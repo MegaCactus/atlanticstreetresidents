@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>355 Atlantic Street maintenance record</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+  :root{
+  --bg:#F6F7F5;
+  --ink:#1B2430;
+--muted:#5D6877;
+--line:#D8DDE3;
+  --line-strong:#AEB7C2;
+  --panel:#ECEFEC;
+  --chip:#E3E7E4;
+  --chip-on:#1B2430;
+--chip-on-ink:#F6F7F5;
+  --focus:#2B6CB0;
+--c-water:#2B6CB0;
+--c-hvac:#DD6B20;
+  --c-elev:#6B46C1;
+--c-win:#2C7A7B;
+--c-fire:#C53030;
+  --c-amen:#B7791F;
+  --c-garage:#5B6779;
+--c-pm:#38A169;
+--c-you:#D53F8C;
+  }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+--bg:#141A21;
+--ink:#E6EAEF;
+  --muted:#9AA5B4;
+--line:#2A333E;
+--line-strong:#465262;
+--panel:#1B232C;
+--chip:#232D38;
+--chip-on:#E6EAEF;
+  --chip-on-ink:#141A21;
+--focus:#6FA6E8;
+--c-water:#4F8FD6;
+--c-hvac:#EE8A3F;
+  --c-elev:#8F74E3;
+--c-win:#3FA79B;
+--c-fire:#E25C5C;
+  --c-amen:#D4A040;
+  --c-garage:#8A97A9;
+--c-pm:#4CBF7E;
+--c-you:#E86AA6;
+  }
+    }
+:root[data-theme="dark"]{
+--bg:#141A21;
+--ink:#E6EAEF;
+  --muted:#9AA5B4;
+--line:#2A333E;
+--line-strong:#465262;
+--panel:#1B232C;
+--chip:#232D38;
+--chip-on:#E6EAEF;
+  --chip-on-ink:#141A21;
+--focus:#6FA6E8;
+--c-water:#4F8FD6;
+--c-hvac:#EE8A3F;
+  --c-elev:#8F74E3;
+--c-win:#3FA79B;
+--c-fire:#E25C5C;
+  --c-amen:#D4A040;
+  --c-garage:#8A97A9;
+--c-pm:#4CBF7E;
+--c-you:#E86AA6;
+  }
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+  body{
+  margin:0;
+background:var(--bg);
+color:var(--ink);
+font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+font-size:16px;
+line-height:1.5;
+}
+.page{max-width:1040px;margin:0 auto;padding:40px 24px 72px}
+h1{font-size:34px;line-height:1.15;font-weight:600;letter-spacing:-0.01em;margin:0 0 12px}
+h2{font-size:21px;line-height:1.3;font-weight:600;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 4px;max-width:66ch}
+.lede{font-size:18px;line-height:1.55;max-width:64ch;margin:20px 0 0}
+section{margin-top:52px}
+  .section-note{color:var(--muted);font-size:14px;margin:0 0 14px;max-width:70ch}
+.scroller{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.timeline{min-width:760px;display:block;width:100%;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:12px 0 0;padding:0;list-style:none;font-size:14px;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:8px}
+.legend .mk{display:inline-block;width:5px;border-radius:1px;background:var(--ink)}
+.legend .mk.u{height:16px}
+.legend .mk.s{height:9px;opacity:.55}
+.legend .mk.n{height:6px;opacity:.3}
+.legend .mk.r{height:16px;background:var(--c-you)}
+.seg{margin:6px 0 14px;gap:18px}
+.seg label{font-size:15px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.seg input{accent-color:var(--ink)}
+.cal-year{margin:18px 0 0}
+.cal-year h3{font-size:15px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:baseline}
+.cal-year h3 span{font-weight:400;color:var(--muted);font-size:14px}
+.cal-year svg{display:block;width:100%;height:auto;min-width:720px}
+.tower-wrap{max-width:560px}
+  .tower-wrap svg{width:100%;height:auto;display:block}
+.tower-wrap .fl{cursor:pointer}
+.tower-wrap .fl:focus-visible{outline:2px solid var(--focus)}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+@media (max-width:760px){.charts{grid-template-columns:1fr}}
+.chart svg{width:100%;height:auto;display:block}
+.chart .cap{font-size:14px;color:var(--muted);margin:8px 0 0;max-width:48ch}
+.you-list{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.you-list li{display:grid;grid-template-columns:120px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.you-list time{color:var(--muted);font-variant-numeric:tabular-nums}
+.you-list strong{font-weight:600}
+  .you-list span{display:block;color:var(--muted);font-size:15px;margin-top:2px}
+@media (max-width:560px){.you-list li{grid-template-columns:1fr;gap:2px} h1{font-size:28px} .lede{font-size:17px}}
+.filters{display:flex;flex-direction:column;gap:12px;margin:18px 0 14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--ink);
+border-radius:16px;padding:5px 12px 5px 9px;font:inherit;font-size:14px;line-height:1.2;cursor:pointer;
+display:inline-flex;align-items:center;gap:7px
+  }
+.chip .sw{width:10px;height:10px;border-radius:2px;background:var(--sw)}
+.chip[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-ink);border-color:var(--chip-on)}
+.chip:focus-visible,select:focus-visible,input:focus-visible,button.link:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+select,input[type="search"]{
+font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line-strong);
+border-radius:6px;padding:7px 10px
+  }
+input[type="search"]{min-width:220px;flex:1}
+.count{color:var(--muted);font-size:14px;margin-left:auto}
+button.link{appearance:none;background:none;border:0;padding:0;font:inherit;font-size:14px;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:720px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:0 12px 8px 0;border-bottom:1px solid var(--line-strong);white-space:nowrap}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.dt{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
+td.dt small{font-size:12px;color:var(--ink);opacity:.8}
+td.cat{white-space:nowrap}
+td.cat i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:-1px;background:var(--sw)}
+td.typ{white-space:nowrap}
+td.typ.u{font-weight:600}
+td.typ.r{color:var(--c-you);font-weight:600}
+td.what strong{font-weight:600}
+  td.what span{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+td.where{white-space:nowrap;color:var(--muted)}
+.empty{padding:24px 0;color:var(--muted)}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;max-width:72ch}
+footer p{margin:0 0 8px}
+@media (prefers-reduced-motion:no-preference){.chip{transition:background-color .12s,color .12s}}
+</style>
+  </head>
+  <body>
+  <div class="page">
+
+  <header>
+  <h1>355 Atlantic Street maintenance record</h1>
+  <p class="sub">A residents’ record of maintenance at 355 Atlantic Street, Stamford. Building notices from October 2020 to the present, plus resident-submitted tickets.</p>
+  <p class="sub">Compiled from the building’s own email notices and from maintenance tickets residents have shared. Nothing here identifies a unit or a person.</p>
+  <p class="lede" id="lede"></p>
+  <p class="lede" id="lede2" style="margin-top:12px"></p>
+  </header>
+
+  <section aria-labelledby="tl-h">
+  <h2 id="tl-h">Every incident since October 2020</h2>
+  <p class="section-note">One row per category, one mark per incident. Tall marks are unplanned failures or emergency work; short marks are scheduled shutoffs, inspections, and repairs; faint marks are informational notices. A wider mark spans multiple days.</p>
+  <div class="scroller"><svg id="timeline" class="timeline" role="img" aria-label="Timeline of maintenance incidents by category, October 2020 to September 2026"></svg></div>
+  <ul class="legend">
+  <li><span class="mk u"></span>Unplanned or emergency</li>
+<li><span class="mk s"></span>Scheduled</li>
+<li><span class="mk n"></span>Notice</li>
+<li><span class="mk r"></span>Resident ticket</li>
+</ul>
+  </section>
+
+  <section aria-labelledby="cal-h">
+  <h2 id="cal-h">Days affected, month by month</h2>
+<p class="section-note">Each square is a day. In the water view, solid blue is a day with an unplanned outage of water or hot water (from a building notice or a boiler failure) and lighter blue is a scheduled shutoff. The other views color each day by its most relevant category. Where the building never announced a restoration, the incident is assumed to have ended the same day; the faintest squares are days inside an estimated end. Informational notices are left out.</p>
+<p class="section-note" id="calStat"></p>
+  <div class="row seg" role="radiogroup" aria-label="Which incidents to show on the calendar">
+  <label><input type="radio" name="calmode" value="water" checked> Water and hot water only</label>
+<label><input type="radio" name="calmode" value="core"> Water and heat</label>
+<label><input type="radio" name="calmode" value="all"> Everything except notices</label>
+</div>
+<div class="scroller" id="cal"></div>
+</section>
+
+<section aria-labelledby="tw-h">
+  <h2 id="tw-h">Where in the building</h2>
+  <p class="section-note">The tower, floor by floor. Each residential floor is shaded by how many incident-days have touched it; a building-wide outage counts on every floor, a floors 17–26 outage only on those. The dashed line is where the hot water risers split, which is why so many notices name one half of the building. Click a floor to narrow the log below to it.</p>
+  <div class="row seg">
+  <select id="towerWin" aria-label="Time window">
+  <option value="all">All time</option>
+  <option value="12m">Last 12 months</option>
+  <option value="90d">Last 90 days</option>
+  </select>
+  <label><input type="checkbox" id="towerUnplanned"> Unplanned only</label>
+  </div>
+<div class="tower-wrap"><svg id="tower" role="img" aria-label="Building model shaded by incident-days per floor"></svg></div>
+  <p class="section-note" id="towerStat"></p>
+  </section>
+
+  <section aria-labelledby="ch-h">
+  <h2 id="ch-h">Where the problems are</h2>
+  <div class="charts">
+  <div class="chart">
+  <svg id="byCat" role="img" aria-label="Incidents by category, with the unplanned share highlighted"></svg>
+  <p class="cap">Incidents by category. The solid part of each bar is unplanned; the light part is scheduled work and notices.</p>
+</div>
+<div class="chart">
+  <svg id="byYear" role="img" aria-label="Hot water and plumbing incidents per year, unplanned versus scheduled"></svg>
+  <p class="cap">Hot water and plumbing incidents per year; the number inside each bar is how many were unplanned. 2020 covers October onward and 2026 runs through early September.</p>
+  </div>
+  </div>
+  </section>
+
+  <section aria-labelledby="you-h">
+  <h2 id="you-h">Resident tickets</h2>
+  <p class="section-note">Maintenance requests residents have shared from the building app, oldest first. Dates are shown by month and locations by floor range so that no ticket can be traced to a unit.</p>
+  <ul class="you-list" id="youList"></ul>
+  </section>
+
+  <section aria-labelledby="log-h">
+  <h2 id="log-h">Full incident log</h2>
+<p class="section-note">Filter by category or type, or search the descriptions. Dates are when the issue started or was announced; the small line under a water incident is its estimated length, taken from the building’s own timestamps. Click a floor in the building model above to narrow the log to that floor. “About” marks an end date that was never announced.</p>
+  <div class="filters">
+  <div class="chips" id="catChips" role="group" aria-label="Filter by category"></div>
+  <div class="row">
+  <select id="typeSel" aria-label="Filter by type">
+  <option value="">All types</option>
+  <option value="U">Unplanned or emergency</option>
+<option value="S">Scheduled</option>
+<option value="N">Notice</option>
+<option value="R">Resident ticket</option>
+  </select>
+  <input type="search" id="q" placeholder="Search, e.g. floors 17–26, elevator, leak" aria-label="Search incidents">
+  <button class="link" id="sortBtn" type="button">Newest first</button>
+  <span class="count" id="count"></span>
+  </div>
+  </div>
+  <div class="scroller">
+  <table id="log">
+  <thead><tr><th>Date</th><th>Category</th><th>Type</th><th>What happened</th><th>Where</th></tr></thead>
+  <tbody id="logBody"></tbody>
+  </table>
+  <p class="empty" id="empty" hidden>Nothing matches those filters.</p>
+  </div>
+  </section>
+
+  <footer>
+  <p>Management changed hands three times in this period: Greystar (for owner RXR) in 2020, AVE from January 2022, Greystar again by mid-2022, and Bozzuto since June 2025.</p>
+  <p>Method: every notice from the building’s notification system and its management addresses was grouped into incidents, so a multi-day outage with six update emails counts once. Floors and durations come from the full text of the notices. Rent reminders, events, holiday hours, and parking enforcement are left out. Resident tickets are shown by month and floor range only, with no tech notes, photos, or unit numbers.</p>
+<p>Have tickets from your own apartment? A submission form is on its way. Nothing on this site is collected automatically from residents.</p>
+  </footer>
+
+  </div>
+
+  <script>
+  (function(){
+  "use strict";
+function render(DATA){
+
+var CATS = [
+{k:"you",    n:"Resident tickets",           v:"--c-you"},
+{k:"water",  n:"Hot water & plumbing",       v:"--c-water"},
+{k:"hvac",   n:"Heating & cooling",          v:"--c-hvac"},
+{k:"elev",   n:"Elevators",                  v:"--c-elev"},
+{k:"win",    n:"Windows & exterior",         v:"--c-win"},
+{k:"fire",   n:"Fire & life safety",         v:"--c-fire"},
+{k:"amen",   n:"Amenities & systems", v:"--c-amen"},
+{k:"garage", n:"Garage & common areas",      v:"--c-garage"},
+{k:"pm",     n:"Preventive maintenance",     v:"--c-pm"}
+];
+var TYPE_NAME = {U:"Unplanned", S:"Scheduled", N:"Notice", R:"Resident ticket"};
+
+function parse(d){ var p=d.split("-"); return new Date(Date.UTC(+p[0],+p[1]-1,+p[2])); }
+var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmt(d){ var t=parse(d); return MONTHS[t.getUTCMonth()]+" "+t.getUTCDate()+", "+t.getUTCFullYear(); }
+function fmtRow(r){ if(r.m){ var t=parse(r.d); return MONTHS[t.getUTCMonth()]+" "+t.getUTCFullYear(); } return fmt(r.d); }
+function catOf(k){ for(var i=0;i<CATS.length;i++) if(CATS[i].k===k) return CATS[i]; return null; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function ns(tag,attrs,text){ var e=document.createElementNS("http://www.w3.org/2000/svg",tag); for(var k in attrs) e.setAttribute(k,attrs[k]); if(text!=null) e.textContent=text; return e; }
+
+var rows = DATA.map(function(r,i){
+var eraw=r.e||"", est=eraw.charAt(0)==="~", e=est?eraw.slice(1):eraw;
+var d=r.m?r.d+"-15":r.d;
+return {i:i,d:d,m:!!r.m,e:e,est:est,c:r.c,t:r.t,s:r.s,x:r.x||"",w:r.w||"",g:r.g||"",dur:r.dur||"",ts:parse(d).getTime(),te:parse(e||d).getTime()};
+});
+var APP={floor:null};
+var DAY=86400000, NL=String.fromCharCode(10);
+function iso(ts){ return new Date(ts).toISOString().slice(0,10); }
+
+// ---------- Lede ----------
+(function(){
+var total=rows.length;
+var water=rows.filter(function(r){return r.c==="water";});
+var waterU=water.filter(function(r){return r.t==="U";}).length;
+var recent=water.filter(function(r){return r.d>="2025-01-01";}).length;
+var wb=water.filter(function(r){return r.t==="U"&&r.d>="2025-01-01"&&r.w==="Whole building"&&/shut off|water off|all water/i.test(r.s+" "+r.x);}).length;
+var you=rows.filter(function(r){return r.c==="you";});
+var sinks=you.filter(function(r){return r.g==="sinks";}).length;
+var hw=you.filter(function(r){return r.g==="hotwater";}).length;
+document.getElementById("lede").textContent =
+  total+" incidents in six years. Hot water and plumbing account for "+water.length+" of them, "+waterU+" unplanned, and the pace has picked up: "+recent+" of the "+water.length+" fall in 2025 and 2026, including "+wb+" occasions when every tap in the building was shut off.";
+document.getElementById("lede2").textContent =
+  you.length+" resident tickets have been shared so far, "+sinks+" of them about bathroom sinks cracking or pulling off the wall and "+hw+" about hot water inside an apartment. Open issues include detaching sinks and leaking windows.";
+})();
+
+// ---------- Timeline ----------
+(function(){
+var svg=document.getElementById("timeline");
+var W=1000, L=196, R=16, top=30, lane=26, H=top+CATS.length*lane+14;
+svg.setAttribute("viewBox","0 0 "+W+" "+H);
+var t0=Date.UTC(2020,9,1), t1=Date.UTC(2026,9,1);
+function x(ts){ return L+(ts-t0)/(t1-t0)*(W-L-R); }
+// year grid
+for(var y=2021;y<=2026;y++){
+var xx=x(Date.UTC(y,0,1));
+svg.appendChild(ns("line",{x1:xx,y1:top-6,x2:xx,y2:H-10,stroke:"var(--line)","stroke-width":1}));
+svg.appendChild(ns("text",{x:xx+4,y:top-12,"font-size":12,fill:"var(--muted)"},String(y)));
+}
+CATS.forEach(function(c,ci){
+  var y0=top+ci*lane;
+svg.appendChild(ns("line",{x1:L,y1:y0+lane-4,x2:W-R,y2:y0+lane-4,stroke:"var(--line)","stroke-width":1,"stroke-dasharray":"1 3"}));
+var lbl=ns("text",{x:L-12,y:y0+lane-9,"font-size":13,"text-anchor":"end",fill:"var(--ink)"},c.n);
+svg.appendChild(lbl);
+rows.filter(function(r){return r.c===c.k;}).forEach(function(r){
+  var xs=x(r.ts), xe=x(r.te), w=Math.max(3, xe-xs);
+var h, op;
+if(r.t==="U"||r.t==="R"){h=16;op=1;} else if(r.t==="S"){h=9;op=.6;} else {h=6;op=.35;}
+var rect=ns("rect",{x:xs-1.5,y:y0+lane-5-h,width:w,height:h,rx:1,fill:"var("+c.v+")",opacity:op});
+var title=ns("title",{},fmtRow(r)+(r.e?" to "+fmt(r.e):"")+": "+r.s+(r.w?" ("+r.w+")":""));
+rect.appendChild(title);
+svg.appendChild(rect);
+});
+});
+})();
+
+// ---------- Calendar ----------
+(function(){
+var PR=["you","water","hvac","elev","fire","amen","win","garage","pm"];
+var reach=/Whole building|17–26|17–P2|6–26|One stack|Upper floors/;
+var MOVE_IN=Date.UTC(2020,9,1), TODAY=Date.UTC(2026,8,3);
+function isWater(r){ return r.t!=="N" && !r.m && (r.c==="water" || r.g==="hotwater"); }
+function reachesFloor(r){ return reach.test(r.w); }
+function build(){
+  var mode=document.querySelector('input[name="calmode"]:checked').value;
+function inc(r){
+  if(r.t==="N"||r.m) return false;
+if(mode==="water") return isWater(r);
+if(mode==="core") return r.c==="you"||r.c==="water"||r.c==="hvac";
+return true;
+}
+var days={};
+rows.forEach(function(r){
+  if(!inc(r)) return;
+for(var t=r.ts;t<=r.te;t+=DAY){ var k=iso(t); (days[k]=days[k]||[]).push({r:r,estDay:r.est&&t>r.ts}); }
+});
+var box=document.getElementById("cal"); box.innerHTML="";
+var cell=12, gap=2, step=cell+gap;
+for(var y=2020;y<=2026;y++){
+var wrap=document.createElement("div"); wrap.className="cal-year";
+var jan1=Date.UTC(y,0,1), dec31=Date.UTC(y,11,31);
+var startTs=jan1-new Date(jan1).getUTCDay()*DAY;
+var cols=Math.ceil((dec31-startTs)/DAY/7)+1;
+var W=cols*step+4, H=18+7*step;
+var svg=ns("svg",{viewBox:"0 0 "+W+" "+H,role:"img","aria-label":"Calendar of affected days in "+y});
+var affected=0;
+for(var m=0;m<12;m++){ var f=Date.UTC(y,m,1); var c=Math.floor((f-startTs)/DAY/7); svg.appendChild(ns("text",{x:c*step,y:11,"font-size":11,fill:"var(--muted)"},MONTHS[m])); }
+for(var t=jan1;t<=dec31;t+=DAY){
+if(t<MOVE_IN||t>TODAY) continue;
+var col=Math.floor((t-startTs)/DAY/7), row=new Date(t).getUTCDay();
+var k=iso(t), list=days[k];
+var attrs={x:col*step,y:18+row*step,width:cell,height:cell,rx:2};
+var tip=fmt(k);
+if(list){
+affected++;
+var allEst=list.every(function(e){return e.estDay;});
+if(mode==="water"){
+var anyU=list.some(function(e){return e.r.t==="U"||e.r.t==="R";});
+attrs.fill="var(--c-water)"; attrs.opacity=allEst?.3:(anyU?1:.5);
+} else {
+var best=null; list.forEach(function(e){ if(!best||PR.indexOf(e.r.c)<PR.indexOf(best.r.c)) best=e; });
+attrs.fill="var("+catOf(best.r.c).v+")"; attrs.opacity=allEst?.45:1;
+}
+tip+=NL+list.map(function(e){return "• "+e.r.s+(e.r.w?" ("+e.r.w+")":"")+(e.r.dur?" — "+e.r.dur:"");}).join(NL);
+} else { attrs.fill="var(--line)"; attrs.opacity=.55; }
+var rc=ns("rect",attrs); rc.appendChild(ns("title",{},tip)); svg.appendChild(rc);
+}
+var h=document.createElement("h3"); h.textContent=y+" "; var sp=document.createElement("span"); sp.textContent=affected+(affected===1?" day":" days")+(y===2020?" (from October)":y===2026?" (through Sep 3)":""); h.appendChild(sp);
+wrap.appendChild(h); wrap.appendChild(svg); box.appendChild(wrap);
+}
+}
+// stat line, independent of the view toggle
+(function(){
+var fd={}, fu={}, ad={}, un=[];
+rows.forEach(function(r){
+  if(!isWater(r)) return;
+if(/^Some/.test(r.w)) un.push(fmt(r.d));
+for(var t=r.ts;t<=r.te;t+=DAY){ var k=iso(t); ad[k]=1; if(reachesFloor(r)){ fd[k]=1; if(r.t==="U"||r.t==="R") fu[k]=1; } }
+});
+var n=Object.keys(fd).length, u=Object.keys(fu).length, a=Object.keys(ad).length;
+document.getElementById("calStat").textContent="Counting every water and hot water interruption that reached the upper floors (17–26), from building notices and boiler failures, service was interrupted there on "+n+" separate days since October 2020, "+u+" of them unplanned. Across all floors, some water interruption was active on "+a+" days. Where the building said cold water was back but hot water wasn’t, the hot water date is the one used."+(un.length?" Two incidents where the affected floors were never named ("+un.join(" and ")+") aren’t counted toward the upper floors.":"");
+})();
+Array.prototype.forEach.call(document.querySelectorAll('input[name="calmode"]'),function(el){ el.addEventListener("change",build); });
+build();
+})();
+
+// ---------- Chart: by category ----------
+(function(){
+var svg=document.getElementById("byCat");
+var stats=CATS.map(function(c){
+var rs=rows.filter(function(r){return r.c===c.k;});
+return {c:c,n:rs.length,u:rs.filter(function(r){return r.t==="U"||r.t==="R";}).length};
+}).sort(function(a,b){return b.n-a.n;});
+var W=480, L=196, R=40, rowH=28, top=8, H=top+stats.length*rowH+4;
+svg.setAttribute("viewBox","0 0 "+W+" "+H);
+var max=stats[0].n, scale=(W-L-R)/max;
+stats.forEach(function(s,i){
+  var y=top+i*rowH;
+svg.appendChild(ns("text",{x:L-10,y:y+17,"font-size":13,"text-anchor":"end",fill:"var(--ink)"},s.c.n));
+svg.appendChild(ns("rect",{x:L,y:y+4,width:Math.max(2,s.n*scale),height:16,rx:1,fill:"var("+s.c.v+")",opacity:.32}));
+  if(s.u>0) svg.appendChild(ns("rect",{x:L,y:y+4,width:Math.max(2,s.u*scale),height:16,rx:1,fill:"var("+s.c.v+")"}));
+svg.appendChild(ns("text",{x:L+s.n*scale+6,y:y+17,"font-size":13,fill:"var(--muted)"},String(s.n)));
+});
+})();
+
+// ---------- Chart: hot water by year ----------
+(function(){
+var svg=document.getElementById("byYear");
+var years=[2020,2021,2022,2023,2024,2025,2026];
+var data=years.map(function(y){
+var rs=rows.filter(function(r){return r.c==="water"&&r.d.slice(0,4)===String(y);});
+return {y:y,u:rs.filter(function(r){return r.t==="U";}).length,s:rs.filter(function(r){return r.t!=="U";}).length};
+});
+var W=480, H=260, L=30, R=8, top=22, bot=30;
+svg.setAttribute("viewBox","0 0 "+W+" "+H);
+var max=Math.max.apply(null,data.map(function(d){return d.u+d.s;}));
+var plotH=H-top-bot, plotW=W-L-R, slot=plotW/years.length, bw=Math.min(44,slot*.6);
+function yy(v){ return top+plotH-(v/max)*plotH; }
+[0,4,8,12].forEach(function(g){ if(g<=max){ svg.appendChild(ns("line",{x1:L,y1:yy(g),x2:W-R,y2:yy(g),stroke:"var(--line)","stroke-width":1})); svg.appendChild(ns("text",{x:L-6,y:yy(g)+4,"font-size":12,"text-anchor":"end",fill:"var(--muted)"},String(g))); } });
+data.forEach(function(d,i){
+  var cx=L+slot*i+slot/2, xb=cx-bw/2;
+var tot=d.u+d.s;
+if(d.s>0) svg.appendChild(ns("rect",{x:xb,y:yy(tot),width:bw,height:yy(d.u)-yy(tot),fill:"var(--c-water)",opacity:.32}));
+if(d.u>0) svg.appendChild(ns("rect",{x:xb,y:yy(d.u),width:bw,height:yy(0)-yy(d.u),fill:"var(--c-water)"}));
+if(tot>0) svg.appendChild(ns("text",{x:cx,y:yy(tot)-6,"font-size":12,"text-anchor":"middle",fill:"var(--muted)"},String(tot)));
+if(d.u>0) svg.appendChild(ns("text",{x:cx,y:yy(0)-6,"font-size":11,"text-anchor":"middle",fill:"#fff"},String(d.u)));
+  svg.appendChild(ns("text",{x:cx,y:H-10,"font-size":13,"text-anchor":"middle",fill:"var(--ink)"},String(d.y)));
+});
+})();
+
+// ---------- Resident ticket list ----------
+(function(){
+var ul=document.getElementById("youList");
+rows.filter(function(r){return r.c==="you";}).sort(function(a,b){return a.ts-b.ts;}).forEach(function(r){
+  var li=document.createElement("li");
+li.innerHTML='<time datetime="'+r.d+'">'+fmtRow(r)+'</time><div><strong>'+esc(r.s)+'</strong>'+(r.x?'<span>'+esc(r.x)+'</span>':'')+'</div>';
+  ul.appendChild(li);
+});
+})();
+
+// ---------- Log with filters ----------
+(function(){
+var active={}; CATS.forEach(function(c){active[c.k]=true;});
+var chips=document.getElementById("catChips");
+CATS.forEach(function(c){
+  var b=document.createElement("button");
+b.type="button"; b.className="chip"; b.setAttribute("aria-pressed","true"); b.dataset.k=c.k;
+b.style.setProperty("--sw","var("+c.v+")");
+b.innerHTML='<span class="sw" aria-hidden="true"></span>'+esc(c.n);
+b.addEventListener("click",function(){
+  var allOn=CATS.every(function(cc){return active[cc.k];});
+if(allOn){ CATS.forEach(function(cc){active[cc.k]=(cc.k===c.k);}); }
+else { active[c.k]=!active[c.k]; if(!CATS.some(function(cc){return active[cc.k];})) CATS.forEach(function(cc){active[cc.k]=true;}); }
+sync(); render();
+});
+chips.appendChild(b);
+});
+function sync(){ Array.prototype.forEach.call(chips.children,function(b){ b.setAttribute("aria-pressed",active[b.dataset.k]?"true":"false"); }); }
+
+var typeSel=document.getElementById("typeSel"), q=document.getElementById("q"), sortBtn=document.getElementById("sortBtn");
+var desc=true;
+typeSel.addEventListener("change",render);
+q.addEventListener("input",render);
+sortBtn.addEventListener("click",function(){ desc=!desc; sortBtn.textContent=desc?"Newest first":"Oldest first"; render(); });
+
+var body=document.getElementById("logBody"), count=document.getElementById("count"), empty=document.getElementById("empty");
+function render(){
+  var t=typeSel.value, term=q.value.trim().toLowerCase();
+var list=rows.filter(function(r){
+if(!active[r.c]) return false;
+if(APP.floor!==null && !touches(r,APP.floor)) return false;
+if(t&&r.t!==t) return false;
+if(term){ var hay=(r.s+" "+r.x+" "+r.w+" "+catOf(r.c).n+" "+TYPE_NAME[r.t]+" "+fmt(r.d)).toLowerCase(); if(hay.indexOf(term)<0) return false; }
+return true;
+}).sort(function(a,b){ return desc?(b.ts-a.ts||b.i-a.i):(a.ts-b.ts||a.i-b.i); });
+body.innerHTML=list.map(function(r){
+  var c=catOf(r.c);
+var when=fmtRow(r)+(r.e?"<br>to "+(r.est?"about ":"")+fmt(r.e):"")+(r.dur?"<br><small>"+esc(r.dur)+"</small>":"");
+return '<tr><td class="dt">'+when+'</td>'+
+  '<td class="cat"><i style="--sw:var('+c.v+')"></i>'+esc(c.n)+'</td>'+
+  '<td class="typ '+r.t.toLowerCase()+'">'+TYPE_NAME[r.t]+'</td>'+
+  '<td class="what"><strong>'+esc(r.s)+'</strong>'+(r.x?'<span>'+esc(r.x)+'</span>':'')+'</td>'+
+  '<td class="where">'+esc(r.w||'')+'</td></tr>';
+}).join("");
+count.textContent="Showing "+list.length+" of "+rows.length+(APP.floor!==null?" on "+floorLabel(APP.floor):"");
+empty.hidden=list.length>0;
+}
+render();
+APP.renderLog=render;
+})();
+
+// ---------- Floor helpers ----------
+function range(a,b){ var o=[]; for(var i=a;i<=b;i++) o.push(i); return o; }
+function floorsOf(r){
+  var w=r.w||"";
+if(/Whole building|All units|Selected units/.test(w)) return range(6,26);
+if(/Upper floors|One stack/.test(w)) return range(17,26);
+var mm=w.match(/([0-9]+)[–-]([0-9]+|P2)/); if(mm) return range(+mm[1], mm[2]==="P2"?26:+mm[2]);
+return [];
+}
+function bandOf(r){
+  var w=r.w||"";
+if(/Garage|G2|G5|Driveway|Street/.test(w)) return "garage";
+if(/Exterior|Windows/.test(w)) return "ext";
+if(/Pool|Sky Terrace|6th floor|Yoga|Lobby|Package|Chute|Entrance|Service corridor|Amenit/.test(w)) return "common";
+return null;
+}
+function touches(r,f){ if(typeof f==="number") return floorsOf(r).indexOf(f)>=0; return bandOf(r)===f; }
+function floorLabel(f){ return typeof f==="number"?"floor "+f:(f==="garage"?"the garage":f==="ext"?"the exterior":"common areas"); }
+
+// ---------- Floor model ----------
+(function(){
+var svg=document.getElementById("tower"), TODAY=Date.UTC(2026,8,3);
+var winSel=document.getElementById("towerWin"), unpl=document.getElementById("towerUnplanned"), stat=document.getElementById("towerStat");
+var bands=[]; for(var f=26;f>=6;f--) bands.push({k:f,n:String(f)});
+bands.push({k:"common",n:"Amenities and common areas"},{k:"ext",n:"Exterior and windows"},{k:"garage",n:"Garage G2–G5"});
+function build(){
+  var since=winSel.value==="12m"?TODAY-365*DAY:winSel.value==="90d"?TODAY-90*DAY:0;
+var counts={}; bands.forEach(function(b){counts[b.k]=0;});
+rows.forEach(function(r){
+  if(r.t==="N") return;
+if(unpl.checked && !(r.t==="U"||r.t==="R")) return;
+if(r.te<since) return;
+var days=Math.round((Math.max(r.te,since)-Math.max(r.ts,since))/DAY)+1;
+floorsOf(r).forEach(function(f){counts[f]+=days;});
+var b=bandOf(r); if(b) counts[b]+=days;
+});
+var max=0; bands.forEach(function(b){ if(b.k!=="common"&&b.k!=="ext"&&b.k!=="garage") max=Math.max(max,counts[b.k]); });
+var W=520, L=44, R=60, rowH=15, top=6;
+var H=top+bands.length*rowH+12;
+svg.setAttribute("viewBox","0 0 "+W+" "+H); svg.innerHTML="";
+bands.forEach(function(b,i){
+  var y=top+i*rowH, isRes=typeof b.k==="number";
+var v=counts[b.k], op=v>0?0.12+0.88*Math.min(1,v/(isRes?max:Math.max(max,v)||1)):0;
+var g=ns("g",{"class":"fl"+(APP.floor===b.k?" on":""),tabindex:0,role:"button","aria-label":"Filter the log to "+b.n});
+g.appendChild(ns("rect",{x:L,y:y+1,width:W-L-R,height:rowH-2,fill:"var(--line)",opacity:.5}));
+if(v>0) g.appendChild(ns("rect",{x:L,y:y+1,width:W-L-R,height:rowH-2,fill:"var(--c-water)",opacity:op}));
+if(APP.floor===b.k) g.appendChild(ns("rect",{x:L-2,y:y-1,width:W-L-R+4,height:rowH+2,fill:"none",stroke:"var(--ink)","stroke-width":1.5}));
+g.appendChild(ns("text",{x:L-8,y:y+11,"font-size":isRes?11:10,"text-anchor":"end",fill:"var(--ink)"},isRes?b.n:""));
+if(!isRes) g.appendChild(ns("text",{x:L+6,y:y+11,"font-size":10,fill:"var(--ink)"},b.n));
+g.appendChild(ns("text",{x:W-R+8,y:y+11,"font-size":11,fill:"var(--muted)"},v?v+" d":""));
+var t=ns("title",{},(isRes?"Floor "+b.n:b.n)+": "+v+" incident-days"); g.appendChild(t);
+function pick(){ APP.floor=(APP.floor===b.k)?null:b.k; build(); if(APP.renderLog) APP.renderLog(); }
+g.addEventListener("click",pick); g.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();pick();} });
+svg.appendChild(g);
+});
+// riser split marker between 16 and 17
+var ySplit=top+(26-17+1)*rowH;
+svg.appendChild(ns("line",{x1:L,y1:ySplit,x2:W-R,y2:ySplit,stroke:"var(--ink)","stroke-width":1,"stroke-dasharray":"3 3",opacity:.6}));
+svg.appendChild(ns("text",{x:W-R+8,y:ySplit+4,"font-size":9,fill:"var(--muted)"},"riser split"));
+var top23=bands.filter(function(b){return typeof b.k==="number";}).sort(function(a,b){return counts[b.k]-counts[a.k];}).slice(0,1)[0];
+stat.textContent=APP.floor!==null?"Showing "+floorLabel(APP.floor)+". Click it again to clear.":"Days are incident-days: a two-day outage on floors 17–26 adds two to each of those floors. Darkest floor in this view: "+top23.n+" ("+counts[top23.k]+").";
+}
+winSel.addEventListener("change",build); unpl.addEventListener("change",build);
+build();
+})();
+}
+fetch("data/incidents.json").then(function(r){return r.json();}).then(render).catch(function(e){ document.getElementById("lede").textContent="The incident data could not be loaded."; });
+})();
+</script>
+  </body>
+  </html>
+  
