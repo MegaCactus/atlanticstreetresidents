@@ -33,7 +33,9 @@ form{margin:26px 0 0}
 fieldset{border:0;padding:0;margin:0 0 22px;min-width:0}
 label,legend{display:block;font-weight:600;font-size:15px;margin:0 0 6px}
 .hint{font-size:14px;color:var(--muted);margin:-2px 0 8px;max-width:60ch}
-input[type="text"],input[type="email"],input[type="date"],select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;width:100%}
+input[type="text"],input[type="email"],input[type="date"],select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;width:100%;max-width:100%;min-width:0;display:block}
+input[type="date"]{-webkit-appearance:none;appearance:none;min-height:46px}
+.two>fieldset{min-width:0}
 textarea{min-height:130px;resize:vertical}
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -81,11 +83,11 @@ details fieldset{margin-top:6px}
 <div class="nav"><div class="wrap"><a class="brand" href="index.html">355 Atlantic Street</a><a class="back" href="index.html">Back to the record</a></div></div>
 <main class="wrap">
 <h1>Add your ticket or report</h1>
-<p class="lead">A maintenance ticket is a problem inside your apartment that you reported to the building. A report is anything happening in the building you want on the record, with photos, under your name or not. Everything is reviewed before it appears, usually within a day.</p>
+<p class="lead">A maintenance ticket is a problem inside your apartment that you reported to the building. A building issue is anything happening in the building you want on the record, with photos, under your name or not. Everything is reviewed before it appears.</p>
 
 <div class="switch" role="group" aria-label="What are you adding">
 <button type="button" id="pickTicket" aria-pressed="true"><strong>Maintenance ticket</strong><span>A problem in your apartment, like no hot water or a sink coming off the wall.</span></button>
-<button type="button" id="pickReport" aria-pressed="false"><strong>Building report</strong><span>Something in the building: a leak in a hallway, a broken gate, a closed amenity.</span></button>
+<button type="button" id="pickReport" aria-pressed="false"><strong>Building issue</strong><span>Something in the building: a leak in a hallway, a broken gate, a closed amenity.</span></button>
 </div>
 
 <form id="form" novalidate>
@@ -129,8 +131,8 @@ details fieldset{margin-top:6px}
 <fieldset>
 <legend>Where</legend>
 <div class="opts" id="whereMain">
-<button type="button" data-w="Floors 17–26">Floors 17–26<small>upper riser</small></button>
-<button type="button" data-w="Floors 6–16">Floors 6–16<small>lower riser</small></button>
+<button type="button" data-w="Floors 17–26">Floors 17–26<small>upper floors</small></button>
+<button type="button" data-w="Floors 6–16">Floors 6–16<small>lower floors</small></button>
 <button type="button" data-w="Whole building">Whole building<small>or not sure</small></button>
 </div>
 <div class="opts small" id="whereOther">
@@ -139,12 +141,11 @@ details fieldset{margin-top:6px}
 <button type="button" data-w="Lobby">Lobby</button>
 <button type="button" data-w="Exterior">Exterior</button>
 </div>
-<p class="hint" id="whereHint" style="margin-top:8px">Tickets are shown by floor range, never by floor.</p>
 </fieldset>
 
 <fieldset>
 <legend>Unit line (optional)</legend>
-<p class="hint">The letter of your apartment stack. It helps show which risers and lines have repeat problems.</p>
+<p class="hint">The letter of your apartment stack. It helps show which lines of the building have repeat problems.</p>
 <div class="letters" id="letters"></div>
 </fieldset>
 
@@ -180,8 +181,8 @@ details fieldset{margin-top:6px}
 <p>Thanks. Here is what happens next:</p>
 <ol>
 <li>The site's editor gets an email with your submission right away.</li>
-<li>It is checked for relevance and for anything that could identify a resident, usually within a day.</li>
-<li>Once approved, it appears in the <a id="doneLink" href="index.html#you-h">resident tickets</a> section and in the full log.</li>
+<li>It is checked for relevance and for anything that could identify a resident.</li>
+<li>Once approved, it appears in the <a id="doneLink" href="index.html#you-h">resident maintenance tickets</a> section and in the full log.</li>
 </ol>
 <p><a href="index.html">Back to the record</a> or <a href="submit.html" id="again">add another</a>.</p>
 </div>
@@ -206,10 +207,9 @@ document.getElementById("byWrap").hidden=k!=="report";
 document.getElementById("titleLabel").textContent=k==="ticket"?"What happened, in one line":"What is this report about";
 document.getElementById("title").placeholder=k==="ticket"?"No hot water in the unit for the second time this week":"Water pouring from the ceiling in the 6th floor hallway";
 document.getElementById("textHint").textContent=k==="ticket"?"When it started, what you saw, what maintenance said when they came. Skip anything that would identify you or a neighbor.":"What you saw, when, and whether the building has acknowledged it. Skip anything that would identify a neighbor.";
-document.getElementById("whereHint").textContent=k==="ticket"?"Tickets are shown by floor range, never by floor.":"Pick the closest area.";
 setWhere(k==="ticket"?"Floors 17–26":"Whole building");
 document.getElementById("doneLink").href=k==="ticket"?"index.html#you-h":"index.html#rep-h";
-document.getElementById("doneLink").textContent=k==="ticket"?"resident tickets":"reports from residents";
+document.getElementById("doneLink").textContent=k==="ticket"?"resident maintenance tickets":"reported building issues";
 }
 pickT.onclick=function(){setKind("ticket");};pickR.onclick=function(){setKind("report");};
 if(location.hash==="#report")setKind("report");else setKind("ticket");
