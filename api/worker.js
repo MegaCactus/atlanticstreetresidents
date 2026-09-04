@@ -71,6 +71,7 @@ async function writeList(env, k, list) { await env.DB.put(k, JSON.stringify(list
 
 async function sendMail(env, subject, text) {
 if (!env.EMAIL || !env.OWNER_EMAIL) return;
+  try { await env.EMAIL.send({ from: env.FROM_EMAIL, to: env.OWNER_EMAIL, subject: subject, text: text }); return; } catch (e) { console.log("email service send failed: " + (e && e.message)); }
 const raw = "From: 355 Atlantic tracker <" + env.FROM_EMAIL + ">\r\nTo: " + env.OWNER_EMAIL + "\r\nSubject: " + subject.replace(/[\r\n]/g, " ") + "\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n" + text;
 await env.EMAIL.send(new EmailMessage(env.FROM_EMAIL, env.OWNER_EMAIL, raw));
 }
