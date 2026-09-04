@@ -1,0 +1,15 @@
+{
+"name": "asr-api",
+"main": "api/worker.js",
+"compatibility_date": "2025-06-01",
+"observability": { "enabled": true },
+"kv_namespaces": [{ "binding": "DB", "id": "8572cf057ad6435e8881c1a70532b2db" }],
+"send_email": [{ "name": "EMAIL", "destination_address": "stamfordguy@proton.me" }],
+"vars": {
+"OWNER_EMAIL": "stamfordguy@proton.me",
+"FROM_EMAIL": "noreply@atlanticstreetresidents.com",
+"SITE_ORIGIN": "https://atlanticstreetresidents.com",
+"API_ORIGIN": "https://api.atlanticstreetresidents.com"
+},
+"routes": [{ "pattern": "api.atlanticstreetresidents.com", "custom_domain": true }]
+}
