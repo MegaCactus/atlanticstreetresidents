@@ -315,7 +315,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 <section aria-labelledby="meth-h" class="methods">
 <h2 id="meth-h">Methods and limitations</h2>
 <h3>Where the data comes from</h3>
-<p>Two sources feed this record. The first is the building's own email notices: every message the building's notification system has sent residents since October 2020, grouped into incidents so that a multi-day outage with six update emails counts once. New notices are added automatically as they arrive, with the category, type, and affected floors read from the text of the notice. The second is residents themselves, through the tickets and reports submitted on this site or emailed to it.</p>
+<p>Three sources feed this record. The first is the building's own email notices: every message the building's notification system has sent residents since October 2020, grouped into incidents so that a multi-day outage with six update emails counts once. New notices are added automatically as they arrive, with the category, type, and affected floors read from the text of the notice. The second is residents themselves, through the tickets and reports submitted on this site or emailed to it. The third is the residents' Discord, a chat that residents started during the February 2026 shutoff: its history from February to September 2026 was read through, and the problems residents described there were summarized into entries, each noting how many people reported it. Photos from the chat were included only where they show the problem itself.</p>
 <h3>How things are counted</h3>
 <ul>
 <li>An incident is "unplanned" when the building called it an emergency, an outage, a failure, or a leak, and "scheduled" when it was announced in advance. Everything else is a notice.</li>
@@ -326,6 +326,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 <h3>What to keep in mind</h3>
 <div class="callout">
 <p>Resident tickets and reports are self-reported. They describe lived experience in the words of the person who submitted them and are not verified by the building or by anyone else. They can contain mistakes, duplicates, and opinions, and they are reviewed only for relevance and privacy before they appear here, not for accuracy.</p>
+<p>Entries drawn from the residents' Discord are summaries of what people said in the chat, with names, unit numbers, and anything identifying removed. Where the chat described an event the building had also announced, the entry appears as a report alongside the notice rather than as a second incident, so nothing is counted twice.</p>
 <p>Building notices are summarized, not reproduced. The automatic classification of new notices can file something under the wrong category or miss the floors; those errors are corrected as they are noticed.</p>
 <p>This site is run by residents and has no connection to the building's ownership or management. Corrections and missed notices are welcome through the report form.</p>
 </div>
@@ -336,6 +337,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 <footer><div class="wrap">
 <p>Management changed hands three times in this period: Greystar (for owner RXR) in 2020, AVE from January 2022, Greystar again by mid-2022, and Bozzuto since June 2025.</p>
 <p>Photos submitted with tickets and reports are re-encoded in the browser before upload, which removes location and device data.</p>
+<p><a href="https://api.atlanticstreetresidents.com/admin">Admin</a></p>
 </div></footer>
 
 <div class="tip" id="tip" role="tooltip"></div>
