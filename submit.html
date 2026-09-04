@@ -47,8 +47,6 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .thumbs div{position:relative}
 .thumbs img{width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
 .thumbs button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:13px;cursor:pointer;line-height:22px;padding:0}
-.privacy{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--muted);margin:0 0 22px}
-.privacy strong{color:var(--ink);font-weight:600}
 .btn{font:inherit;font-weight:600;font-size:16px;background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:12px 20px;cursor:pointer}
 .btn[disabled]{opacity:.55;cursor:default}
 .status{margin:14px 0 0;font-size:15px;min-height:1.4em}
@@ -64,7 +62,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <div class="nav"><div class="wrap"><a class="brand" href="index.html">355 Atlantic Street</a><a class="back" href="index.html">Back to the record</a></div></div>
 <main class="wrap">
 <h1>Add your ticket or report</h1>
-<p class="lead">Two ways to add to the record. A maintenance ticket is a problem inside your apartment that you reported to the building. A report is anything happening in the building you want on the record, with photos, under your name or not.</p>
+<p class="lead">Two ways to add to the record. A maintenance ticket is a problem inside your apartment that you reported to the building. A report is anything happening in the building you want on the record, with photos, under your name or not. Everything is reviewed before it appears.</p>
 
 <div class="switch" role="group" aria-label="What are you adding">
 <button type="button" id="pickTicket" aria-pressed="true"><strong>Maintenance ticket</strong><span>A problem in your apartment, like no hot water or a sink coming off the wall.</span></button>
@@ -74,8 +72,6 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <form id="form" novalidate>
 <input type="hidden" name="kind" id="kind" value="ticket">
 <div class="hp" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-
-<div class="privacy"><strong>Nothing here identifies you.</strong> The form never asks for a unit number; leave it out of your description too. Photos are re-encoded in your browser before upload, which removes location and camera data. Tickets appear by month and floor range only.</div>
 
 <fieldset>
 <label for="title" id="titleLabel">What happened, in one line</label>
@@ -99,6 +95,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <option value="win">Windows and exterior</option>
 <option value="amen">Amenities and building systems</option>
 <option value="garage">Garage and common areas</option>
+<option value="clean">Cleaning (apartment cleaning service or common areas)</option>
 <option value="other">Something else</option>
 </select>
 </fieldset>
@@ -122,8 +119,12 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <label for="date">When</label>
 <input type="date" id="date" name="date">
 </fieldset>
-<fieldset id="monthWrap">
-<label class="check"><input type="checkbox" id="monthOnly" name="monthOnly" checked><span>Show only the month publicly (recommended for tickets)</span></label>
+<fieldset>
+<label for="stack">Unit line (optional)</label>
+<select id="stack" name="stack">
+<option value="">Prefer not to say</option>
+<option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>H</option><option>J</option><option>K</option><option>L</option><option>M</option><option>N</option><option>P</option><option>R</option><option>S</option><option>T</option>
+</select>
 </fieldset>
 </div>
 
@@ -170,8 +171,6 @@ kindEl.value=k;
 pickT.setAttribute("aria-pressed",k==="ticket"?"true":"false");
 pickR.setAttribute("aria-pressed",k==="report"?"true":"false");
 document.getElementById("byWrap").hidden=k!=="report";
-document.getElementById("monthWrap").hidden=k!=="ticket";
-document.getElementById("monthOnly").checked=k==="ticket";
 document.getElementById("titleLabel").textContent=k==="ticket"?"What happened, in one line":"What is this report about";
 document.getElementById("title").placeholder=k==="ticket"?"No hot water in the unit for the second time this week":"Water pouring from the ceiling in the 6th floor hallway";
 document.getElementById("textHint").textContent=k==="ticket"?"When it started, what you saw, what maintenance said when they came. Skip anything that would identify you or a neighbor.":"What you saw, when, and whether the building has acknowledged it. Skip anything that would identify a neighbor.";
@@ -221,7 +220,7 @@ if(title.length<4){status.className="status bad";status.textContent="Give it a o
 if(text.length<10){status.className="status bad";status.textContent="Add a few words of detail (at least 10 characters).";return;}
 if(/(^|[^A-Za-z0-9])[0-9]{1,2}[A-Z]([^A-Za-z0-9]|$)/.test(title+" "+text)){status.className="status bad";status.textContent="That looks like a unit number. Remove it so the record stays anonymous.";return;}
 var anon=document.querySelector('input[name="anon"]:checked').value==="1";
-var body={kind:kindEl.value,title:title,text:text,cat:document.getElementById("cat").value,where:document.getElementById("where").value,date:document.getElementById("date").value,monthOnly:document.getElementById("monthOnly").checked,anon:anon,name:anon?"":document.getElementById("name").value.trim(),contact:document.getElementById("contact").value.trim(),images:images,website:form.website.value};
+var body={kind:kindEl.value,title:title,text:text,cat:document.getElementById("cat").value,where:document.getElementById("where").value,date:document.getElementById("date").value,stack:document.getElementById("stack").value,anon:anon,name:anon?"":document.getElementById("name").value.trim(),contact:document.getElementById("contact").value.trim(),images:images,website:form.website.value};
 send.disabled=true;status.textContent="Sending"+(images.length?" with "+images.length+" photo"+(images.length>1?"s":""):"")+"…";
 fetch(API+"/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
 .then(function(r){return r.json();})
