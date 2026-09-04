@@ -134,6 +134,7 @@ select{font:inherit;font-size:15px;color:var(--ink);background:var(--paper);bord
 .chip:focus-visible,select:focus-visible,input:focus-visible,button:focus-visible,.btn:focus-visible,a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .tablebox{border:1px solid var(--line);border-radius:12px;background:var(--paper);max-height:72vh;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .tablebox.short{max-height:58vh}
+.tablebox.cards{padding:14px;background:var(--bg)}
 .tbl th:first-child{border-top-left-radius:12px}.tbl th:last-child{border-top-right-radius:12px}
 .tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:15px;table-layout:fixed}
 .tbl th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:10px 12px;background:var(--paper);border-bottom:1px solid var(--line-strong);white-space:nowrap;position:sticky;top:0;z-index:2}
@@ -249,9 +250,9 @@ footer p{margin:0 0 8px;max-width:76ch}
 <h2 id="cal-h">Days affected, month by month</h2>
 <p class="section-note" id="calStat"></p>
 <div class="seg" role="radiogroup" aria-label="Which incidents to show on the calendar">
-<label><input type="radio" name="calmode" value="water" checked> Water and hot water only</label>
+<label><input type="radio" name="calmode" value="all" checked> Everything</label>
 <label><input type="radio" name="calmode" value="core"> Water and heat</label>
-<label><input type="radio" name="calmode" value="all"> Everything</label>
+<label><input type="radio" name="calmode" value="water"> Water and hot water only</label>
 </div>
 <ul class="legend" id="calLegend"></ul>
 <div id="cal"></div>
@@ -285,7 +286,8 @@ footer p{margin:0 0 8px;max-width:76ch}
 <section aria-labelledby="rep-h">
 <h2 id="rep-h">Reported building issues</h2>
 <p class="section-note">Issues residents have seen in the building, with photos, posted anonymously or under a name. Every one is reviewed before it appears.</p>
-<div class="reports" id="reports"></div>
+<div class="tablebox cards"><div class="reports" id="reports"></div></div>
+<div class="tfoot" id="rfoot"></div>
 <div class="actions"><a class="btn" href="submit.html#report">Report a building issue</a></div>
 </section>
 
@@ -615,7 +617,7 @@ function whatCell(r,term){var long=(r.x||"").length>90;return '<td class="what">
 
 // ---------- Reports ----------
 (function(){
-  var box=document.getElementById("reports");box.innerHTML="";
+  var box=document.getElementById("reports");box.innerHTML="";var rf=document.getElementById("rfoot");rf.textContent="";
   var reps=APP.reports.slice().sort(function(a,b){return (b.d||"").localeCompare(a.d||"");});
   if(!reps.length){box.innerHTML='<div class="empty-state">Nothing reported yet. If something in the building needs attention, a photo and a few sentences here are worth a dozen tickets. Reports can be anonymous.</div>';return;}
   reps.forEach(function(rp){
@@ -625,6 +627,7 @@ function whatCell(r,term){var long=(r.x||"").length>90;return '<td class="what">
       '<div class="body"><p class="meta">'+esc(fmt(rp.d))+(rp.where?", "+esc(rp.where):"")+(rp.stack?", "+esc(rp.stack)+" line":"")+(rp.name?", by "+esc(rp.name):", anonymous")+'</p><h3>'+esc(rp.title)+'</h3><p>'+esc(rp.text)+'</p>'+pill(rp.cat,tcatName(rp.cat))+((rp.img||[]).length>1?' <span class="pill" style="--pc:var(--c-garage)">'+rp.img.length+' photos</span>':'')+'</div>';
     box.appendChild(el);
   });
+  rf.textContent="Showing "+reps.length+" report"+(reps.length===1?"":"s")+(reps.length>6?". Scroll inside the box to see more.":"");
 })();
 
 // ---------- Full log ----------
