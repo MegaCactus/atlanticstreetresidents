@@ -12,7 +12,7 @@ export default {
   },
   async email(message, env, ctx) {
     try { await ingestEmail(message, env); }
-    catch (e) { console.log("ingest failed: " + (e && e.message)); }
+    catch (e) { console.log("ingest failed: " + (e && e.message) + " " + (e && e.stack)); }
     try { await message.forward(env.OWNER_EMAIL); } catch (e) { console.log("forward failed: " + (e && e.message)); }
   }
 };
@@ -171,8 +171,10 @@ return json({ ok: true, id: item.id }, 200, request);
 }
 function cleanFloors(v) {
   v = String(v || "").trim().slice(0, 40);
-  const allowed = ["Floors 6–16", "Floors 17–26", "Whole building", "Garage", "Amenities", "Exterior", "Lobby"];
-  return allowed.includes(v) ? v : "Upper floors";
+  const allowed = ["Floors 6–16", "Floors 17–26", "Whole building", "Garage", "Amenities", "Exterior", "Lobby", "All units", "Upper floors"];
+  if (allowed.includes(v)) return v;
+  if (/^Floors \d{1,2}–(\d{1,2}|P2)$/.test(v) || /^\d{1,2}(st|nd|rd|th) floor$/.test(v)) return v;
+  return "Upper floors";
 }
 function cleanStack(v) { v = String(v || "").trim().toUpperCase().slice(0, 1); return /^[A-HJ-NPRST]$/.test(v) ? v : ""; }
 function cleanDate(v) { v = String(v || ""); return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : (/^\d{4}-\d{2}$/.test(v) ? v : ""); }
@@ -191,6 +193,8 @@ async function applyAction(env, itemId, act) {
     item.status = "approved";
     if (item.kind === "ticket") {
       pub.incidents.unshift({ id: item.id, d: item.d, e: "", m: false, c: "you", t: "R", s: item.s, x: item.x, w: item.w, g: item.cat === "water" ? "hotwater" : "", dur: "", src: "ticket", img: item.img, cat: item.cat, stack: item.stack || "" });
+    } else if (item.kind === "incident") {
+      pub.incidents.unshift({ id: item.id, d: item.d, e: "", c: item.c, t: item.t, s: item.s, x: item.x, w: item.w, g: item.g || "", dur: "", src: "email", via: "resident", copies: item.copies || 1, img: [] });
     } else {
       pub.reports.unshift({ id: item.id, d: item.d, title: item.title, text: item.text, where: item.where, cat: item.cat, img: item.img, anon: item.anon, name: item.name, at: item.at, stack: item.stack || "" });
     }
@@ -198,6 +202,11 @@ async function applyAction(env, itemId, act) {
     return { ok: true, status: "approved" };
   }
   for (const i of item.img || []) await env.DB.delete("img:" + i);
+  if (item.kind === "incident" || item.kind === "report") {
+    const rej = await readList(env, "rej");
+    rej.unshift({ s: item.s || item.title || "", d: item.d, c: item.c || item.cat || "", at: Date.now() });
+    await writeList(env, "rej", rej.slice(0, 500));
+  }
   return { ok: true, status: "rejected" };
 }
 async function actFromLink(url, env) {
@@ -317,15 +326,15 @@ document.getElementById("pc").textContent="("+d.pending.length+")";
 var p=document.getElementById("pending");
 p.innerHTML=d.pending.length?d.pending.map(card).join(""):'<p class="empty">Nothing waiting. New submissions also arrive by email with one-click links.</p>';
 var pub=document.getElementById("published");
-var items=d.incidents.filter(function(x){return x.src==="ticket";}).concat(d.reports);
+var items=d.incidents.filter(function(x){return x.src==="ticket"||x.via==="resident";}).concat(d.reports);
 pub.innerHTML=items.length?items.map(pubCard).join(""):'<p class="empty">Nothing published from residents yet.</p>';
 });
 }
 function card(it){
-var kind=it.kind==="report"?"Report":"Ticket";
+var kind=it.kind==="report"?"Report":(it.kind==="incident"?"Forwarded notice":"Ticket");
 var who=it.kind==="report"?(it.anon?"anonymous":(it.name||"no name")):"";
 return '<div class="item" data-id="'+it.id+'"><div>'+
-'<p class="meta">'+kind+(who?" from "+esc(who):"")+' filed '+esc(it.at.slice(0,16).replace("T"," "))+(it.stack?' from the '+esc(it.stack)+' line':'')+(it.contact?' (contact: '+esc(it.contact)+')':'')+'</p>'+
+'<p class="meta">'+kind+(who?" from "+esc(who):"")+' filed '+esc(it.at.slice(0,16).replace("T"," "))+(it.stack?' from the '+esc(it.stack)+' line':'')+(it.contact?' (from: '+esc(it.contact)+')':'')+(it.copies>1?' \u00b7 forwarded by '+it.copies+' people':'')+(it.note?'<br>Note from sender: '+esc(it.note):'')+'</p>'+
 '<label>Title</label><input name="s" value="'+esc(it.s||it.title)+'">'+
 '<label>Description</label><textarea name="x">'+esc(it.x||it.text)+'</textarea>'+
 '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><div><label>Category</label><select name="cat">'+opt(CATS,it.cat)+'</select></div><div><label>Where</label><select name="w">'+wopt(it.w||it.where)+'</select></div><div><label>Date</label><input name="d" value="'+esc(it.d)+'"></div></div>'+
@@ -333,7 +342,7 @@ return '<div class="item" data-id="'+it.id+'"><div>'+
 '</div><div class="thumbs">'+(it.img||[]).map(function(i){return '<a href="/img/'+i+'" target="_blank"><img src="/img/'+i+'" alt=""></a>';}).join("")+'</div></div>';
 }
 function pubCard(it){
-return '<div class="item pub" data-id="'+it.id+'"><div><p class="meta">'+esc(it.d)+(it.kind==="report"||it.title?" report":" ticket")+(it.name?" from "+esc(it.name):"")+'</p><strong>'+esc(it.s||it.title)+'</strong><div style="font-size:14px;color:#5D6877;margin-top:4px">'+esc(it.x||it.text)+'</div>'+
+return '<div class="item pub" data-id="'+it.id+'"><div><p class="meta">'+esc(it.d)+(it.kind==="report"||it.title?" report":(it.via==="resident"?" forwarded notice":" ticket"))+(it.name?" from "+esc(it.name):"")+(it.copies>1?" (forwarded by "+it.copies+" people)":"")+'</p><strong>'+esc(it.s||it.title)+'</strong><div style="font-size:14px;color:#5D6877;margin-top:4px">'+esc(it.x||it.text)+'</div>'+
 (it.title?'':'<div class="row"><label style="margin:0">Ended on</label><input name="e" style="max-width:150px" value="'+esc(it.e||"")+'" placeholder="YYYY-MM-DD"><button class="secondary" onclick="setEnd(this)">Save end date</button></div>')+
 '<div class="row"><button class="danger" onclick="unpub(this)">Unpublish</button></div></div></div>';
 }
@@ -350,43 +359,142 @@ load();
 </script></body></html>`;
 
 // ---------- email ingestion ----------
+const IGNORE_SENDERS = /noreply@google\.com|forwarding-noreply|mailer-daemon|postmaster@|no-reply@cloudflare|noreply@github|@squarespace\.com|@proton\.me.*notify|noreply@atlanticstreetresidents/i;
+const BUILDING = /rentcafe\.com|greystar\.com|bozzuto\.com|atlantic ?station/i;
+
+function trustedList(env) {
+  return String(env.TRUSTED_SENDERS || env.OWNER_EMAIL || "").toLowerCase().split(/[,\s]+/).filter(Boolean);
+}
+function isTrusted(env, parsed, message) {
+  const t = trustedList(env);
+  if (!t.length) return false;
+  const hay = [message.from || "", parsed.from || "", parsed.headers["return-path"] || "", parsed.headers["x-forwarded-for"] || "", parsed.headers["x-original-sender"] || ""].join(" ").toLowerCase();
+  return t.some(a => hay.indexOf(a) >= 0);
+}
+function senderAddress(parsed, message) {
+  const m = /<([^>]+)>/.exec(parsed.from || "") || /([^\s<>]+@[^\s<>]+)/.exec(parsed.from || "");
+  return (m ? m[1] : (message.from || "")).toLowerCase();
+}
+// Unwrap a forwarded message (Gmail, Apple Mail, Outlook) into {subject, date, from, body, note}
+function extractForwarded(subject, text) {
+  const m = /(-{2,}\s*Forwarded message\s*-{2,}|Begin forwarded message:|-{2,}\s*Original Message\s*-{2,}|-{2,}\s*Forwarded by[^\n]*-{2,})/i.exec(text);
+  const fwdSubject = /^\s*(fwd?|fw)\s*:/i.test(subject);
+  if (!m && !fwdSubject) return null;
+  let note = m ? text.slice(0, m.index).trim() : "";
+  let rest = m ? text.slice(m.index + m[0].length) : text;
+  const out = { subject: cleanSubject(subject), date: null, from: "", body: rest, note: note.slice(0, 300) };
+  const lines = rest.split("\n");
+  let i = 0, seen = 0;
+  while (i < lines.length && i < 14) {
+    const l = lines[i].trim();
+    if (!l) { if (seen) break; i++; continue; }
+    const h = /^(From|Date|Sent|Subject|To|Cc|Reply-To)\s*:\s*(.*)$/i.exec(l);
+    if (!h) { if (seen) break; i++; continue; }
+    seen++;
+    const k = h[1].toLowerCase(), v = h[2].trim();
+    if (k === "from") out.from = v;
+    else if (k === "subject") out.subject = cleanSubject(v);
+    else if (k === "date" || k === "sent") { const d = new Date(v.replace(/ at /i, " ").replace(/\s+\(.*\)$/, "")); if (!isNaN(d.getTime())) out.date = d; }
+    i++;
+  }
+  if (seen) out.body = lines.slice(i).join("\n").trim();
+  return out;
+}
+function norm(s) { return String(s || "").toLowerCase().replace(/^\s*((fwd?|re|fw)\s*:\s*)+/i, "").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim(); }
+function sameEvent(a, b) {
+  if (!a || !b) return false;
+  if (a.c && b.c && a.c !== b.c) return false;
+  if (a.d && b.d && Math.abs(daysBetween(a.d, b.d)) > 1) return false;
+  return norm(a.s) === norm(b.s) || similar(a.s || "", b.s || "");
+}
+
 async function ingestEmail(message, env) {
   const raw = await new Response(message.raw).text();
   const parsed = parseMime(raw);
-  const subject = cleanSubject(parsed.subject);
-  const from = (parsed.from || message.from || "").toLowerCase();
-  const text = parsed.text.slice(0, 6000);
-  const isBuilding = /rentcafe\.com|greystar\.com|bozzuto\.com|atlanticstation/i.test(from + " " + (parsed.headers["x-forwarded-for"] || "") + " " + text.slice(0, 400));
-  if (!isBuilding) return; // Not a building notice: just forward, don't publish
+  const sender = senderAddress(parsed, message);
+  if (IGNORE_SENDERS.test(sender) || IGNORE_SENDERS.test(parsed.from || "")) return;
+  const trusted = isTrusted(env, parsed, message);
+  const fwd = extractForwarded(parsed.subject, parsed.text);
+  const origin = fwd ? fwd : { subject: cleanSubject(parsed.subject), date: parsed.date, from: parsed.from || "", body: parsed.text, note: "" };
+  if (!origin.date) origin.date = parsed.date;
+  const text = String(origin.body || "").slice(0, 6000);
+  const subject = origin.subject || "Building notice";
+  const isBuilding = BUILDING.test(origin.from + " " + (parsed.headers["x-forwarded-for"] || "") + " " + text.slice(0, 500)) || BUILDING.test(parsed.from || "");
+  const date = origin.date ? todayNY(origin.date) : todayNY();
 
-const hay = (subject + " " + text.slice(0, 1200)).toLowerCase();
-  const c = classify(hay);
-  const t = typeOf(hay);
-  const w = floorsOf(hay, c);
-  const date = parsed.date ? todayNY(parsed.date) : todayNY();
-  const detail = firstSentences(text, 300);
-
-const pub = (await env.DB.get("pub", "json")) || { incidents: [], reports: [] };
-  // Restoration notice: close the matching open incident instead of adding a row
-if (/restored|resolved|back on|is back|has been completed|repairs? (are|is) complete|reopened/i.test(subject) || /has been restored|is now restored|fully restored/i.test(text.slice(0, 600))) {
-  const open = pub.incidents.find(x => x.c === c && x.t === "U" && !x.e && daysBetween(x.d, date) <= 6);
-  if (open) {
-    if (open.d !== date) open.e = date;
-    open.x = (open.x ? open.x + " " : "") + "Restored: " + subject + " (" + date + ").";
-    open.dur = open.dur || (open.d === date ? "same day" : "≈" + daysBetween(open.d, date) + " day" + (daysBetween(open.d, date) === 1 ? "" : "s"));
+if (isBuilding) {
+  const hay = (subject + " " + text.slice(0, 1200)).toLowerCase();
+  const cand = { c: classify(hay), t: typeOf(hay), w: floorsOf(hay, classify(hay)), d: date, s: subject.slice(0, 140), x: firstSentences(text, 300), hay: hay };
+  if (trusted) return publishIncident(env, cand);
+  return reviewCandidate(env, { kind: "incident", c: cand.c, t: cand.t, w: cand.w, d: cand.d, s: cand.s, x: cand.x, g: (cand.c === "hvac" && /boiler/.test(hay)) ? "hotwater" : "" }, sender, origin.note);
+}
+  // Not a building notice: a resident (or you) writing directly
+const hay2 = (subject + " " + text.slice(0, 1200)).toLowerCase();
+  const rep = { kind: "report", title: subject.slice(0, 140), text: firstSentences(text, 1200), where: reportWhere(floorsOf(hay2, classify(hay2))), cat: classify(hay2), d: date, anon: true, name: "", img: [] };
+  if (trusted) {
+    const pub = (await env.DB.get("pub", "json")) || { incidents: [], reports: [] };
+    if (pub.reports.some(r => sameEvent({ s: r.title, d: r.d }, { s: rep.title, d: rep.d }))) return;
+    pub.reports.unshift({ id: id(), d: rep.d, title: rep.title, text: rep.text, where: rep.where, cat: rep.cat, img: [], anon: true, name: "", at: new Date().toISOString(), via: "email" });
     await env.DB.put("pub", JSON.stringify(pub));
     return;
   }
+  return reviewCandidate(env, rep, sender, "");
 }
-  // Update notice for an existing open incident: append instead of duplicating
-const dup = pub.incidents.find(x => x.c === c && x.src === "email" && daysBetween(x.d, date) <= 1 && similar(x.s, subject));
+function reportWhere(w) { return ["Floors 6–16", "Floors 17–26", "Whole building", "Garage", "Amenities", "Exterior", "Lobby"].includes(w) ? w : "Whole building"; }
+
+// Auto-publish a building notice (trusted path): merge restorations and updates, otherwise add a row
+async function publishIncident(env, cand) {
+  const { c, t, w, d: date, s: subject, x: detail, hay } = cand;
+  const pub = (await env.DB.get("pub", "json")) || { incidents: [], reports: [] };
+  if (/restored|resolved|back on|is back|has been completed|repairs? (are|is) complete|reopened/i.test(subject) || /has been restored|is now restored|fully restored/i.test(detail)) {
+    const open = pub.incidents.find(x => x.c === c && x.t === "U" && !x.e && daysBetween(x.d, date) <= 6);
+    if (open) {
+      if (open.d !== date) open.e = date;
+      open.x = (open.x ? open.x + " " : "") + "Restored: " + subject + " (" + date + ").";
+      open.dur = open.dur || (open.d === date ? "same day" : "≈" + daysBetween(open.d, date) + " day" + (daysBetween(open.d, date) === 1 ? "" : "s"));
+      await env.DB.put("pub", JSON.stringify(pub));
+      return;
+    }
+  }
+  const dup = pub.incidents.find(x => x.c === c && x.src === "email" && Math.abs(daysBetween(x.d, date)) <= 1 && similar(x.s, subject));
   if (dup) {
-    dup.x = (dup.x ? dup.x + " " : "") + "Update " + date + ": " + detail;
+    if (norm(dup.s) !== norm(subject)) dup.x = (dup.x ? dup.x + " " : "") + "Update " + date + ": " + detail;
     await env.DB.put("pub", JSON.stringify(pub));
     return;
   }
   pub.incidents.unshift({ id: id(), d: date, e: "", c: c, t: t, s: subject.slice(0, 140), x: detail, w: w, g: (c === "hvac" && /boiler/.test(hay)) ? "hotwater" : "", dur: "", src: "email", img: [] });
   await env.DB.put("pub", JSON.stringify(pub));
+}
+
+// Untrusted path: create one reviewable event per distinct notice; duplicates only bump a counter
+async function reviewCandidate(env, item, sender, note) {
+  const key = { s: item.s || item.title, d: item.d, c: item.c || "" };
+  const pub = (await env.DB.get("pub", "json")) || { incidents: [], reports: [] };
+  const pubMatch = item.kind === "incident"
+  ? pub.incidents.find(x => sameEvent({ s: x.s, d: x.d, c: x.c }, key))
+    : pub.reports.find(x => sameEvent({ s: x.title, d: x.d }, { s: key.s, d: key.d }));
+  if (pubMatch) { pubMatch.copies = (pubMatch.copies || 1) + 1; await env.DB.put("pub", JSON.stringify(pub)); return; }
+  const rej = await readList(env, "rej");
+  if (rej.some(r => sameEvent({ s: r.s, d: r.d, c: r.c }, key))) return;
+  const pend = await readList(env, "pend");
+  const pendMatch = pend.find(x => x.kind === item.kind && sameEvent({ s: x.s || x.title, d: x.d, c: x.c || "" }, key));
+  if (pendMatch) {
+    pendMatch.copies = (pendMatch.copies || 1) + 1;
+    if (sender && pendMatch.contact && pendMatch.contact.indexOf(sender) < 0) pendMatch.contact = (pendMatch.contact + ", " + sender).slice(0, 300);
+    await writeList(env, "pend", pend);
+    return;
+  }
+  item.id = id(); item.at = new Date().toISOString(); item.status = "pending"; item.img = item.img || []; item.copies = 1;
+  item.contact = sender.slice(0, 120); item.note = String(note || "").slice(0, 300); item.stack = ""; item.cat = item.cat || item.c || "other";
+  pend.unshift(item);
+  await writeList(env, "pend", pend);
+  try {
+    const approve = env.API_ORIGIN + "/a?id=" + item.id + "&act=approve&t=" + encodeURIComponent(await sign(env, { p: "act", id: item.id, act: "approve", exp: Date.now() + 30 * 86400000 }));
+    const reject = env.API_ORIGIN + "/a?id=" + item.id + "&act=reject&t=" + encodeURIComponent(await sign(env, { p: "act", id: item.id, act: "reject", exp: Date.now() + 30 * 86400000 }));
+    const what = item.kind === "incident" ? "forwarded notice" : "emailed report";
+    await sendMail(env, "[Review] New " + what + ": " + key.s,
+                   "A resident emailed a " + what + " that is waiting for review.\n\nFrom: " + sender + (item.note ? "\nTheir note: " + item.note : "") + "\n\nWhat: " + key.s + "\nDate: " + item.d + "\nCategory: " + (item.c || item.cat) + (item.t ? "\nType: " + item.t : "") + "\nWhere: " + (item.w || item.where) + "\n\n" + (item.x || item.text) + "\n\nApprove: " + approve + "\nReject: " + reject + "\n\nIf more residents forward the same notice, it will not create another review; the count is shown on the review page: " + env.API_ORIGIN + "/admin\n");
+  } catch (e) { console.log("notify failed: " + (e && e.message)); }
 }
 function daysBetween(a, b) { return Math.round((Date.parse(b) - Date.parse(a)) / 86400000); }
 function similar(a, b) { a = a.toLowerCase().replace(/[^a-z0-9 ]/g, ""); b = b.toLowerCase().replace(/[^a-z0-9 ]/g, ""); if (!a || !b) return false; const wa = new Set(a.split(/\s+/)); const wb = b.split(/\s+/); let hit = 0; wb.forEach(x => { if (wa.has(x)) hit++; }); return hit / Math.max(wa.size, wb.length) >= 0.5; }
