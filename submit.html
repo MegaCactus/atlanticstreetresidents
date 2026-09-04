@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Add a ticket or report: 355 Atlantic Street</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -28,19 +30,34 @@ h1{font-size:36px;line-height:1.1}
 .switch strong{display:block;font-weight:600}
 .switch span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
 form{margin:26px 0 0}
-fieldset{border:0;padding:0;margin:0 0 22px}
+fieldset{border:0;padding:0;margin:0 0 22px;min-width:0}
 label,legend{display:block;font-weight:600;font-size:15px;margin:0 0 6px}
 .hint{font-size:14px;color:var(--muted);margin:-2px 0 8px;max-width:60ch}
-input[type="text"],input[type="email"],input[type="date"],input[type="month"],select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;width:100%}
+input[type="text"],input[type="email"],input[type="date"],select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;width:100%}
 textarea{min-height:130px;resize:vertical}
-input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media (max-width:560px){.two{grid-template-columns:1fr}.switch{grid-template-columns:1fr}h1{font-size:30px}}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opts button{font:inherit;font-size:15px;padding:12px 10px;border-radius:10px;border:1px solid var(--line-strong);background:var(--paper);color:var(--ink);cursor:pointer;text-align:center;line-height:1.3}
+.opts button small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.opts button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--bg)}
+.opts.small{grid-template-columns:repeat(4,1fr);margin-top:8px}
+.opts.small button{padding:8px 6px;font-size:14px}
+.letters{display:grid;grid-template-columns:repeat(9,1fr);gap:6px}
+@media (max-width:560px){.letters{grid-template-columns:repeat(6,1fr)}}
+.letters button{font:inherit;font-size:15px;font-weight:600;padding:9px 0;border-radius:8px;border:1px solid var(--line-strong);background:var(--paper);color:var(--ink);cursor:pointer}
+.letters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.letters .none{grid-column:1/-1;font-weight:400;color:var(--muted)}
 .radios label{font-weight:400;display:flex;gap:8px;align-items:center;margin:0 0 6px}
 .radios input{accent-color:var(--ink)}
-.check{display:flex;gap:8px;align-items:flex-start;font-weight:400}
-.check input{margin-top:5px;accent-color:var(--ink)}
-.drop{border:1px dashed var(--line-strong);border-radius:10px;padding:18px;background:var(--paper);text-align:center;color:var(--muted);font-size:15px;cursor:pointer}
+details{border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:0 16px;margin:0 0 22px}
+summary{cursor:pointer;padding:14px 0;font-weight:600;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:20px;color:var(--muted)}
+details[open] summary::after{content:"–"}
+details fieldset{margin-top:6px}
+.drop{border:1px dashed var(--line-strong);border-radius:10px;padding:18px;background:var(--bg);text-align:center;color:var(--muted);font-size:15px;cursor:pointer}
 .drop.over{border-color:var(--ink);color:var(--ink)}
 .drop input{display:none}
 .thumbs{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 0}
@@ -53,7 +70,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .status.bad{color:var(--bad)}
 .done{margin:40px 0 0;padding:26px;border-radius:12px;background:var(--paper);border:1px solid var(--line)}
 .done h2{font-size:26px;margin:0 0 8px}
-.done p{color:var(--muted);margin:0 0 6px;max-width:56ch}
+.done p{color:var(--muted);margin:0 0 8px;max-width:56ch}
+.done ol{margin:0 0 14px;padding-left:20px;color:var(--muted)}
+.done li{margin:0 0 4px}
 .done a{color:var(--ink)}
 .hp{position:absolute;left:-9999px;top:-9999px}
 </style>
@@ -62,7 +81,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <div class="nav"><div class="wrap"><a class="brand" href="index.html">355 Atlantic Street</a><a class="back" href="index.html">Back to the record</a></div></div>
 <main class="wrap">
 <h1>Add your ticket or report</h1>
-<p class="lead">Two ways to add to the record. A maintenance ticket is a problem inside your apartment that you reported to the building. A report is anything happening in the building you want on the record, with photos, under your name or not. Everything is reviewed before it appears.</p>
+<p class="lead">A maintenance ticket is a problem inside your apartment that you reported to the building. A report is anything happening in the building you want on the record, with photos, under your name or not. Everything is reviewed before it appears, usually within a day.</p>
 
 <div class="switch" role="group" aria-label="What are you adding">
 <button type="button" id="pickTicket" aria-pressed="true"><strong>Maintenance ticket</strong><span>A problem in your apartment, like no hot water or a sink coming off the wall.</span></button>
@@ -71,6 +90,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 
 <form id="form" novalidate>
 <input type="hidden" name="kind" id="kind" value="ticket">
+<input type="hidden" name="where" id="where" value="Upper floors">
+<input type="hidden" name="stack" id="stack" value="">
 <div class="hp" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 
 <fieldset>
@@ -100,33 +121,32 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 </select>
 </fieldset>
 <fieldset>
-<label for="where">Where</label>
-<select id="where" name="where">
-<option>Upper floors</option>
-<option>Floors 17–26</option>
-<option>Floors 6–16</option>
-<option>Whole building</option>
-<option>Garage</option>
-<option>Amenities</option>
-<option>Exterior</option>
-<option>Lobby</option>
-</select>
-</fieldset>
-</div>
-
-<div class="two">
-<fieldset>
 <label for="date">When</label>
 <input type="date" id="date" name="date">
 </fieldset>
-<fieldset>
-<label for="stack">Unit line (optional)</label>
-<select id="stack" name="stack">
-<option value="">Prefer not to say</option>
-<option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>H</option><option>J</option><option>K</option><option>L</option><option>M</option><option>N</option><option>P</option><option>R</option><option>S</option><option>T</option>
-</select>
-</fieldset>
 </div>
+
+<fieldset>
+<legend>Where</legend>
+<div class="opts" id="whereMain">
+<button type="button" data-w="Floors 17–26">Floors 17–26<small>upper riser</small></button>
+<button type="button" data-w="Floors 6–16">Floors 6–16<small>lower riser</small></button>
+<button type="button" data-w="Whole building">Whole building<small>or not sure</small></button>
+</div>
+<div class="opts small" id="whereOther">
+<button type="button" data-w="Garage">Garage</button>
+<button type="button" data-w="Amenities">Amenities</button>
+<button type="button" data-w="Lobby">Lobby</button>
+<button type="button" data-w="Exterior">Exterior</button>
+</div>
+<p class="hint" id="whereHint" style="margin-top:8px">Tickets are shown by floor range, never by floor.</p>
+</fieldset>
+
+<fieldset>
+<legend>Unit line (optional)</legend>
+<p class="hint">The letter of your apartment stack. It helps show which risers and lines have repeat problems.</p>
+<div class="letters" id="letters"></div>
+</fieldset>
 
 <fieldset id="byWrap" hidden>
 <legend>Post this report as</legend>
@@ -137,17 +157,19 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <input type="text" id="name" name="name" maxlength="60" placeholder="Name as it should appear" hidden>
 </fieldset>
 
+<details id="moreWrap">
+<summary>Add photos or an email for replies</summary>
 <fieldset>
 <label>Photos</label>
 <p class="hint">Up to three. They are resized to 1400 pixels and stripped of metadata before they leave your phone.</p>
 <label class="drop" id="drop" for="file">Tap to add photos, or drop them here<input type="file" id="file" accept="image/*" multiple></label>
 <div class="thumbs" id="thumbs"></div>
 </fieldset>
-
 <fieldset>
 <label for="contact">Email, if you want a reply (never published)</label>
 <input type="email" id="contact" name="contact" maxlength="120" placeholder="optional">
 </fieldset>
+</details>
 
 <button class="btn" id="send" type="submit">Send for review</button>
 <p class="status" id="status" aria-live="polite"></p>
@@ -155,7 +177,12 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 
 <div class="done" id="done" hidden>
 <h2>Held for review</h2>
-<p>Thanks. Your submission is in the review queue and will appear on the record once it has been checked, usually within a day.</p>
+<p>Thanks. Here is what happens next:</p>
+<ol>
+<li>The site's editor gets an email with your submission right away.</li>
+<li>It is checked for relevance and for anything that could identify a resident, usually within a day.</li>
+<li>Once approved, it appears in the <a id="doneLink" href="index.html#you-h">resident tickets</a> section and in the full log.</li>
+</ol>
 <p><a href="index.html">Back to the record</a> or <a href="submit.html" id="again">add another</a>.</p>
 </div>
 </main>
@@ -165,7 +192,12 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 "use strict";
 var API="https://api.atlanticstreetresidents.com";
 var images=[];
-var kindEl=document.getElementById("kind"),pickT=document.getElementById("pickTicket"),pickR=document.getElementById("pickReport");
+var kindEl=document.getElementById("kind"),pickT=document.getElementById("pickTicket"),pickR=document.getElementById("pickReport"),whereEl=document.getElementById("where"),stackEl=document.getElementById("stack");
+function setWhere(w){whereEl.value=w;Array.prototype.forEach.call(document.querySelectorAll("#whereMain button, #whereOther button"),function(b){b.setAttribute("aria-pressed",b.getAttribute("data-w")===w?"true":"false");});}
+Array.prototype.forEach.call(document.querySelectorAll("#whereMain button, #whereOther button"),function(b){b.onclick=function(){setWhere(b.getAttribute("data-w"));};});
+var L=document.getElementById("letters");
+"ABCDEFGHJKLMNPRST".split("").forEach(function(ch){var b=document.createElement("button");b.type="button";b.textContent=ch;b.setAttribute("aria-pressed","false");b.onclick=function(){var on=stackEl.value===ch;stackEl.value=on?"":ch;Array.prototype.forEach.call(L.querySelectorAll("button"),function(x){x.setAttribute("aria-pressed",x.textContent===stackEl.value?"true":"false");});};L.appendChild(b);});
+var none=document.createElement("button");none.type="button";none.className="none";none.textContent="Prefer not to say";none.onclick=function(){stackEl.value="";Array.prototype.forEach.call(L.querySelectorAll("button"),function(x){x.setAttribute("aria-pressed","false");});};L.appendChild(none);
 function setKind(k){
 kindEl.value=k;
 pickT.setAttribute("aria-pressed",k==="ticket"?"true":"false");
@@ -174,10 +206,14 @@ document.getElementById("byWrap").hidden=k!=="report";
 document.getElementById("titleLabel").textContent=k==="ticket"?"What happened, in one line":"What is this report about";
 document.getElementById("title").placeholder=k==="ticket"?"No hot water in the unit for the second time this week":"Water pouring from the ceiling in the 6th floor hallway";
 document.getElementById("textHint").textContent=k==="ticket"?"When it started, what you saw, what maintenance said when they came. Skip anything that would identify you or a neighbor.":"What you saw, when, and whether the building has acknowledged it. Skip anything that would identify a neighbor.";
-document.getElementById("where").value=k==="ticket"?"Upper floors":"Whole building";
+document.getElementById("whereHint").textContent=k==="ticket"?"Tickets are shown by floor range, never by floor.":"Pick the closest area.";
+setWhere(k==="ticket"?"Floors 17–26":"Whole building");
+document.getElementById("doneLink").href=k==="ticket"?"index.html#you-h":"index.html#rep-h";
+document.getElementById("doneLink").textContent=k==="ticket"?"resident tickets":"reports from residents";
 }
 pickT.onclick=function(){setKind("ticket");};pickR.onclick=function(){setKind("report");};
 if(location.hash==="#report")setKind("report");else setKind("ticket");
+window.addEventListener("hashchange",function(){setKind(location.hash==="#report"?"report":"ticket");});
 document.getElementById("date").value=new Date().toISOString().slice(0,10);
 Array.prototype.forEach.call(document.querySelectorAll('input[name="anon"]'),function(r){r.onchange=function(){document.getElementById("name").hidden=document.querySelector('input[name="anon"]:checked').value==="1";};});
 
@@ -216,11 +252,11 @@ form.onsubmit=function(e){
 e.preventDefault();
 status.className="status";status.textContent="";
 var title=document.getElementById("title").value.trim(),text=document.getElementById("text").value.trim();
-if(title.length<4){status.className="status bad";status.textContent="Give it a one-line title first.";return;}
-if(text.length<10){status.className="status bad";status.textContent="Add a few words of detail (at least 10 characters).";return;}
+if(title.length<4){status.className="status bad";status.textContent="Give it a one-line title first.";document.getElementById("title").focus();return;}
+if(text.length<10){status.className="status bad";status.textContent="Add a few words of detail (at least 10 characters).";document.getElementById("text").focus();return;}
 if(/(^|[^A-Za-z0-9])[0-9]{1,2}[A-Z]([^A-Za-z0-9]|$)/.test(title+" "+text)){status.className="status bad";status.textContent="That looks like a unit number. Remove it so the record stays anonymous.";return;}
 var anon=document.querySelector('input[name="anon"]:checked').value==="1";
-var body={kind:kindEl.value,title:title,text:text,cat:document.getElementById("cat").value,where:document.getElementById("where").value,date:document.getElementById("date").value,stack:document.getElementById("stack").value,anon:anon,name:anon?"":document.getElementById("name").value.trim(),contact:document.getElementById("contact").value.trim(),images:images,website:form.website.value};
+var body={kind:kindEl.value,title:title,text:text,cat:document.getElementById("cat").value,where:whereEl.value,date:document.getElementById("date").value,stack:stackEl.value,anon:anon,name:anon?"":document.getElementById("name").value.trim(),contact:document.getElementById("contact").value.trim(),images:images,website:form.website.value};
 send.disabled=true;status.textContent="Sending"+(images.length?" with "+images.length+" photo"+(images.length>1?"s":""):"")+"…";
 fetch(API+"/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
 .then(function(r){return r.json();})
