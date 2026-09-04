@@ -108,6 +108,7 @@ section{padding:52px 0 8px}
 .cal-year h3{font-family:"IBM Plex Sans",sans-serif;font-size:15px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:baseline}
 .cal-year h3 span{font-weight:400;color:var(--muted);font-size:14px}
 .cal-year svg{display:block;width:100%;height:auto;min-width:740px}
+@media (max-width:720px){.cal-year svg{min-width:560px}}
 .cal-year rect.day{cursor:default}
 .link{appearance:none;background:none;border:0;padding:0;font:inherit;font-size:14px;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px}
@@ -256,6 +257,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 </div>
 <ul class="legend" id="calLegend"></ul>
 <div id="cal"></div>
+<p class="scrollhint">Slide a year sideways to see the rest of it.</p>
 <p style="margin:14px 0 0"><button class="link" id="calMore" type="button">Show 2020 to 2023</button></p>
 </section>
 
@@ -525,7 +527,7 @@ var rows=APP.rows;
         var rc=ns("rect",attrs);if(list)attachTip(rc,tipText);svg.appendChild(rc);
       }
       var h=document.createElement("h3");h.textContent=y+" ";var sp=document.createElement("span");sp.textContent=affected+(affected===1?" day":" days")+(y===2020?" (from October)":y===lastYear?" (so far)":"");h.appendChild(sp);
-      wrap.appendChild(h);var scr=document.createElement("div");scr.className="scroller";scr.appendChild(svg);wrap.appendChild(scr);box.appendChild(wrap);
+      wrap.appendChild(h);var scr=document.createElement("div");scr.className="scroller fade";scr.appendChild(svg);scr.addEventListener("scroll",function(){scr.classList.remove("fade");},{once:true});wrap.appendChild(scr);box.appendChild(wrap);
     }
     var lg=document.getElementById("calLegend");
     lg.innerHTML=mode==="water"?'<li><span class="sq"></span>Unplanned outage</li><li><span class="sq" style="opacity:.5"></span>Scheduled shutoff</li><li><span class="sq" style="opacity:.3"></span>Estimated end</li>':'<li><span class="sq" style="background:var(--c-water)"></span>Water</li><li><span class="sq" style="background:var(--c-hvac)"></span>Heat & AC</li><li><span class="sq" style="background:var(--c-you)"></span>Resident ticket</li><li><span class="sq" style="background:var(--c-garage)"></span>Other categories in their colors</li>';
