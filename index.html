@@ -65,6 +65,13 @@ button{font:inherit}
 .cta{margin-left:0}
 .cta .long{display:none}.cta .short{display:inline}
 }
+/* welcome banner */
+.welcome{background:var(--paper);border-bottom:1px solid var(--line);font-size:15px;color:var(--ink)}
+.welcome .wrap{display:flex;gap:16px;align-items:flex-start;padding-top:12px;padding-bottom:12px}
+.welcome p{margin:0;max-width:86ch;line-height:1.5}
+.welcome a{color:inherit}
+.welcome-close{flex:none;font:inherit;font-size:14px;font-weight:600;background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:7px 12px;cursor:pointer;margin-top:2px}
+@media (max-width:720px){.welcome .wrap{flex-direction:column;gap:10px}}
 /* hero */
 .hero{background:var(--harbor);color:var(--harbor-ink);padding:44px 0 48px}
 .hero .wrap{max-width:900px}
@@ -223,6 +230,12 @@ footer p{margin:0 0 8px;max-width:76ch}
 <button class="menu" id="menuBtn" aria-expanded="false" aria-controls="nav">Sections</button>
 <a class="cta" href="submit.html"><span class="long">Submit a ticket or report</span><span class="short">Submit</span></a>
 </div></div>
+
+<div class="welcome" id="welcome" role="region" aria-label="How to use this site"><div class="wrap">
+<p><strong>New here?</strong> This is a running record of outages and repairs at 355 Atlantic Street, kept by residents. <strong>Look:</strong> the timeline and calendar show every incident since October 2020. <strong>Search:</strong> the full log and the ticket list take any word, like <em>elevator</em>, <em>leak</em>, or <em>floors 17–26</em>. <strong>Add:</strong> file a maintenance ticket or report a building issue on the <a href="submit.html">submit page</a>, or forward a building notice or your own report to <a href="mailto:notices@atlanticstreetresidents.com">notices@atlanticstreetresidents.com</a>. Everything is reviewed before it appears, and nothing published identifies a person or an apartment.</p>
+<button type="button" class="welcome-close" id="welcomeClose">Got it</button>
+</div></div>
+<script>(function(){var w=document.getElementById("welcome");try{if(localStorage.getItem("asr_welcome")==="1")w.hidden=true;}catch(e){}document.getElementById("welcomeClose").onclick=function(){try{localStorage.setItem("asr_welcome","1");}catch(e){}w.hidden=true;};})();</script>
 
 <header class="hero" id="top"><div class="wrap skel" id="hero">
 <p class="kicker">355 Atlantic Street, Stamford, Connecticut</p>
