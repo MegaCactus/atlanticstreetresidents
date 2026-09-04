@@ -13,20 +13,20 @@
 --bg:#F4F6F8;--paper:#FFFFFF;--ink:#1B2430;--muted:#5D6877;--line:#D8DDE3;--line-strong:#AEB7C2;
 --harbor:#16202B;--harbor-ink:#E9EEF3;--harbor-muted:#9FB0C2;
 --chip:#E6EAEE;--chip-on:#1B2430;--chip-on-ink:#F4F6F8;--focus:#2B6CB0;
---c-water:#2B6CB0;--c-hvac:#DD6B20;--c-elev:#6B46C1;--c-win:#2C7A7B;--c-fire:#C53030;--c-amen:#B7791F;--c-garage:#5B6779;--c-pm:#38A169;--c-you:#D53F8C;--c-other:#7C8B9A;--amber:#C98A1B;
+--c-water:#2B6CB0;--c-hvac:#DD6B20;--c-elev:#6B46C1;--c-win:#2C7A7B;--c-fire:#C53030;--c-amen:#B7791F;--c-garage:#5B6779;--c-pm:#38A169;--c-clean:#0E9488;--c-you:#D53F8C;--c-other:#7C8B9A;--amber:#C98A1B;
 }
 @media (prefers-color-scheme: dark){
 :root:not([data-theme="light"]){
 --bg:#0F151C;--paper:#171F29;--ink:#E6EAEF;--muted:#9AA5B4;--line:#2A333E;--line-strong:#465262;
 --harbor:#0B1118;--harbor-ink:#E9EEF3;--harbor-muted:#8E9FB2;
 --chip:#232D38;--chip-on:#E6EAEF;--chip-on-ink:#0F151C;--focus:#6FA6E8;
---c-water:#4F8FD6;--c-hvac:#EE8A3F;--c-elev:#8F74E3;--c-win:#3FA79B;--c-fire:#E25C5C;--c-amen:#D4A040;--c-garage:#8A97A9;--c-pm:#4CBF7E;--c-you:#E86AA6;--c-other:#8C9BAA;--amber:#E0A23A;
+--c-water:#4F8FD6;--c-hvac:#EE8A3F;--c-elev:#8F74E3;--c-win:#3FA79B;--c-fire:#E25C5C;--c-amen:#D4A040;--c-garage:#8A97A9;--c-pm:#4CBF7E;--c-clean:#2FB8AA;--c-you:#E86AA6;--c-other:#8C9BAA;--amber:#E0A23A;
 }}
 :root[data-theme="dark"]{
 --bg:#0F151C;--paper:#171F29;--ink:#E6EAEF;--muted:#9AA5B4;--line:#2A333E;--line-strong:#465262;
 --harbor:#0B1118;--harbor-ink:#E9EEF3;--harbor-muted:#8E9FB2;
 --chip:#232D38;--chip-on:#E6EAEF;--chip-on-ink:#0F151C;--focus:#6FA6E8;
---c-water:#4F8FD6;--c-hvac:#EE8A3F;--c-elev:#8F74E3;--c-win:#3FA79B;--c-fire:#E25C5C;--c-amen:#D4A040;--c-garage:#8A97A9;--c-pm:#4CBF7E;--c-you:#E86AA6;--c-other:#8C9BAA;--amber:#E0A23A;
+--c-water:#4F8FD6;--c-hvac:#EE8A3F;--c-elev:#8F74E3;--c-win:#3FA79B;--c-fire:#E25C5C;--c-amen:#D4A040;--c-garage:#8A97A9;--c-pm:#4CBF7E;--c-clean:#2FB8AA;--c-you:#E86AA6;--c-other:#8C9BAA;--amber:#E0A23A;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
@@ -35,7 +35,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",
 a{color:inherit}
 h1,h2,h3{font-family:"Fraunces","Iowan Old Style",Georgia,serif;font-weight:500;letter-spacing:-0.01em;margin:0}
 h2{font-size:30px;line-height:1.15;margin:0 0 8px}
-h3{font-size:20px;line-height:1.25}
+h3{font-size:20px;line-height:1.25;margin:22px 0 6px}
 .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
 /* nav */
 .nav{position:sticky;top:0;z-index:20;background:var(--harbor);color:var(--harbor-ink);border-bottom:1px solid rgba(255,255,255,.08)}
@@ -48,27 +48,18 @@ h3{font-size:20px;line-height:1.25}
 .cta:hover{background:#fff}
 @media (max-width:720px){.nav nav{display:none}}
 /* hero */
-.hero{background:var(--harbor);color:var(--harbor-ink);padding:44px 0 52px}
-.hero .wrap{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:56px;align-items:start}
-@media (max-width:860px){.hero .wrap{grid-template-columns:1fr;gap:28px}}
-.hero h1{font-size:44px;line-height:1.08;max-width:18ch}
+.hero{background:var(--harbor);color:var(--harbor-ink);padding:48px 0 52px}
+.hero .wrap{max-width:900px}
+.hero h1{font-size:46px;line-height:1.08;max-width:18ch}
 @media (max-width:600px){.hero h1{font-size:34px}}
-.hero .status{font-size:18px;line-height:1.5;margin:20px 0 0;max-width:56ch;color:var(--harbor-ink)}
+.hero .status{font-size:19px;line-height:1.5;margin:22px 0 0;max-width:60ch;color:var(--harbor-ink)}
 .hero .status strong{font-weight:600}
-.hero .sub{color:var(--harbor-muted);margin:16px 0 0;max-width:60ch;font-size:15px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0 0;max-width:560px}
+.hero .sub{color:var(--harbor-muted);margin:16px 0 0;max-width:64ch;font-size:15px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0 0;max-width:620px}
 .stats div{border-top:1px solid rgba(255,255,255,.18);padding-top:10px}
-.stats b{display:block;font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:30px;line-height:1;margin-bottom:6px}
+.stats b{display:block;font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:32px;line-height:1;margin-bottom:6px}
 .stats span{font-size:13px;color:var(--harbor-muted)}
-.tower-wrap{position:relative}
-.tower-wrap svg{width:100%;height:auto;display:block}
-.tower-wrap .fl{cursor:pointer}
-.tower-wrap .fl:focus-visible{outline:2px solid var(--focus)}
-.tower-ctl{display:flex;gap:14px;align-items:center;margin:12px 0 0;font-size:13px;color:var(--harbor-muted);flex-wrap:wrap}
-.tower-ctl select{font:inherit;font-size:13px;background:transparent;color:var(--harbor-ink);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 8px}
-.tower-ctl label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
-.tower-ctl input{accent-color:var(--harbor-ink)}
-.tower-note{font-size:13px;color:var(--harbor-muted);margin:8px 0 0}
+@media (max-width:560px){.stats{grid-template-columns:1fr 1fr}}
 /* sections */
 section{padding:56px 0 8px}
 .section-note{color:var(--muted);font-size:15px;margin:0 0 16px;max-width:70ch}
@@ -89,14 +80,26 @@ section{padding:56px 0 8px}
 @media (max-width:760px){.charts{grid-template-columns:1fr}}
 .chart svg{width:100%;height:auto;display:block}
 .chart .cap{font-size:14px;color:var(--muted);margin:8px 0 0;max-width:48ch}
-.you-list{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
-.you-list li{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
-.you-list time{color:var(--muted);font-variant-numeric:tabular-nums}
-.you-list strong{font-weight:600}
-.you-list span{display:block;color:var(--muted);font-size:15px;margin-top:2px}
-.you-list .ph{display:flex;gap:8px;margin-top:8px}
-.you-list .ph img{width:88px;height:66px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
-@media (max-width:560px){.you-list li{grid-template-columns:1fr;gap:2px} h2{font-size:26px}}
+/* tables */
+.tablebox{border:1px solid var(--line);border-radius:12px;background:var(--paper);max-height:70vh;overflow:auto;-webkit-overflow-scrolling:touch}
+.tablebox.short{max-height:56vh}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:15px;min-width:720px}
+th{position:sticky;top:0;z-index:2;text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:10px 12px;background:var(--paper);border-bottom:1px solid var(--line-strong);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.dt{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
+td.dt small{font-size:12px;color:var(--ink);opacity:.8}
+td.cat{white-space:nowrap}
+td.cat i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:-1px;background:var(--sw)}
+td.typ{white-space:nowrap}
+td.typ.u{font-weight:600}
+td.typ.r{color:var(--c-you);font-weight:600}
+td.what strong{font-weight:600}
+td.what span{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+td.where{white-space:nowrap;color:var(--muted)}
+td .ph{display:flex;gap:8px;margin-top:8px}
+td .ph img{width:88px;height:66px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.empty{padding:24px 12px;color:var(--muted)}
 /* reports */
 .reports{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
 .report{background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
@@ -110,7 +113,7 @@ section{padding:56px 0 8px}
 .btn{display:inline-block;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:600;font-size:15px;padding:11px 18px;border-radius:8px}
 .btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--line-strong)}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 0}
-/* log */
+/* filters */
 .filters{display:flex;flex-direction:column;gap:12px;margin:18px 0 14px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:16px;padding:5px 12px 5px 9px;font:inherit;font-size:14px;line-height:1.2;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
@@ -122,23 +125,14 @@ select,input[type="search"]{font:inherit;font-size:15px;color:var(--ink);backgro
 input[type="search"]{min-width:220px;flex:1}
 .count{color:var(--muted);font-size:14px;margin-left:auto}
 button.link{appearance:none;background:none;border:0;padding:0;font:inherit;font-size:14px;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-table{width:100%;border-collapse:collapse;font-size:15px;min-width:720px}
-th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:0 12px 8px 0;border-bottom:1px solid var(--line-strong);white-space:nowrap}
-td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
-td.dt{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
-td.dt small{font-size:12px;color:var(--ink);opacity:.8}
-td.cat{white-space:nowrap}
-td.cat i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:-1px;background:var(--sw)}
-td.typ{white-space:nowrap}
-td.typ.u{font-weight:600}
-td.typ.r{color:var(--c-you);font-weight:600}
-td.what strong{font-weight:600}
-td.what span{display:block;color:var(--muted);font-size:14px;margin-top:2px}
-td.where{white-space:nowrap;color:var(--muted)}
-.empty{padding:24px 0;color:var(--muted)}
-footer{margin-top:64px;padding:28px 0 48px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
-footer .wrap{max-width:1120px}
-footer p{margin:0 0 10px;max-width:76ch}
+/* methods */
+.methods{max-width:76ch}
+.methods p{margin:0 0 12px}
+.methods ul{margin:0 0 12px;padding-left:20px}
+.methods li{margin:0 0 6px}
+.callout{border-left:3px solid var(--amber);padding:10px 16px;background:var(--paper);border-radius:0 10px 10px 0;margin:18px 0}
+footer{margin-top:56px;padding:24px 0 48px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+footer p{margin:0 0 8px;max-width:76ch}
 .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:6px;vertical-align:1px}
 @media (prefers-reduced-motion:no-preference){.chip{transition:background-color .12s,color .12s}}
 </style>
@@ -147,26 +141,16 @@ footer p{margin:0 0 10px;max-width:76ch}
 
 <div class="nav"><div class="wrap">
 <a class="brand" href="#top">355 Atlantic Street</a>
-<nav aria-label="Sections"><a href="#cal-h">Calendar</a><a href="#ch-h">Patterns</a><a href="#you-h">Tickets</a><a href="#rep-h">Reports</a><a href="#log-h">Full log</a></nav>
+<nav aria-label="Sections"><a href="#cal-h">Calendar</a><a href="#ch-h">Patterns</a><a href="#you-h">Tickets</a><a href="#rep-h">Reports</a><a href="#log-h">Full log</a><a href="#meth-h">Methods</a></nav>
 <a class="cta" href="submit.html">Submit a ticket or report</a>
 </div></div>
 
 <header class="hero" id="top"><div class="wrap">
-<div>
-<div class="tower-wrap"><svg id="tower" role="img" aria-label="Building model shaded by incident-days per floor"></svg></div>
-<div class="tower-ctl">
-<select id="towerWin" aria-label="Time window"><option value="all">All time</option><option value="12m">Last 12 months</option><option value="90d">Last 90 days</option></select>
-<label><input type="checkbox" id="towerUnplanned"> Unplanned only</label>
-</div>
-<p class="tower-note" id="towerStat"></p>
-</div>
-<div>
 <h1>The residents' maintenance record</h1>
 <p class="status" id="status"></p>
 <div class="stats" id="stats"></div>
-<p class="sub">Compiled from the building's own email notices since October 2020 and from tickets and reports residents share. Nothing here identifies a unit or a person. New notices post automatically; resident submissions are reviewed first.</p>
-<div class="actions"><a class="btn" href="submit.html">Add your ticket or report</a><a class="btn secondary" style="color:var(--harbor-ink);border-color:rgba(255,255,255,.3)" href="#log-h">Browse the log</a></div>
-</div>
+<p class="sub">Compiled from the building's own email notices since October 2020 and from tickets and reports residents share. New notices post automatically; resident submissions are reviewed first.</p>
+<div class="actions"><a class="btn" style="background:var(--harbor-ink);color:var(--harbor)" href="submit.html">Add your ticket or report</a><a class="btn secondary" style="color:var(--harbor-ink);border-color:rgba(255,255,255,.3)" href="#log-h">Browse the log</a></div>
 </div></header>
 
 <main class="wrap">
@@ -180,12 +164,12 @@ footer p{margin:0 0 10px;max-width:76ch}
 
 <section aria-labelledby="cal-h">
 <h2 id="cal-h">Days affected, month by month</h2>
-<p class="section-note">Each square is a day. In the water view, solid blue is a day with an unplanned outage of water or hot water and lighter blue is a scheduled shutoff. The other views color each day by its most relevant category. Where the building never announced a restoration, the incident is assumed to have ended the same day; the faintest squares are days inside an estimated end.</p>
+<p class="section-note">Each square is a day. In the water view, solid blue is a day with an unplanned outage of water or hot water and lighter blue is a scheduled shutoff. The other views color each day by its most relevant category.</p>
 <p class="section-note" id="calStat"></p>
 <div class="seg" role="radiogroup" aria-label="Which incidents to show on the calendar">
 <label><input type="radio" name="calmode" value="water" checked> Water and hot water only</label>
 <label><input type="radio" name="calmode" value="core"> Water and heat</label>
-<label><input type="radio" name="calmode" value="all"> Everything except notices</label>
+<label><input type="radio" name="calmode" value="all"> Everything</label>
 </div>
 <div class="scroller" id="cal"></div>
 </section>
@@ -200,8 +184,18 @@ footer p{margin:0 0 10px;max-width:76ch}
 
 <section aria-labelledby="you-h">
 <h2 id="you-h">Resident tickets</h2>
-<p class="section-note">Maintenance requests residents have shared from the building app, oldest first. Dates are shown by month and locations by floor range so that no ticket can be traced to a unit.</p>
-<ul class="you-list" id="youList"></ul>
+<p class="section-note">Maintenance requests residents have filed for their own apartments, newest first, with the category and floor range they gave. Filter by category or search.</p>
+<div class="filters">
+<div class="row">
+<select id="tCat" aria-label="Filter tickets by category"><option value="">All categories</option></select>
+<input type="search" id="tq" placeholder="Search tickets" aria-label="Search tickets">
+<span class="count" id="tcount"></span>
+</div>
+</div>
+<div class="tablebox short">
+<table id="tickets"><thead><tr><th>Date</th><th>Category</th><th>Where</th><th>What happened</th></tr></thead><tbody id="ticketBody"></tbody></table>
+<p class="empty" id="tempty" hidden>No tickets match.</p>
+</div>
 <div class="actions"><a class="btn" href="submit.html#ticket">Add a ticket from your apartment</a></div>
 </section>
 
@@ -214,7 +208,7 @@ footer p{margin:0 0 10px;max-width:76ch}
 
 <section aria-labelledby="log-h">
 <h2 id="log-h">Full incident log</h2>
-<p class="section-note">Filter by category or type, or search the descriptions. Dates are when the issue started or was announced; the small line under a water incident is its estimated length, taken from the building's own timestamps. Click a floor in the building model at the top to narrow the log to that floor. "About" marks an end date that was never announced.</p>
+<p class="section-note">Everything in one place: building notices, resident tickets, and scheduled work. Filter by category or type, or search the descriptions. Dates are when the issue started or was announced; the small line under a water incident is its estimated length, taken from the building's own timestamps.</p>
 <div class="filters">
 <div class="chips" id="catChips" role="group" aria-label="Filter by category"></div>
 <div class="row">
@@ -224,9 +218,29 @@ footer p{margin:0 0 10px;max-width:76ch}
 <span class="count" id="count"></span>
 </div>
 </div>
-<div class="scroller">
+<div class="tablebox">
 <table id="log"><thead><tr><th>Date</th><th>Category</th><th>Type</th><th>What happened</th><th>Where</th></tr></thead><tbody id="logBody"></tbody></table>
 <p class="empty" id="empty" hidden>Nothing matches those filters.</p>
+</div>
+</section>
+
+<section aria-labelledby="meth-h" class="methods">
+<h2 id="meth-h">Methods and limitations</h2>
+<h3>Where the data comes from</h3>
+<p>Two sources feed this record. The first is the building's own email notices: every message the building's notification system has sent residents since October 2020, grouped into incidents so that a multi-day outage with six update emails counts once. New notices are added automatically as they arrive, with the category, type, and affected floors read from the text of the notice. The second is residents themselves, through the tickets and reports submitted on this site.</p>
+<h3>How things are counted</h3>
+<ul>
+<li>An incident is "unplanned" when the building called it an emergency, an outage, a failure, or a leak, and "scheduled" when it was announced in advance. Everything else is a notice.</li>
+<li>Floors come from the notice. When a notice named no floors, the incident is counted for the whole building.</li>
+<li>Durations for water incidents come from the timestamps of the building's own emails. When no restoration was announced, the incident is assumed to have ended the same day, and end dates marked "about" are estimates.</li>
+<li>Where the building said cold water was back but hot water was not, the hot water date is the one used.</li>
+<li>Resident tickets from before this site existed are shown by month and floor range only.</li>
+</ul>
+<h3>What to keep in mind</h3>
+<div class="callout">
+<p>Resident tickets and reports are self-reported. They describe lived experience in the words of the person who submitted them and are not verified by the building or by anyone else. They can contain mistakes, duplicates, and opinions, and they are reviewed only for relevance and privacy before they appear here, not for accuracy.</p>
+<p>Building notices are summarized, not reproduced. The automatic classification of new notices can file something under the wrong category or miss the floors; those errors are corrected as they are noticed.</p>
+<p>This site is run by residents and has no connection to the building's ownership or management. Corrections and missed notices are welcome through the report form.</p>
 </div>
 </section>
 
@@ -234,8 +248,7 @@ footer p{margin:0 0 10px;max-width:76ch}
 
 <footer><div class="wrap">
 <p>Management changed hands three times in this period: Greystar (for owner RXR) in 2020, AVE from January 2022, Greystar again by mid-2022, and Bozzuto since June 2025.</p>
-<p>Method: every notice from the building's notification system and its management addresses is grouped into incidents, so a multi-day outage with six update emails counts once. Floors and durations come from the full text of the notices. Rent reminders, events, holiday hours, and parking enforcement are left out. New building notices are added automatically as they arrive. Resident tickets and reports are shown by month and floor range only, with no unit numbers, and photos are re-encoded so they carry no location data.</p>
-<p>Corrections or a notice we missed? Use the report form and mark it as a correction.</p>
+<p>Photos submitted with tickets and reports are re-encoded in the browser before upload, which removes location and device data.</p>
 </div></footer>
 
 <script>
@@ -251,8 +264,12 @@ var CATS=[
 {k:"fire",n:"Fire & life safety",v:"--c-fire"},
 {k:"amen",n:"Amenities & systems",v:"--c-amen"},
 {k:"garage",n:"Garage & common areas",v:"--c-garage"},
+{k:"clean",n:"Cleaning",v:"--c-clean"},
 {k:"pm",n:"Preventive maintenance",v:"--c-pm"},
 {k:"other",n:"Other notices",v:"--c-other"}
+];
+var TICKET_CATS=[
+{k:"water",n:"Hot water & plumbing"},{k:"hvac",n:"Heating & cooling"},{k:"elev",n:"Elevators"},{k:"fire",n:"Fire & life safety"},{k:"win",n:"Windows & exterior"},{k:"amen",n:"Amenities & building systems"},{k:"garage",n:"Garage & common areas"},{k:"clean",n:"Cleaning"},{k:"other",n:"Something else"}
 ];
 var TYPE_NAME={U:"Unplanned",S:"Scheduled",N:"Notice",R:"Resident ticket"};
 var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -263,22 +280,34 @@ function iso(ts){return new Date(ts).toISOString().slice(0,10);}
 function fmt(d){var t=parse(d);return MONTHS[t.getUTCMonth()]+" "+t.getUTCDate()+", "+t.getUTCFullYear();}
 function fmtRow(r){if(r.m){var t=parse(r.d);return MONTHS[t.getUTCMonth()]+" "+t.getUTCFullYear();}return fmt(r.d);}
 function catOf(k){for(var i=0;i<CATS.length;i++)if(CATS[i].k===k)return CATS[i];return CATS[CATS.length-1];}
+function tcatName(k){for(var i=0;i<TICKET_CATS.length;i++)if(TICKET_CATS[i].k===k)return TICKET_CATS[i].n;return "Something else";}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function ns(tag,attrs,text){var e=document.createElementNS("http://www.w3.org/2000/svg",tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;return e;}
-function range(a,b){var o=[];for(var i=a;i<=b;i++)o.push(i);return o;}
-function floorsOf(r){var w=r.w||"";if(/Whole building|All units|Selected units/.test(w))return range(6,26);if(/Upper floors|One stack/.test(w))return range(17,26);var mm=w.match(/([0-9]+)[–-]([0-9]+|P2)/);if(mm)return range(+mm[1],mm[2]==="P2"?26:+mm[2]);return [];}
-function bandOf(r){var w=r.w||"";if(/Garage|G2|G5|Driveway|Street/.test(w))return "garage";if(/Exterior|Windows/.test(w))return "ext";if(/Pool|Sky Terrace|6th floor|Yoga|Lobby|Package|Chute|Entrance|Service corridor|Amenit/.test(w))return "common";return null;}
-function touches(r,f){if(typeof f==="number")return floorsOf(r).indexOf(f)>=0;return bandOf(r)===f;}
-function floorLabel(f){return typeof f==="number"?"floor "+f:(f==="garage"?"the garage":f==="ext"?"the exterior":"common areas");}
-var reach=/Whole building|17–26|17–P2|6–26|One stack|Upper floors/;
-var APP={floor:null,rows:[],reports:[]};
+var reach=/Whole building|17–26|17–P2|6–26|One stack|Upper floors|All units/;
+var APP={rows:[],reports:[]};
 
+function guessCat(r){
+if(r.cat)return r.cat;
+var g=r.g||"",s=(r.s+" "+r.x).toLowerCase();
+if(g==="sinks"||g==="hotwater")return "water";
+if(g==="smoke")return "fire";
+if(/clean/.test(s))return "clean";
+if(/window/.test(s))return "win";
+if(/ac unit|air condition|heat/.test(s))return "hvac";
+if(/ev charger|charger/.test(s))return "amen";
+if(/sink|leak|water|shower/.test(s))return "water";
+return "other";
+}
 function normalize(list){
 return list.map(function(r,i){
 var eraw=r.e||"",est=eraw.charAt(0)==="~",e=est?eraw.slice(1):eraw;
 var m=!!r.m||/^[0-9]{4}-[0-9]{2}$/.test(r.d);
 var d=m?r.d.slice(0,7)+"-15":r.d;
-return {i:i,id:r.id||"",d:d,m:m,e:e,est:est,c:catOf(r.c).k,t:r.t,s:r.s,x:r.x||"",w:r.w||"",g:r.g||"",dur:r.dur||"",img:r.img||[],src:r.src||"base",ts:parse(d).getTime(),te:parse(e||d).getTime()};
+var w=r.w||"";if(/^Some/.test(w))w="Whole building";
+var x=(r.x||"").replace(/ Not counted toward the upper floors because the affected units weren.t named[.]/,"");
+var o={i:i,id:r.id||"",d:d,m:m,e:e,est:est,c:catOf(r.c).k,t:r.t,s:r.s,x:x,w:w,g:r.g||"",dur:r.dur||"",img:r.img||[],src:r.src||"base",stack:r.stack||"",cat:r.cat||"",ts:parse(d).getTime(),te:parse(e||d).getTime()};
+if(o.c==="you")o.cat=guessCat(o);
+return o;
 });
 }
 
@@ -299,7 +328,7 @@ var rows=APP.rows;
 // ---------- Hero status ----------
 (function(){
 var up=rows.filter(function(r){return r.c==="water"&&r.t!=="N"&&reach.test(r.w);}).sort(function(a,b){return b.ts-a.ts;})[0];
-var low=rows.filter(function(r){return r.c==="water"&&r.t!=="N"&&/6–16|6–17|Whole building|6–26/.test(r.w);}).sort(function(a,b){return b.ts-a.ts;})[0];
+var low=rows.filter(function(r){return r.c==="water"&&r.t!=="N"&&/6–16|6–17|Whole building|6–26|All units/.test(r.w);}).sort(function(a,b){return b.ts-a.ts;})[0];
 var open=rows.filter(function(r){return r.t==="U"&&!r.e&&(TODAY-r.ts)<=3*DAY;});
 var last30=rows.filter(function(r){return r.t!=="N"&&(TODAY-r.ts)<=30*DAY;}).length;
 var wateru=rows.filter(function(r){return r.c==="water"&&r.t==="U";}).length;
@@ -310,53 +339,6 @@ if(open.length){msg='<span class="live"></span><strong>Active now:</strong> '+es
 msg+="Water or hot water on the upper floors was last interrupted <strong>"+(up?ago(up):"never")+"</strong>"+(up?" ("+esc(up.s)+")":"")+"; on floors 6–16, <strong>"+(low?ago(low):"never")+"</strong>.";
 s.innerHTML=msg;
 document.getElementById("stats").innerHTML='<div><b>'+rows.length+'</b><span>incidents since October 2020</span></div><div><b>'+wateru+'</b><span>unplanned water and hot water outages</span></div><div><b>'+last30+'</b><span>incidents in the last 30 days</span></div>';
-})();
-
-// ---------- Tower ----------
-(function(){
-var svg=document.getElementById("tower"),winSel=document.getElementById("towerWin"),unpl=document.getElementById("towerUnplanned"),stat=document.getElementById("towerStat");
-var bands=[];for(var f=26;f>=6;f--)bands.push({k:f,n:String(f)});
-bands.push({k:"common",n:"Amenities and common areas"},{k:"ext",n:"Exterior and windows"},{k:"garage",n:"Garage G2–G5"});
-var first=true;
-function build(){
-var since=winSel.value==="12m"?TODAY-365*DAY:winSel.value==="90d"?TODAY-90*DAY:0;
-var counts={};bands.forEach(function(b){counts[b.k]=0;});
-rows.forEach(function(r){
-if(r.t==="N")return;
-if(unpl.checked&&!(r.t==="U"||r.t==="R"))return;
-if(r.te<since)return;
-var days=Math.round((Math.max(r.te,since)-Math.max(r.ts,since))/DAY)+1;
-floorsOf(r).forEach(function(f){counts[f]+=days;});
-var b=bandOf(r);if(b)counts[b]+=days;
-});
-var max=0;bands.forEach(function(b){if(typeof b.k==="number")max=Math.max(max,counts[b.k]);});
-var W=420,L=40,R=64,rowH=15,top=8,H=top+bands.length*rowH+14;
-svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.innerHTML="";
-var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-bands.forEach(function(b,i){
-var y=top+i*rowH,isRes=typeof b.k==="number";
-var v=counts[b.k],op=v>0?0.15+0.85*Math.min(1,v/((isRes?max:Math.max(max,v))||1)):0;
-var g=ns("g",{"class":"fl"+(APP.floor===b.k?" on":""),tabindex:0,role:"button","aria-label":"Filter the log to "+b.n});
-g.appendChild(ns("rect",{x:L,y:y+1,width:W-L-R,height:rowH-2,fill:"rgba(255,255,255,0.10)"}));
-if(v>0){var rc=ns("rect",{x:L,y:y+1,width:W-L-R,height:rowH-2,fill:"var(--c-water)",opacity:op});if(first&&!reduce){rc.style.opacity=0;rc.style.transition="opacity .5s ease "+((bands.length-i)*35)+"ms";setTimeout(function(){rc.style.opacity=op;},20);}g.appendChild(rc);}
-if(APP.floor===b.k)g.appendChild(ns("rect",{x:L-2,y:y-1,width:W-L-R+4,height:rowH+2,fill:"none",stroke:"var(--harbor-ink)","stroke-width":1.5}));
-g.appendChild(ns("text",{x:L-8,y:y+11,"font-size":isRes?11:10,"text-anchor":"end",fill:"var(--harbor-ink)"},isRes?b.n:""));
-if(!isRes)g.appendChild(ns("text",{x:L+6,y:y+11,"font-size":10,fill:"var(--harbor-ink)"},b.n));
-g.appendChild(ns("text",{x:W-R+8,y:y+11,"font-size":11,fill:"var(--harbor-muted)"},v?v+" d":""));
-g.appendChild(ns("title",{},(isRes?"Floor "+b.n:b.n)+": "+v+" incident-days"));
-function pick(){APP.floor=(APP.floor===b.k)?null:b.k;first=false;build();if(APP.renderLog)APP.renderLog();if(APP.floor!==null)document.getElementById("log-h").scrollIntoView({behavior:"smooth",block:"start"});}
-g.addEventListener("click",pick);g.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();pick();}});
-svg.appendChild(g);
-});
-var ySplit=top+(26-17+1)*rowH;
-svg.appendChild(ns("line",{x1:L,y1:ySplit,x2:W-R,y2:ySplit,stroke:"var(--harbor-ink)","stroke-width":1,"stroke-dasharray":"3 3",opacity:.7}));
-svg.appendChild(ns("text",{x:L+6,y:ySplit-4,"font-size":9,fill:"var(--harbor-muted)"},"riser split: floors 17–26 above, 6–16 below"));
-var top1=bands.filter(function(b){return typeof b.k==="number";}).sort(function(a,b){return counts[b.k]-counts[a.k];})[0];
-stat.textContent=APP.floor!==null?"Showing "+floorLabel(APP.floor)+" in the log below. Click it again to clear.":"Each floor is shaded by incident-days: a two-day outage on floors 17–26 adds two to each of those floors. Click a floor to filter the log. Most affected: floor "+top1.n+" with "+counts[top1.k]+".";
-first=false;
-}
-winSel.addEventListener("change",build);unpl.addEventListener("change",build);
-build();
 })();
 
 // ---------- Timeline ----------
@@ -383,12 +365,12 @@ svg.appendChild(rect);
 
 // ---------- Calendar ----------
 (function(){
-var PR=["you","water","hvac","elev","fire","amen","win","garage","pm","other"];
+var PR=["you","water","hvac","elev","fire","amen","win","garage","clean","pm","other"];
 var MOVE_IN=Date.UTC(2020,9,1);
 function isWater(r){return r.t!=="N"&&!r.m&&(r.c==="water"||r.g==="hotwater");}
 function build(){
 var mode=document.querySelector('input[name="calmode"]:checked').value;
-function inc(r){if(r.t==="N"||r.m)return false;if(mode==="water")return isWater(r);if(mode==="core")return r.c==="you"||r.c==="water"||r.c==="hvac";return true;}
+function inc(r){if(r.m)return false;if(mode==="water")return isWater(r);if(mode==="core")return r.t!=="N"&&(r.c==="you"||r.c==="water"||r.c==="hvac");return true;}
 var days={};
 rows.forEach(function(r){if(!inc(r))return;for(var t=r.ts;t<=r.te;t+=DAY){var k=iso(t);(days[k]=days[k]||[]).push({r:r,estDay:r.est&&t>r.ts});}});
 var box=document.getElementById("cal");box.innerHTML="";
@@ -403,9 +385,9 @@ for(var t=jan1;t<=dec31;t+=DAY){
 if(t<MOVE_IN||t>TODAY)continue;
 var col=Math.floor((t-startTs)/DAY/7),row=new Date(t).getUTCDay(),k=iso(t),list=days[k];
 var attrs={x:col*step,y:18+row*step,width:cell,height:cell,rx:2},tip=fmt(k);
-if(list){affected++;var allEst=list.every(function(e){return e.estDay;});
+if(list){affected++;var allEst=list.every(function(e){return e.estDay;});var allN=list.every(function(e){return e.r.t==="N";});
 if(mode==="water"){var anyU=list.some(function(e){return e.r.t==="U"||e.r.t==="R";});attrs.fill="var(--c-water)";attrs.opacity=allEst?.3:(anyU?1:.5);}
-else{var best=null;list.forEach(function(e){if(!best||PR.indexOf(e.r.c)<PR.indexOf(best.r.c))best=e;});attrs.fill="var("+catOf(best.r.c).v+")";attrs.opacity=allEst?.45:1;}
+else{var best=null;list.forEach(function(e){if(!best||PR.indexOf(e.r.c)<PR.indexOf(best.r.c))best=e;});attrs.fill="var("+catOf(best.r.c).v+")";attrs.opacity=allEst?.45:(allN?.35:1);}
 tip+=NL+list.map(function(e){return "• "+e.r.s+(e.r.w?" ("+e.r.w+")":"")+(e.r.dur?" — "+e.r.dur:"");}).join(NL);
 }else{attrs.fill="var(--line)";attrs.opacity=.55;}
 var rc=ns("rect",attrs);rc.appendChild(ns("title",{},tip));svg.appendChild(rc);
@@ -414,10 +396,10 @@ var h=document.createElement("h3");h.textContent=y+" ";var sp=document.createEle
 wrap.appendChild(h);wrap.appendChild(svg);box.appendChild(wrap);
 }
 }
-var fd={},fu={},ad={},un=[];
-rows.forEach(function(r){if(!isWater(r))return;if(/^Some/.test(r.w))un.push(fmt(r.d));for(var t=r.ts;t<=r.te;t+=DAY){var k=iso(t);ad[k]=1;if(reach.test(r.w)){fd[k]=1;if(r.t==="U"||r.t==="R")fu[k]=1;}}});
+var fd={},fu={},ad={};
+rows.forEach(function(r){if(!isWater(r))return;for(var t=r.ts;t<=r.te;t+=DAY){var k=iso(t);ad[k]=1;if(reach.test(r.w)){fd[k]=1;if(r.t==="U"||r.t==="R")fu[k]=1;}}});
 var n=Object.keys(fd).length,u=Object.keys(fu).length,a=Object.keys(ad).length;
-document.getElementById("calStat").textContent="Counting every water and hot water interruption that reached the upper floors (17–26), service was interrupted there on "+n+" separate days since October 2020, "+u+" of them unplanned. Across all floors, some water interruption was active on "+a+" days. Where the building said cold water was back but hot water was not, the hot water date is the one used."+(un.length?" Incidents where the affected floors were never named ("+un.join(", ")+") are not counted toward the upper floors.":"");
+document.getElementById("calStat").textContent="Counting every water and hot water interruption that reached the upper floors (17–26), service was interrupted there on "+n+" separate days since October 2020, "+u+" of them unplanned. Across all floors, some water interruption was active on "+a+" days.";
 Array.prototype.forEach.call(document.querySelectorAll('input[name="calmode"]'),function(el){el.addEventListener("change",build);});
 build();
 })();
@@ -454,15 +436,22 @@ svg.appendChild(ns("text",{x:cx,y:H-10,"font-size":13,"text-anchor":"middle",fil
 });
 })();
 
-// ---------- Resident tickets ----------
+// ---------- Resident tickets table ----------
 (function(){
-var ul=document.getElementById("youList");ul.innerHTML="";
-rows.filter(function(r){return r.c==="you";}).sort(function(a,b){return a.ts-b.ts;}).forEach(function(r){
-var li=document.createElement("li");
+var sel=document.getElementById("tCat"),q=document.getElementById("tq"),body=document.getElementById("ticketBody"),count=document.getElementById("tcount"),empty=document.getElementById("tempty");
+var tickets=rows.filter(function(r){return r.c==="you";});
+TICKET_CATS.forEach(function(c){if(tickets.some(function(r){return r.cat===c.k;})){var o=document.createElement("option");o.value=c.k;o.textContent=c.n;sel.appendChild(o);}});
+function render(){
+var k=sel.value,term=q.value.trim().toLowerCase();
+var list=tickets.filter(function(r){if(k&&r.cat!==k)return false;if(term){var hay=(r.s+" "+r.x+" "+r.w+" "+tcatName(r.cat)).toLowerCase();if(hay.indexOf(term)<0)return false;}return true;}).sort(function(a,b){return b.ts-a.ts||b.i-a.i;});
+body.innerHTML=list.map(function(r){
 var ph=(r.img||[]).map(function(i){return '<a href="'+API+'/img/'+esc(i)+'" target="_blank" rel="noopener"><img src="'+API+'/img/'+esc(i)+'" alt="Photo attached to the ticket" loading="lazy"></a>';}).join("");
-li.innerHTML='<time datetime="'+r.d+'">'+fmtRow(r)+'</time><div><strong>'+esc(r.s)+'</strong>'+(r.x?'<span>'+esc(r.x)+'</span>':'')+(ph?'<div class="ph">'+ph+'</div>':'')+'</div>';
-ul.appendChild(li);
-});
+return '<tr><td class="dt">'+fmtRow(r)+'</td><td class="cat"><i style="--sw:var(--c-'+esc(r.cat)+')"></i>'+esc(tcatName(r.cat))+'</td><td class="where">'+esc(r.w)+(r.stack?", "+esc(r.stack)+" line":"")+'</td><td class="what"><strong>'+esc(r.s)+'</strong>'+(r.x?'<span>'+esc(r.x)+'</span>':'')+(ph?'<div class="ph">'+ph+'</div>':'')+'</td></tr>';
+}).join("");
+count.textContent="Showing "+list.length+" of "+tickets.length;
+empty.hidden=list.length>0;
+}
+sel.onchange=render;q.oninput=render;render();
 })();
 
 // ---------- Reports ----------
@@ -474,7 +463,7 @@ reps.forEach(function(rp){
 var el=document.createElement("article");el.className="report";
 var img=(rp.img||[])[0];
 el.innerHTML=(img?'<a href="'+API+'/img/'+esc(img)+'" target="_blank" rel="noopener"><img src="'+API+'/img/'+esc(img)+'" alt="" loading="lazy"></a>':'')+
-'<div class="body"><p class="meta">'+esc(fmt(rp.d))+(rp.where?", "+esc(rp.where):"")+(rp.name?", by "+esc(rp.name):", anonymous")+'</p><h3>'+esc(rp.title)+'</h3><p>'+esc(rp.text)+'</p><span class="tag">'+esc(catOf(rp.cat).n)+'</span>'+((rp.img||[]).length>1?' <span class="tag">'+rp.img.length+' photos</span>':'')+'</div>';
+'<div class="body"><p class="meta">'+esc(fmt(rp.d))+(rp.where?", "+esc(rp.where):"")+(rp.stack?", "+esc(rp.stack)+" line":"")+(rp.name?", by "+esc(rp.name):", anonymous")+'</p><h3>'+esc(rp.title)+'</h3><p>'+esc(rp.text)+'</p><span class="tag">'+esc(tcatName(rp.cat))+'</span>'+((rp.img||[]).length>1?' <span class="tag">'+rp.img.length+' photos</span>':'')+'</div>';
 box.appendChild(el);
 });
 })();
@@ -498,7 +487,6 @@ function render(){
 var t=typeSel.value,term=q.value.trim().toLowerCase();
 var list=rows.filter(function(r){
 if(!active[r.c])return false;
-if(APP.floor!==null&&!touches(r,APP.floor))return false;
 if(t&&r.t!==t)return false;
 if(term){var hay=(r.s+" "+r.x+" "+r.w+" "+catOf(r.c).n+" "+TYPE_NAME[r.t]+" "+fmt(r.d)).toLowerCase();if(hay.indexOf(term)<0)return false;}
 return true;
@@ -506,12 +494,13 @@ return true;
 body.innerHTML=list.map(function(r){
 var c=catOf(r.c);
 var when=fmtRow(r)+(r.e?"<br>to "+(r.est?"about ":"")+fmt(r.e):"")+(r.dur?"<br><small>"+esc(r.dur)+"</small>":"");
-return '<tr><td class="dt">'+when+'</td><td class="cat"><i style="--sw:var('+c.v+')"></i>'+esc(c.n)+'</td><td class="typ '+r.t.toLowerCase()+'">'+TYPE_NAME[r.t]+'</td><td class="what"><strong>'+esc(r.s)+'</strong>'+(r.x?'<span>'+esc(r.x)+'</span>':'')+'</td><td class="where">'+esc(r.w)+'</td></tr>';
+var label=r.c==="you"?"Ticket: "+tcatName(r.cat):c.n;
+return '<tr><td class="dt">'+when+'</td><td class="cat"><i style="--sw:var('+c.v+')"></i>'+esc(label)+'</td><td class="typ '+r.t.toLowerCase()+'">'+TYPE_NAME[r.t]+'</td><td class="what"><strong>'+esc(r.s)+'</strong>'+(r.x?'<span>'+esc(r.x)+'</span>':'')+'</td><td class="where">'+esc(r.w)+(r.stack?", "+esc(r.stack)+" line":"")+'</td></tr>';
 }).join("");
-count.textContent="Showing "+list.length+" of "+rows.length+(APP.floor!==null?" on "+floorLabel(APP.floor):"");
+count.textContent="Showing "+list.length+" of "+rows.length;
 empty.hidden=list.length>0;
 }
-render();APP.renderLog=render;
+render();
 })();
 }
 load();
