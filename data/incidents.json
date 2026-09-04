@@ -174,5 +174,5 @@
 {"d":"2026-08-27","e":"","c":"fire","t":"S","s":"Fire alarm and sprinkler testing","x":"Unit entry required.","w":"All units","g":"","dur":""},
 {"d":"2026-08-30","e":"2026-09-01","c":"water","t":"U","s":"Leak affecting hot water","x":"The building found the leak on Aug 30 and emailed the next morning. A temporary repair restored service the evening of Aug 31; final repair Sep 1.","w":"Floors 17–26","g":"","dur":"≈2 days"},
 {"d":"2026-09","e":"","m":true,"c":"you","t":"R","s":"Bathroom sinks detaching from the wall again","x":"Third ticket about the sinks pulling away from the wall since 2024; open.","w":"Upper floors","g":"sinks","dur":""},
-{"d":"2026-09-03","e":"","c":"water","t":"U","s":"Water discoloration, city-wide","x":"Sent 4:21pm: some residents seeing discolored water; described as a city-wide issue not isolated to Atlantic Station. Residents were told not to file work orders and to run cold water until it clears. No end announced.","w":"Whole building","g":"","dur":"ongoing at time of notice"}
+{"d":"2026-09-03","e":"","c":"water","t":"U","s":"Water discoloration","x":"Sent 4:21pm: some residents seeing discolored water. Residents were told not to file work orders and to run cold water until it clears. No end announced.","w":"Whole building","g":"","dur":"ongoing at time of notice"}
 ]
