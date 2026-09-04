@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add a ticket or report: 355 Atlantic Street</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F6F8;--paper:#FFFFFF;--ink:#1B2430;--muted:#5D6877;--line:#D8DDE3;--line-strong:#AEB7C2;--harbor:#16202B;--harbor-ink:#E9EEF3;--harbor-muted:#9FB0C2;--focus:#2B6CB0;--water:#2B6CB0;--amber:#C98A1B;--ok:#15803D;--bad:#B91C1C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0F151C;--paper:#171F29;--ink:#E6EAEF;--muted:#9AA5B4;--line:#2A333E;--line-strong:#465262;--harbor:#0B1118;--harbor-ink:#E9EEF3;--harbor-muted:#8E9FB2;--focus:#6FA6E8;--water:#4F8FD6;--amber:#E0A23A;--ok:#4CBF7E;--bad:#E25C5C}}
+:root[data-theme="dark"]{--bg:#0F151C;--paper:#171F29;--ink:#E6EAEF;--muted:#9AA5B4;--line:#2A333E;--line-strong:#465262;--harbor:#0B1118;--harbor-ink:#E9EEF3;--harbor-muted:#8E9FB2;--focus:#6FA6E8;--water:#4F8FD6;--amber:#E0A23A;--ok:#4CBF7E;--bad:#E25C5C}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55}
+h1,h2{font-family:"Fraunces","Iowan Old Style",Georgia,serif;font-weight:500;letter-spacing:-0.01em;margin:0}
+.nav{background:var(--harbor);color:var(--harbor-ink)}
+.nav .wrap{display:flex;align-items:center;gap:22px;height:56px}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+.brand{font-family:"Fraunces",Georgia,serif;font-size:18px;text-decoration:none;color:var(--harbor-ink)}
+.nav a.back{margin-left:auto;color:var(--harbor-muted);text-decoration:none;font-size:14px}
+main{padding:36px 0 72px}
+h1{font-size:36px;line-height:1.1}
+.lead{color:var(--muted);margin:12px 0 0;max-width:60ch}
+.switch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:28px 0 0}
+.switch button{font:inherit;text-align:left;padding:14px 16px;border-radius:10px;border:1px solid var(--line-strong);background:var(--paper);color:var(--ink);cursor:pointer}
+.switch button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.switch strong{display:block;font-weight:600}
+.switch span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+form{margin:26px 0 0}
+fieldset{border:0;padding:0;margin:0 0 22px}
+label,legend{display:block;font-weight:600;font-size:15px;margin:0 0 6px}
+.hint{font-size:14px;color:var(--muted);margin:-2px 0 8px;max-width:60ch}
+input[type="text"],input[type="email"],input[type="date"],input[type="month"],select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:130px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.two{grid-template-columns:1fr}.switch{grid-template-columns:1fr}h1{font-size:30px}}
+.radios label{font-weight:400;display:flex;gap:8px;align-items:center;margin:0 0 6px}
+.radios input{accent-color:var(--ink)}
+.check{display:flex;gap:8px;align-items:flex-start;font-weight:400}
+.check input{margin-top:5px;accent-color:var(--ink)}
+.drop{border:1px dashed var(--line-strong);border-radius:10px;padding:18px;background:var(--paper);text-align:center;color:var(--muted);font-size:15px;cursor:pointer}
+.drop.over{border-color:var(--ink);color:var(--ink)}
+.drop input{display:none}
+.thumbs{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 0}
+.thumbs div{position:relative}
+.thumbs img{width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.thumbs button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:13px;cursor:pointer;line-height:22px;padding:0}
+.privacy{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--muted);margin:0 0 22px}
+.privacy strong{color:var(--ink);font-weight:600}
+.btn{font:inherit;font-weight:600;font-size:16px;background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:12px 20px;cursor:pointer}
+.btn[disabled]{opacity:.55;cursor:default}
+.status{margin:14px 0 0;font-size:15px;min-height:1.4em}
+.status.bad{color:var(--bad)}
+.done{margin:40px 0 0;padding:26px;border-radius:12px;background:var(--paper);border:1px solid var(--line)}
+.done h2{font-size:26px;margin:0 0 8px}
+.done p{color:var(--muted);margin:0 0 6px;max-width:56ch}
+.done a{color:var(--ink)}
+.hp{position:absolute;left:-9999px;top:-9999px}
+</style>
+</head>
+<body>
+<div class="nav"><div class="wrap"><a class="brand" href="index.html">355 Atlantic Street</a><a class="back" href="index.html">Back to the record</a></div></div>
+<main class="wrap">
+<h1>Add your ticket or report</h1>
+<p class="lead">Two ways to add to the record. A maintenance ticket is a problem inside your apartment that you reported to the building. A report is anything happening in the building you want on the record, with photos, under your name or not.</p>
+
+<div class="switch" role="group" aria-label="What are you adding">
+<button type="button" id="pickTicket" aria-pressed="true"><strong>Maintenance ticket</strong><span>A problem in your apartment, like no hot water or a sink coming off the wall.</span></button>
+<button type="button" id="pickReport" aria-pressed="false"><strong>Building report</strong><span>Something in the building: a leak in a hallway, a broken gate, a closed amenity.</span></button>
+</div>
+
+<form id="form" novalidate>
+<input type="hidden" name="kind" id="kind" value="ticket">
+<div class="hp" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+<div class="privacy"><strong>Nothing here identifies you.</strong> The form never asks for a unit number; leave it out of your description too. Photos are re-encoded in your browser before upload, which removes location and camera data. Tickets appear by month and floor range only.</div>
+
+<fieldset>
+<label for="title" id="titleLabel">What happened, in one line</label>
+<input type="text" id="title" name="title" maxlength="140" placeholder="No hot water in the unit for the second time this week" required>
+</fieldset>
+
+<fieldset>
+<label for="text">Details</label>
+<p class="hint" id="textHint">When it started, what you saw, what maintenance said when they came. Skip anything that would identify you or a neighbor.</p>
+<textarea id="text" name="text" maxlength="2000" required></textarea>
+</fieldset>
+
+<div class="two">
+<fieldset>
+<label for="cat">Category</label>
+<select id="cat" name="cat">
+<option value="water">Hot water and plumbing</option>
+<option value="hvac">Heating and cooling</option>
+<option value="elev">Elevators</option>
+<option value="fire">Fire and life safety</option>
+<option value="win">Windows and exterior</option>
+<option value="amen">Amenities and building systems</option>
+<option value="garage">Garage and common areas</option>
+<option value="other">Something else</option>
+</select>
+</fieldset>
+<fieldset>
+<label for="where">Where</label>
+<select id="where" name="where">
+<option>Upper floors</option>
+<option>Floors 17–26</option>
+<option>Floors 6–16</option>
+<option>Whole building</option>
+<option>Garage</option>
+<option>Amenities</option>
+<option>Exterior</option>
+<option>Lobby</option>
+</select>
+</fieldset>
+</div>
+
+<div class="two">
+<fieldset>
+<label for="date">When</label>
+<input type="date" id="date" name="date">
+</fieldset>
+<fieldset id="monthWrap">
+<label class="check"><input type="checkbox" id="monthOnly" name="monthOnly" checked><span>Show only the month publicly (recommended for tickets)</span></label>
+</fieldset>
+</div>
+
+<fieldset id="byWrap" hidden>
+<legend>Post this report as</legend>
+<div class="radios">
+<label><input type="radio" name="anon" value="1" checked>Anonymous</label>
+<label><input type="radio" name="anon" value="0">With my name</label>
+</div>
+<input type="text" id="name" name="name" maxlength="60" placeholder="Name as it should appear" hidden>
+</fieldset>
+
+<fieldset>
+<label>Photos</label>
+<p class="hint">Up to three. They are resized to 1400 pixels and stripped of metadata before they leave your phone.</p>
+<label class="drop" id="drop" for="file">Tap to add photos, or drop them here<input type="file" id="file" accept="image/*" multiple></label>
+<div class="thumbs" id="thumbs"></div>
+</fieldset>
+
+<fieldset>
+<label for="contact">Email, if you want a reply (never published)</label>
+<input type="email" id="contact" name="contact" maxlength="120" placeholder="optional">
+</fieldset>
+
+<button class="btn" id="send" type="submit">Send for review</button>
+<p class="status" id="status" aria-live="polite"></p>
+</form>
+
+<div class="done" id="done" hidden>
+<h2>Held for review</h2>
+<p>Thanks. Your submission is in the review queue and will appear on the record once it has been checked, usually within a day.</p>
+<p><a href="index.html">Back to the record</a> or <a href="submit.html" id="again">add another</a>.</p>
+</div>
+</main>
+
+<script>
+(function(){
+"use strict";
+var API="https://api.atlanticstreetresidents.com";
+var images=[];
+var kindEl=document.getElementById("kind"),pickT=document.getElementById("pickTicket"),pickR=document.getElementById("pickReport");
+function setKind(k){
+kindEl.value=k;
+pickT.setAttribute("aria-pressed",k==="ticket"?"true":"false");
+pickR.setAttribute("aria-pressed",k==="report"?"true":"false");
+document.getElementById("byWrap").hidden=k!=="report";
+document.getElementById("monthWrap").hidden=k!=="ticket";
+document.getElementById("monthOnly").checked=k==="ticket";
+document.getElementById("titleLabel").textContent=k==="ticket"?"What happened, in one line":"What is this report about";
+document.getElementById("title").placeholder=k==="ticket"?"No hot water in the unit for the second time this week":"Water pouring from the ceiling in the 6th floor hallway";
+document.getElementById("textHint").textContent=k==="ticket"?"When it started, what you saw, what maintenance said when they came. Skip anything that would identify you or a neighbor.":"What you saw, when, and whether the building has acknowledged it. Skip anything that would identify a neighbor.";
+document.getElementById("where").value=k==="ticket"?"Upper floors":"Whole building";
+}
+pickT.onclick=function(){setKind("ticket");};pickR.onclick=function(){setKind("report");};
+if(location.hash==="#report")setKind("report");else setKind("ticket");
+document.getElementById("date").value=new Date().toISOString().slice(0,10);
+Array.prototype.forEach.call(document.querySelectorAll('input[name="anon"]'),function(r){r.onchange=function(){document.getElementById("name").hidden=document.querySelector('input[name="anon"]:checked').value==="1";};});
+
+var drop=document.getElementById("drop"),file=document.getElementById("file"),thumbs=document.getElementById("thumbs");
+file.onchange=function(){addFiles(file.files);file.value="";};
+drop.ondragover=function(e){e.preventDefault();drop.classList.add("over");};
+drop.ondragleave=function(){drop.classList.remove("over");};
+drop.ondrop=function(e){e.preventDefault();drop.classList.remove("over");addFiles(e.dataTransfer.files);};
+function addFiles(list){
+Array.prototype.slice.call(list,0,3-images.length).forEach(function(f){
+if(f.type.indexOf("image/")!==0)return;
+compress(f,function(dataUrl){if(dataUrl){images.push(dataUrl);drawThumbs();}});
+});
+}
+function compress(f,cb){
+var img=new Image(),url=URL.createObjectURL(f);
+img.onload=function(){
+var max=1400,w=img.naturalWidth,h=img.naturalHeight,s=Math.min(1,max/Math.max(w,h));
+var c=document.createElement("canvas");c.width=Math.round(w*s);c.height=Math.round(h*s);
+c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+URL.revokeObjectURL(url);
+var q=0.82,out=c.toDataURL("image/jpeg",q);
+while(out.length>1200000&&q>0.4){q-=0.1;out=c.toDataURL("image/jpeg",q);}
+cb(out);
+};
+img.onerror=function(){URL.revokeObjectURL(url);cb(null);};
+img.src=url;
+}
+function drawThumbs(){
+thumbs.innerHTML=images.map(function(d,i){return '<div><img src="'+d+'" alt="Selected photo '+(i+1)+'"><button type="button" aria-label="Remove photo '+(i+1)+'" data-i="'+i+'">×</button></div>';}).join("");
+Array.prototype.forEach.call(thumbs.querySelectorAll("button"),function(b){b.onclick=function(){images.splice(+b.dataset.i,1);drawThumbs();};});
+}
+
+var form=document.getElementById("form"),status=document.getElementById("status"),send=document.getElementById("send");
+form.onsubmit=function(e){
+e.preventDefault();
+status.className="status";status.textContent="";
+var title=document.getElementById("title").value.trim(),text=document.getElementById("text").value.trim();
+if(title.length<4){status.className="status bad";status.textContent="Give it a one-line title first.";return;}
+if(text.length<10){status.className="status bad";status.textContent="Add a few words of detail (at least 10 characters).";return;}
+if(/(^|[^A-Za-z0-9])[0-9]{1,2}[A-Z]([^A-Za-z0-9]|$)/.test(title+" "+text)){status.className="status bad";status.textContent="That looks like a unit number. Remove it so the record stays anonymous.";return;}
+var anon=document.querySelector('input[name="anon"]:checked').value==="1";
+var body={kind:kindEl.value,title:title,text:text,cat:document.getElementById("cat").value,where:document.getElementById("where").value,date:document.getElementById("date").value,monthOnly:document.getElementById("monthOnly").checked,anon:anon,name:anon?"":document.getElementById("name").value.trim(),contact:document.getElementById("contact").value.trim(),images:images,website:form.website.value};
+send.disabled=true;status.textContent="Sending"+(images.length?" with "+images.length+" photo"+(images.length>1?"s":""):"")+"…";
+fetch(API+"/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+.then(function(r){return r.json();})
+.then(function(r){
+if(!r.ok)throw new Error(r.error||"The server could not take the submission.");
+form.hidden=true;document.querySelector(".switch").hidden=true;document.querySelector(".lead").hidden=true;document.getElementById("done").hidden=false;window.scrollTo(0,0);
+})
+.catch(function(err){send.disabled=false;status.className="status bad";status.textContent=err.message||"Something went wrong. Check your connection and try again.";});
+};
+})();
+</script>
+</body>
+</html>
