@@ -168,7 +168,7 @@
 {"d":"2026-07-16","e":"","c":"water","t":"S","s":"Riser project water interruption","x":"Restored 12:33pm.","w":"Floors 6–16","g":"","dur":"≈½ day"},
 {"d":"2026-07-20","e":"2026-08-06","c":"garage","t":"S","s":"Cobblestone driveway repair project","x":"Planned Jul 20–31, extended to Aug 14, finished Aug 6.","w":"Driveway","g":"","dur":""},
 {"d":"2026-07-27","e":"","c":"water","t":"S","s":"Riser project hot water interruption","x":"Restored 1:39pm.","w":"Floors 17–26","g":"","dur":"≈½ day"},
-{"d":"2026-08","e":"","m":true,"c":"you","t":"R","s":"Bedroom circuit breaker tripping repeatedly","x":"Closed after a light fixture was replaced.","w":"Upper floors","g":"","dur":""},
+{"d":"2026-08","e":"","m":true,"c":"you","t":"R","s":"Bedroom circuit breaker tripping repeatedly","x":"Closed after light replaced. Leak from above apartment caused electrical issue.","w":"Upper floors","g":"","dur":""},
 {"d":"2026-08","e":"","m":true,"c":"you","t":"R","s":"Windows leaking","x":"Reported at the end of August 2026; the building has been resealing leaking exterior windows since 2022.","w":"Upper floors","g":"","dur":""},
 {"d":"2026-08","e":"","m":true,"c":"you","t":"R","s":"No hot water in the unit","x":"Filed the day the building identified a leak affecting floors 17–26.","w":"Upper floors","g":"hotwater","dur":""},
 {"d":"2026-08-27","e":"","c":"fire","t":"S","s":"Fire alarm and sprinkler testing","x":"Unit entry required.","w":"All units","g":"","dur":""},
