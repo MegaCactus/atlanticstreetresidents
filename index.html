@@ -66,12 +66,19 @@ button{font:inherit}
 .cta .long{display:none}.cta .short{display:inline}
 }
 /* welcome banner */
-.welcome{background:var(--paper);border-bottom:1px solid var(--line);font-size:15px;color:var(--ink)}
-.welcome .wrap{display:flex;gap:16px;align-items:flex-start;padding-top:12px;padding-bottom:12px}
-.welcome p{margin:0;max-width:86ch;line-height:1.5}
+.welcome{background:var(--bg);border-bottom:1px solid var(--line)}
+.welcome .wrap{padding-top:16px;padding-bottom:16px}
+.welcome-card{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:12px;padding:16px 20px 14px}
+.welcome-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
+.welcome-head h2{font-size:21px;margin:0}
+.welcome-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 28px}
+.welcome-grid b{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.welcome-grid p{margin:0;font-size:15px;line-height:1.5}
 .welcome a{color:inherit}
-.welcome-close{flex:none;font:inherit;font-size:14px;font-weight:600;background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:7px 12px;cursor:pointer;margin-top:2px}
-@media (max-width:720px){.welcome .wrap{flex-direction:column;gap:10px}}
+.welcome-note{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.welcome-close{flex:none;font:inherit;font-size:14px;font-weight:600;background:transparent;color:var(--ink);border:1px solid var(--line-strong);border-radius:8px;padding:7px 12px;cursor:pointer}
+.welcome-close:hover{background:var(--hover)}
+@media (max-width:760px){.welcome-grid{grid-template-columns:1fr;gap:12px}.welcome-card{padding:14px 16px 12px}}
 /* hero */
 .hero{background:var(--harbor);color:var(--harbor-ink);padding:44px 0 48px}
 .hero .wrap{max-width:900px}
@@ -231,9 +238,16 @@ footer p{margin:0 0 8px;max-width:76ch}
 <a class="cta" href="submit.html"><span class="long">Submit a ticket or report</span><span class="short">Submit</span></a>
 </div></div>
 
-<div class="welcome" id="welcome" role="region" aria-label="How to use this site"><div class="wrap">
-<p><strong>New here?</strong> This is a running record of outages and repairs at 355 Atlantic Street, kept by residents. <strong>Look:</strong> the timeline and calendar show every incident since October 2020. <strong>Search:</strong> the full log and the ticket list take any word, like <em>elevator</em>, <em>leak</em>, or <em>floors 17–26</em>. <strong>Add:</strong> file a maintenance ticket or report a building issue on the <a href="submit.html">submit page</a>, or forward a building notice or your own report to <a href="mailto:notices@atlanticstreetresidents.com">notices@atlanticstreetresidents.com</a>. Everything is reviewed before it appears, and nothing published identifies a person or an apartment.</p>
-<button type="button" class="welcome-close" id="welcomeClose">Got it</button>
+<div class="welcome" id="welcome" role="region" aria-label="How this site works"><div class="wrap">
+<div class="welcome-card">
+<div class="welcome-head"><h2>How this site works</h2><button type="button" class="welcome-close" id="welcomeClose" aria-label="Dismiss this guide">Got it</button></div>
+<div class="welcome-grid">
+<div><b>Look</b><p>The timeline and calendar show every incident on record, and the charts show where the problems cluster.</p></div>
+<div><b>Search</b><p>The full log and the ticket list take any word: <em>elevator</em>, <em>leak</em>, <em>floors 17–26</em>. Click a column heading to sort.</p></div>
+<div><b>Add</b><p>File a maintenance ticket or report a building issue on the <a href="submit.html">submit page</a>, or forward a building notice or your own report to <a href="mailto:notices@atlanticstreetresidents.com">notices@atlanticstreetresidents.com</a>.</p></div>
+</div>
+<p class="welcome-note">A running record of outages and repairs at 355 Atlantic Street, kept by residents. Everything is reviewed before it appears.</p>
+</div>
 </div></div>
 <script>(function(){var w=document.getElementById("welcome");try{if(localStorage.getItem("asr_welcome")==="1")w.hidden=true;}catch(e){}document.getElementById("welcomeClose").onclick=function(){try{localStorage.setItem("asr_welcome","1");}catch(e){}w.hidden=true;};})();</script>
 
@@ -242,8 +256,8 @@ footer p{margin:0 0 8px;max-width:76ch}
 <h1>The residents' maintenance record</h1>
 <div class="alert" id="alert"><span class="dot" aria-hidden="true"></span><p>Loading the record…</p></div>
 <ul class="facts" id="facts"></ul>
-<div class="stats" id="stats"><div><b>—</b><span>incidents since October 2020</span></div><div><b>—</b><span>unplanned water and hot water outages</span></div><div><b>—</b><span>incidents in the last 30 days</span></div></div>
-<p class="sub">Compiled from the building's own email notices since October 2020 and from tickets and reports residents share. New notices post automatically; resident submissions are reviewed first.</p>
+<div class="stats" id="stats"><div><b>—</b><span>incidents on record</span></div><div><b>—</b><span>unplanned water and hot water outages</span></div><div><b>—</b><span>incidents in the last 30 days</span></div></div>
+<p class="sub">Compiled from the building's own email notices, from tickets and reports residents share, and from the residents' Discord. New notices post automatically; resident submissions are reviewed first.</p>
 <div class="actions"><a class="btn" style="background:var(--harbor-ink);color:var(--harbor)" href="submit.html">Add your ticket or report</a><a class="btn secondary" style="color:var(--harbor-ink);border-color:rgba(255,255,255,.3)" href="#log-h">Browse the log</a></div>
 <p class="updated" id="updated"></p>
 </div></header>
@@ -252,7 +266,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 <p class="notice" id="liveNotice">Live additions could not be loaded just now; this is the archived record. Refresh in a minute.</p>
 
 <section aria-labelledby="tl-h">
-<h2 id="tl-h">Every incident since October 2020</h2>
+<h2 id="tl-h">Every incident on record</h2>
 <p class="section-note">One mark per incident; tall marks are unplanned, short marks scheduled, faint marks informational. Hover or tap a mark for details, click it to open that entry in the log.</p>
 <div class="scroller fade" id="tlScroll"><svg id="timeline" class="timeline" role="img" aria-label="Timeline of maintenance incidents by category"></svg></div>
 <p class="scrollhint">Drag sideways to see other years.</p>
@@ -277,7 +291,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 <h2 id="ch-h">Where the problems are</h2>
 <div class="charts">
 <div class="chart"><h3>Incidents by category</h3><svg id="byCat" role="img" aria-label="Incidents by category, with the unplanned share highlighted"></svg><p class="cap">The solid part of each bar is unplanned; the light part is scheduled work and notices.</p></div>
-<div class="chart"><h3>Hot water and plumbing incidents per year</h3><svg id="byYear" role="img" aria-label="Hot water and plumbing incidents per year"></svg><p class="cap">The number inside each bar is how many were unplanned. 2020 covers October onward.</p></div>
+<div class="chart"><h3>Hot water and plumbing incidents per year</h3><svg id="byYear" role="img" aria-label="Hot water and plumbing incidents per year"></svg><p class="cap">The number inside each bar is how many were unplanned.</p></div>
 <div class="chart"><h3>Days with water interrupted, per year</h3><svg id="byDays" role="img" aria-label="Days with water or hot water interrupted on the upper floors, per year"></svg><p class="cap">Upper floors (17 to 26). Solid is days with an unplanned outage; light is scheduled shutoffs only.</p></div>
 </div>
 </section>
@@ -331,7 +345,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 <section aria-labelledby="meth-h" class="methods">
 <h2 id="meth-h">Methods and limitations</h2>
 <h3>Where the data comes from</h3>
-<p>Three sources feed this record. The first is the building's own email notices: every message the building's notification system has sent residents since October 2020, grouped into incidents so that a multi-day outage with six update emails counts once. New notices are added automatically as they arrive, with the category, type, and affected floors read from the text of the notice. The second is residents themselves, through the tickets and reports submitted on this site or emailed to it. The third is the residents' Discord, a chat that residents started during the February 2026 shutoff: its history from February to September 2026 was read through, and the problems residents described there were summarized into entries, each noting how many people reported it. Photos from the chat were included only where they show the problem itself.</p>
+<p>Three sources feed this record. The first is the building's own email notices: the messages the building's notification system sends residents, grouped into incidents so that a multi-day outage with six update emails counts once. New notices are added automatically as they arrive, with the category, type, and affected floors read from the text of the notice. The second is residents themselves, through the tickets and reports submitted on this site or emailed to it. The third is the residents' Discord, a chat that residents started during the February 2026 shutoff: its history from February to September 2026 was read through, and the problems residents described there were summarized into entries, each noting how many people reported it. Photos from the chat were included only where they show the problem itself.</p>
 <h3>How things are counted</h3>
 <ul>
 <li>An incident is "unplanned" when the building called it an emergency, an outage, a failure, or a leak, and "scheduled" when it was announced in advance. Everything else is a notice.</li>
@@ -343,6 +357,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 <div class="callout">
 <p>Resident tickets and reports are self-reported. They describe lived experience in the words of the person who submitted them and are not verified by the building or by anyone else. They can contain mistakes, duplicates, and opinions, and they are reviewed only for relevance and privacy before they appear here, not for accuracy.</p>
 <p>Entries drawn from the residents' Discord are summaries of what people said in the chat, with names, unit numbers, and anything identifying removed. Where the chat described an event the building had also announced, the entry appears as a report alongside the notice rather than as a second incident, so nothing is counted twice.</p>
+<p>The building's own notices on file go back to late 2020; anything earlier appears only where residents have added it.</p>
 <p>Building notices are summarized, not reproduced. The automatic classification of new notices can file something under the wrong category or miss the floors; those errors are corrected as they are noticed.</p>
 <p>This site is run by residents and has no connection to the building's ownership or management. Corrections and missed notices are welcome through the report form.</p>
 </div>
@@ -462,6 +477,9 @@ function load(){
 
 function render(){
 var rows=APP.rows;
+var OCT2020=Date.UTC(2020,9,1);
+var FIRST_TS=rows.length?Math.min.apply(null,rows.map(function(r){return r.ts;})):OCT2020;
+var START=Math.min(OCT2020,FIRST_TS),START_YEAR=new Date(START).getUTCFullYear();
 
 // ---------- Hero ----------
 (function(){
@@ -474,7 +492,7 @@ var rows=APP.rows;
   if(open.length){al.classList.remove("ok");al.querySelector("p").innerHTML='<strong>Active now:</strong> <a href="#log-h" data-focus="'+esc(open[0].id)+'">'+esc(open[0].s)+'</a>'+(open[0].w?" ("+esc(open[0].w)+")":"")+(open.length>1?', and '+(open.length-1)+' more.':'.');}
   else{al.classList.add("ok");al.querySelector("p").innerHTML="<strong>Nothing active right now.</strong> No unplanned outage has been reported in the last three days.";}
   document.getElementById("facts").innerHTML='<li>Upper floors, water or hot water: last interrupted <strong>'+(up?ago(up.ts):"never")+'</strong></li><li>Floors 6–16: last interrupted <strong>'+(low?ago(low.ts):"never")+'</strong></li>';
-  document.getElementById("stats").innerHTML='<div><b>'+rows.length+'</b><span>incidents since October 2020</span></div><div><b>'+wateru+'</b><span>unplanned water and hot water outages</span></div><div><b>'+last30+'</b><span>incidents in the last 30 days</span></div>';
+  document.getElementById("stats").innerHTML='<div><b>'+rows.length+'</b><span>incidents on record</span></div><div><b>'+wateru+'</b><span>unplanned water and hot water outages</span></div><div><b>'+last30+'</b><span>incidents in the last 30 days</span></div>';
   var newest=Math.max.apply(null,rows.filter(function(r){return !r.m;}).map(function(r){return r.ts;}).concat(APP.reports.map(function(r){return parse(r.d).getTime();})));
   document.getElementById("updated").textContent="Latest entry: "+fmt(iso(newest))+". Building notices post within minutes of arriving.";
   al.addEventListener("click",function(e){var a=e.target.closest("a[data-focus]");if(a){APP.focus=a.getAttribute("data-focus");if(APP.renderLog)APP.renderLog(true);}});
@@ -486,9 +504,9 @@ var rows=APP.rows;
   var mob=narrow.matches;
   var W=1000,L=mob?96:196,R=52,top=30,lane=26,H=top+CATS.length*lane+14;
   svg.setAttribute("viewBox","0 0 "+W+" "+H);
-  var t0=Date.UTC(2020,9,1),t1=TODAY+30*DAY;
+  var t0=START<OCT2020?Date.UTC(START_YEAR,0,1):OCT2020,t1=TODAY+30*DAY;
   function x(ts){return L+(ts-t0)/(t1-t0)*(W-L-R);}
-  for(var y=2021;y<=new Date(TODAY).getUTCFullYear();y++){var xx=x(Date.UTC(y,0,1));svg.appendChild(ns("line",{x1:xx,y1:top-6,x2:xx,y2:H-10,stroke:"var(--line)","stroke-width":1}));svg.appendChild(ns("text",{x:xx+4,y:top-12,"font-size":12,fill:"var(--muted)"},String(y)));}
+  for(var y=START_YEAR+1;y<=new Date(TODAY).getUTCFullYear();y++){var xx=x(Date.UTC(y,0,1));svg.appendChild(ns("line",{x1:xx,y1:top-6,x2:xx,y2:H-10,stroke:"var(--line)","stroke-width":1}));svg.appendChild(ns("text",{x:xx+4,y:top-12,"font-size":12,fill:"var(--muted)"},String(y)));}
   var tx=x(TODAY);svg.appendChild(ns("line",{x1:tx,y1:top-6,x2:tx,y2:H-10,stroke:"var(--amber)","stroke-width":1.5,"stroke-dasharray":"3 3"}));svg.appendChild(ns("text",{x:tx-4,y:top-12,"font-size":11,"text-anchor":"end",fill:"var(--amber)"},"Today"));
   CATS.forEach(function(c,ci){
     var y0=top+ci*lane,list=rows.filter(function(r){return r.c===c.k;});
@@ -510,7 +528,7 @@ var rows=APP.rows;
 // ---------- Calendar ----------
 (function(){
   var PR=["you","water","hvac","elev","fire","amen","win","garage","clean","pm","other"];
-  var MOVE_IN=Date.UTC(2020,9,1),lastYear=new Date(TODAY).getUTCFullYear(),showAll=false;
+  var MOVE_IN=START,firstYear=START_YEAR,lastYear=new Date(TODAY).getUTCFullYear(),showAll=false;
   function isWater(r){return r.t!=="N"&&!r.m&&(r.c==="water"||r.g==="hotwater");}
   function build(){
     var mode=document.querySelector('input[name="calmode"]:checked').value;
@@ -519,7 +537,7 @@ var rows=APP.rows;
     rows.forEach(function(r){if(!inc(r))return;for(var t=r.ts;t<=r.te;t+=DAY){var k=iso(t);(days[k]=days[k]||[]).push({r:r,estDay:r.est&&t>r.ts});}});
     var box=document.getElementById("cal");box.innerHTML="";
     var cell=12,gap=2,step=cell+gap,L=22;
-    var first=showAll?2020:Math.max(2020,lastYear-2);
+    var first=showAll?firstYear:Math.max(firstYear,lastYear-2);
     for(var y=first;y<=lastYear;y++){
       var wrap=document.createElement("div");wrap.className="cal-year";
       var jan1=Date.UTC(y,0,1),dec31=Date.UTC(y,11,31),startTs=jan1-new Date(jan1).getUTCDay()*DAY,cols=Math.ceil((dec31-startTs)/DAY/7)+1,W=L+cols*step+4,H=18+7*step;
@@ -538,17 +556,17 @@ var rows=APP.rows;
         }else{attrs.fill="var(--line)";attrs.opacity=.55;}
         var rc=ns("rect",attrs);if(list)attachTip(rc,tipText);svg.appendChild(rc);
       }
-      var h=document.createElement("h3");h.textContent=y+" ";var sp=document.createElement("span");sp.textContent=affected+(affected===1?" day":" days")+(y===2020?" (from October)":y===lastYear?" (so far)":"");h.appendChild(sp);
+      var h=document.createElement("h3");h.textContent=y+" ";var sp=document.createElement("span");sp.textContent=affected+(affected===1?" day":" days")+(y===firstYear&&new Date(MOVE_IN).getUTCMonth()>0?" (from "+MONTHS[new Date(MOVE_IN).getUTCMonth()]+")":y===lastYear?" (so far)":"");h.appendChild(sp);
       wrap.appendChild(h);var scr=document.createElement("div");scr.className="scroller fade";scr.appendChild(svg);scr.addEventListener("scroll",function(){scr.classList.remove("fade");},{once:true});wrap.appendChild(scr);box.appendChild(wrap);
     }
     var lg=document.getElementById("calLegend");
     lg.innerHTML=mode==="water"?'<li><span class="sq"></span>Unplanned outage</li><li><span class="sq" style="opacity:.5"></span>Scheduled shutoff</li><li><span class="sq" style="opacity:.3"></span>Estimated end</li>':'<li><span class="sq" style="background:var(--c-water)"></span>Water</li><li><span class="sq" style="background:var(--c-hvac)"></span>Heat & AC</li><li><span class="sq" style="background:var(--c-you)"></span>Resident ticket</li><li><span class="sq" style="background:var(--c-garage)"></span>Other categories in their colors</li>';
-    document.getElementById("calMore").textContent=showAll?"Show only recent years":"Show 2020 to "+(lastYear-3);
+    var more=document.getElementById("calMore");more.textContent=showAll?"Show only recent years":"Show "+firstYear+" to "+(lastYear-3);more.hidden=firstYear>lastYear-3;
   }
   var fd={},fu={},ad={};
   rows.forEach(function(r){if(!isWater(r))return;for(var t=r.ts;t<=r.te;t+=DAY){var k=iso(t);ad[k]=1;if(reach.test(r.w)){fd[k]=1;if(r.t==="U"||r.t==="R")fu[k]=1;}}});
   var n=Object.keys(fd).length,u=Object.keys(fu).length,a=Object.keys(ad).length;
-  document.getElementById("calStat").textContent="Each square is a day. Water or hot water was interrupted on the upper floors on "+n+" separate days since October 2020, "+u+" of them unplanned; across all floors, "+a+" days.";
+  document.getElementById("calStat").textContent="Each square is a day. Water or hot water was interrupted on the upper floors on "+n+" separate days, "+u+" of them unplanned; across all floors, "+a+" days.";
   Array.prototype.forEach.call(document.querySelectorAll('input[name="calmode"]'),function(el){el.addEventListener("change",build);});
   document.getElementById("calMore").onclick=function(){showAll=!showAll;build();};
   build();
@@ -587,7 +605,7 @@ function barChart(id,years,data,labelU,color){
   });
 }
 (function(){
-  var years=[];for(var y=2020;y<=new Date(TODAY).getUTCFullYear();y++)years.push(y);
+  var years=[];for(var y=START_YEAR;y<=new Date(TODAY).getUTCFullYear();y++)years.push(y);
   barChart("byYear",years,years.map(function(y){var rs=rows.filter(function(r){return r.c==="water"&&r.d.slice(0,4)===String(y);});return {y:y,u:rs.filter(function(r){return r.t==="U";}).length,s:rs.filter(function(r){return r.t!=="U";}).length};}),true,"var(--c-water)");
   barChart("byDays",years,years.map(function(y){var u=0,s=0;Object.keys(APP.waterDays).forEach(function(k){if(k.slice(0,4)!==String(y))return;if(APP.waterDaysU[k])u++;else s++;});return {y:y,u:u,s:s};}),false,"var(--c-water)");
 })();
