@@ -256,7 +256,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 <h1>The residents' maintenance record</h1>
 <div class="alert" id="alert"><span class="dot" aria-hidden="true"></span><p>Loading the record…</p></div>
 <ul class="facts" id="facts"></ul>
-<div class="stats" id="stats"><div><b>—</b><span>incidents on record</span></div><div><b>—</b><span>unplanned water and hot water outages</span></div><div><b>—</b><span>incidents in the last 30 days</span></div></div>
+<div class="stats" id="stats"><div><b>—</b><span>incidents and reported issues on record</span></div><div><b>—</b><span>unplanned water and hot water outages</span></div><div><b>—</b><span>incidents and issues in the last 30 days</span></div></div>
 <p class="sub">Compiled from the building's own email notices, from tickets and reports residents share, and from the residents' Discord. New notices post automatically; resident submissions are reviewed first.</p>
 <div class="actions"><a class="btn" style="background:var(--harbor-ink);color:var(--harbor)" href="submit.html">Add your ticket or report</a><a class="btn secondary" style="color:var(--harbor-ink);border-color:rgba(255,255,255,.3)" href="#log-h">Browse the log</a></div>
 <p class="updated" id="updated"></p>
@@ -486,13 +486,13 @@ var START=Math.min(OCT2020,FIRST_TS),START_YEAR=new Date(START).getUTCFullYear()
   var up=rows.filter(function(r){return r.c==="water"&&r.t!=="N"&&reach.test(r.w);}).sort(function(a,b){return b.ts-a.ts;})[0];
   var low=rows.filter(function(r){return r.c==="water"&&r.t!=="N"&&/6–16|6–17|Whole building|6–26|All units/.test(r.w);}).sort(function(a,b){return b.ts-a.ts;})[0];
   var open=rows.filter(function(r){return r.active;}).sort(function(a,b){return b.ts-a.ts;});
-  var last30=rows.filter(function(r){return r.t!=="N"&&(TODAY-r.ts)<=30*DAY;}).length;
+  var last30=rows.filter(function(r){return r.t!=="N"&&(TODAY-r.ts)<=30*DAY;}).length+APP.reports.filter(function(r){return r.d&&(TODAY-parse(r.d).getTime())<=30*DAY;}).length;
   var wateru=rows.filter(function(r){return r.c==="water"&&r.t==="U";}).length;
   var al=document.getElementById("alert");
   if(open.length){al.classList.remove("ok");al.querySelector("p").innerHTML='<strong>Active now:</strong> <a href="#log-h" data-focus="'+esc(open[0].id)+'">'+esc(open[0].s)+'</a>'+(open[0].w?" ("+esc(open[0].w)+")":"")+(open.length>1?', and '+(open.length-1)+' more.':'.');}
   else{al.classList.add("ok");al.querySelector("p").innerHTML="<strong>Nothing active right now.</strong> No unplanned outage has been reported in the last three days.";}
   document.getElementById("facts").innerHTML='<li>Upper floors, water or hot water: last interrupted <strong>'+(up?ago(up.ts):"never")+'</strong></li><li>Floors 6–16: last interrupted <strong>'+(low?ago(low.ts):"never")+'</strong></li>';
-  document.getElementById("stats").innerHTML='<div><b>'+rows.length+'</b><span>incidents on record</span></div><div><b>'+wateru+'</b><span>unplanned water and hot water outages</span></div><div><b>'+last30+'</b><span>incidents in the last 30 days</span></div>';
+  document.getElementById("stats").innerHTML='<div><b>'+(rows.length+APP.reports.length)+'</b><span>incidents and reported issues on record</span></div><div><b>'+wateru+'</b><span>unplanned water and hot water outages</span></div><div><b>'+last30+'</b><span>incidents and issues in the last 30 days</span></div>';
   var newest=Math.max.apply(null,rows.filter(function(r){return !r.m;}).map(function(r){return r.ts;}).concat(APP.reports.map(function(r){return parse(r.d).getTime();})));
   document.getElementById("updated").textContent="Latest entry: "+fmt(iso(newest))+". Building notices post within minutes of arriving.";
   al.addEventListener("click",function(e){var a=e.target.closest("a[data-focus]");if(a){APP.focus=a.getAttribute("data-focus");if(APP.renderLog)APP.renderLog(true);}});
