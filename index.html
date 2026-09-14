@@ -113,6 +113,7 @@ section{padding:52px 0 8px}
 .legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:12px 0 0;padding:0;list-style:none;font-size:14px;color:var(--muted)}
 .legend li{display:flex;align-items:center;gap:8px}
 .legend .mk{display:inline-block;width:5px;border-radius:1px;background:var(--ink)}
+.legend .mk.rp{height:16px;background:transparent;border:1.5px solid var(--ink);box-sizing:border-box;width:7px}
 .legend .mk.u{height:16px}.legend .mk.s{height:9px;opacity:.55}.legend .mk.n{height:6px;opacity:.3}.legend .mk.r{height:16px;background:var(--c-you)}
 .legend .sq{display:inline-block;width:12px;height:12px;border-radius:2px;background:var(--c-water)}
 .seg{margin:6px 0 14px;gap:18px;display:flex;flex-wrap:wrap;align-items:center}
@@ -270,7 +271,7 @@ footer p{margin:0 0 8px;max-width:76ch}
 <p class="section-note">One mark per incident; tall marks are unplanned, short marks scheduled, faint marks informational. Hover or tap a mark for details, click it to open that entry in the log.</p>
 <div class="scroller fade" id="tlScroll"><svg id="timeline" class="timeline" role="img" aria-label="Timeline of maintenance incidents by category"></svg></div>
 <p class="scrollhint">Drag sideways to see other years.</p>
-<ul class="legend"><li><span class="mk u"></span>Unplanned or emergency</li><li><span class="mk s"></span>Scheduled</li><li><span class="mk n"></span>Notice</li><li><span class="mk r"></span>Resident maintenance ticket</li></ul>
+<ul class="legend"><li><span class="mk u"></span>Unplanned or emergency</li><li><span class="mk s"></span>Scheduled</li><li><span class="mk n"></span>Notice</li><li><span class="mk r"></span>Resident maintenance ticket</li><li><span class="mk rp"></span>Building issue report</li></ul>
 </section>
 
 <section aria-labelledby="cal-h">
@@ -456,7 +457,9 @@ function normalize(list){
     var x=(r.x||"").replace(/ Not counted toward the upper floors because the affected units weren.t named[.]/,"");
     var o={i:i,id:r.id||("b"+i),d:d,m:m,e:e,est:est,c:catOf(r.c).k,t:r.t,s:r.s,x:x,w:w,g:r.g||"",dur:r.dur||"",img:r.img||[],src:r.src||"base",stack:r.stack||"",cat:r.cat||"",copies:r.copies||1,ts:parse(d).getTime(),te:parse(e||d).getTime()};
     if(o.c==="you")o.cat=guessCat(o);
-    o.active=o.t==="U"&&!o.e&&(TODAY-o.ts)<=3*DAY;
+    o.banner=r.banner||"";
+    var pinned=o.banner==="pin"&&(!r.pinUntil||parse(r.pinUntil).getTime()>=TODAY);
+    o.active=pinned||(o.banner!=="hide"&&o.t==="U"&&!o.e&&(TODAY-o.ts)<=3*DAY);
     o.recent=(TODAY-o.ts)<=7*DAY;
     o.hours=o.c==="water"?hoursOf(o.dur):0;
     return o;
@@ -470,6 +473,8 @@ function load(){
     var all=res[0].concat(res[1].incidents||[]);
     APP.rows=normalize(all);
     APP.reports=res[1].reports||[];
+    APP.banner=(res[1].banner&&res[1].banner.text)||"";
+    APP.reportRows=APP.reports.filter(function(r){return r.d;}).map(function(r,i){var ts=parse(r.d).getTime(),te=parse(r.e||r.d).getTime();var b=r.banner||"";return {i:i,id:r.id,kind:"report",d:r.d,e:r.e||"",m:false,est:false,c:catOf(r.cat).k,t:"R",s:r.title,x:r.text,w:r.where||"",img:r.img||[],ts:ts,te:te,banner:b,active:(b==="pin"&&(!r.pinUntil||parse(r.pinUntil).getTime()>=TODAY))||(b!=="hide"&&!r.e&&(TODAY-ts)<=7*DAY)};});
     document.getElementById("hero").classList.remove("skel");
     render();
   }).catch(function(){document.getElementById("alert").querySelector("p").textContent="The incident data could not be loaded. Try again in a minute.";});
@@ -485,12 +490,14 @@ var START=Math.min(OCT2020,FIRST_TS),START_YEAR=new Date(START).getUTCFullYear()
 (function(){
   var up=rows.filter(function(r){return r.c==="water"&&r.t!=="N"&&reach.test(r.w);}).sort(function(a,b){return b.ts-a.ts;})[0];
   var low=rows.filter(function(r){return r.c==="water"&&r.t!=="N"&&/6–16|6–17|Whole building|6–26|All units/.test(r.w);}).sort(function(a,b){return b.ts-a.ts;})[0];
-  var open=rows.filter(function(r){return r.active;}).sort(function(a,b){return b.ts-a.ts;});
+  var open=rows.filter(function(r){return r.active;}).concat(APP.reportRows.filter(function(r){return r.active;})).sort(function(a,b){return b.ts-a.ts;});
   var last30=rows.filter(function(r){return r.t!=="N"&&(TODAY-r.ts)<=30*DAY;}).length+APP.reports.filter(function(r){return r.d&&(TODAY-parse(r.d).getTime())<=30*DAY;}).length;
   var wateru=rows.filter(function(r){return r.c==="water"&&r.t==="U";}).length;
   var al=document.getElementById("alert");
-  if(open.length){al.classList.remove("ok");al.querySelector("p").innerHTML='<strong>Active now:</strong> <a href="#log-h" data-focus="'+esc(open[0].id)+'">'+esc(open[0].s)+'</a>'+(open[0].w?" ("+esc(open[0].w)+")":"")+(open.length>1?', and '+(open.length-1)+' more.':'.');}
-  else{al.classList.add("ok");al.querySelector("p").innerHTML="<strong>Nothing active right now.</strong> No unplanned outage has been reported in the last three days.";}
+  function openLink(r){return (r.kind==="report"?'<a href="#rep-h">':'<a href="#log-h" data-focus="'+esc(r.id)+'">')+esc(r.s)+'</a>'+(r.w?" ("+esc(r.w)+")":"");}
+  if(APP.banner){al.classList.remove("ok");al.querySelector("p").innerHTML='<strong>Active now:</strong> '+esc(APP.banner);}
+  else if(open.length){al.classList.remove("ok");var shown=open.slice(0,3).map(openLink);al.querySelector("p").innerHTML='<strong>Active now:</strong> '+shown.join("; ")+(open.length>3?'; and '+(open.length-3)+' more.':'.');}
+  else{al.classList.add("ok");al.querySelector("p").innerHTML="<strong>Nothing active right now.</strong> No unplanned outage or open building issue has been reported recently.";}
   document.getElementById("facts").innerHTML='<li>Upper floors, water or hot water: last interrupted <strong>'+(up?ago(up.ts):"never")+'</strong></li><li>Floors 6–16: last interrupted <strong>'+(low?ago(low.ts):"never")+'</strong></li>';
   document.getElementById("stats").innerHTML='<div><b>'+(rows.length+APP.reports.length)+'</b><span>incidents and reported issues on record</span></div><div><b>'+wateru+'</b><span>unplanned water and hot water outages</span></div><div><b>'+last30+'</b><span>incidents and issues in the last 30 days</span></div>';
   var newest=Math.max.apply(null,rows.filter(function(r){return !r.m;}).map(function(r){return r.ts;}).concat(APP.reports.map(function(r){return parse(r.d).getTime();})));
@@ -509,10 +516,17 @@ var START=Math.min(OCT2020,FIRST_TS),START_YEAR=new Date(START).getUTCFullYear()
   for(var y=START_YEAR+1;y<=new Date(TODAY).getUTCFullYear();y++){var xx=x(Date.UTC(y,0,1));svg.appendChild(ns("line",{x1:xx,y1:top-6,x2:xx,y2:H-10,stroke:"var(--line)","stroke-width":1}));svg.appendChild(ns("text",{x:xx+4,y:top-12,"font-size":12,fill:"var(--muted)"},String(y)));}
   var tx=x(TODAY);svg.appendChild(ns("line",{x1:tx,y1:top-6,x2:tx,y2:H-10,stroke:"var(--amber)","stroke-width":1.5,"stroke-dasharray":"3 3"}));svg.appendChild(ns("text",{x:tx-4,y:top-12,"font-size":11,"text-anchor":"end",fill:"var(--amber)"},"Today"));
   CATS.forEach(function(c,ci){
-    var y0=top+ci*lane,list=rows.filter(function(r){return r.c===c.k;});
+    var y0=top+ci*lane,list=rows.filter(function(r){return r.c===c.k;}),reps=APP.reportRows.filter(function(r){return r.c===c.k;});
     svg.appendChild(ns("line",{x1:L,y1:y0+lane-4,x2:W-R,y2:y0+lane-4,stroke:"var(--line)","stroke-width":1,"stroke-dasharray":"1 3"}));
     svg.appendChild(ns("text",{x:L-12,y:y0+lane-9,"font-size":mob?11:13,"text-anchor":"end",fill:"var(--ink)"},mob?c.s:c.n));
-    svg.appendChild(ns("text",{x:W-R+10,y:y0+lane-9,"font-size":12,fill:"var(--muted)"},list.length?String(list.length):""));
+    svg.appendChild(ns("text",{x:W-R+10,y:y0+lane-9,"font-size":12,fill:"var(--muted)"},(list.length+reps.length)?String(list.length+reps.length):""));
+    reps.forEach(function(r){
+      var xs=x(r.ts),xe=x(r.te),w=Math.max(4,xe-xs);
+      var rect=ns("rect",{x:xs-2,y:y0+lane-5-16,width:w,height:16,rx:1,fill:"var("+c.v+")","fill-opacity":.18,stroke:"var("+c.v+")","stroke-width":1.5,style:"cursor:pointer"});
+      attachTip(rect,fmtRow(r)+(r.e?" to "+fmt(r.e):"")+NL+"Building issue: "+r.s+(r.w?NL+r.w:""));
+      rect.addEventListener("click",function(){document.getElementById("rep-h").scrollIntoView({block:"start"});});
+      svg.appendChild(rect);
+    });
     list.forEach(function(r){
       var xs=x(r.ts),xe=x(r.te),w=Math.max(3,xe-xs),h,op;
       if(r.t==="U"||r.t==="R"){h=16;op=1;}else if(r.t==="S"){h=9;op=.6;}else{h=6;op=.35;}
@@ -534,7 +548,7 @@ var START=Math.min(OCT2020,FIRST_TS),START_YEAR=new Date(START).getUTCFullYear()
     var mode=document.querySelector('input[name="calmode"]:checked').value;
     function inc(r){if(r.m)return false;if(mode==="water")return isWater(r);if(mode==="core")return r.t!=="N"&&(r.c==="you"||r.c==="water"||r.c==="hvac");return true;}
     var days={};
-    rows.forEach(function(r){if(!inc(r))return;for(var t=r.ts;t<=r.te;t+=DAY){var k=iso(t);(days[k]=days[k]||[]).push({r:r,estDay:r.est&&t>r.ts});}});
+    rows.concat(APP.reportRows).forEach(function(r){if(!inc(r))return;for(var t=r.ts;t<=r.te;t+=DAY){var k=iso(t);(days[k]=days[k]||[]).push({r:r,estDay:r.est&&t>r.ts});}});
     var box=document.getElementById("cal");box.innerHTML="";
     var cell=12,gap=2,step=cell+gap,L=22;
     var first=showAll?firstYear:Math.max(firstYear,lastYear-2);
@@ -564,7 +578,7 @@ var START=Math.min(OCT2020,FIRST_TS),START_YEAR=new Date(START).getUTCFullYear()
     var more=document.getElementById("calMore");more.textContent=showAll?"Show only recent years":"Show "+firstYear+" to "+(lastYear-3);more.hidden=firstYear>lastYear-3;
   }
   var fd={},fu={},ad={};
-  rows.forEach(function(r){if(!isWater(r))return;for(var t=r.ts;t<=r.te;t+=DAY){var k=iso(t);ad[k]=1;if(reach.test(r.w)){fd[k]=1;if(r.t==="U"||r.t==="R")fu[k]=1;}}});
+  rows.concat(APP.reportRows).forEach(function(r){if(!isWater(r))return;for(var t=r.ts;t<=r.te;t+=DAY){var k=iso(t);ad[k]=1;if(reach.test(r.w)){fd[k]=1;if(r.t==="U"||r.t==="R")fu[k]=1;}}});
   var n=Object.keys(fd).length,u=Object.keys(fu).length,a=Object.keys(ad).length;
   document.getElementById("calStat").textContent="Each square is a day. Water or hot water was interrupted on the upper floors on "+n+" separate days, "+u+" of them unplanned; across all floors, "+a+" days.";
   Array.prototype.forEach.call(document.querySelectorAll('input[name="calmode"]'),function(el){el.addEventListener("change",build);});
@@ -656,7 +670,7 @@ function whatCell(r,term){var long=(r.x||"").length>90;return '<td class="what">
     var el=document.createElement("article");el.className="report";
     var img=(rp.img||[])[0];
     el.innerHTML=(img?'<a class="zoom" href="'+API+'/img/'+esc(img)+'"><img src="'+API+'/img/'+esc(img)+'" alt="" loading="lazy"></a>':'')+
-      '<div class="body"><p class="meta">'+esc(fmt(rp.d))+(rp.where?", "+esc(rp.where):"")+(rp.stack?", "+esc(rp.stack)+" line":"")+(rp.name?", by "+esc(rp.name):", anonymous")+'</p><h3>'+esc(rp.title)+'</h3><p>'+esc(rp.text)+'</p>'+pill(rp.cat,tcatName(rp.cat))+((rp.img||[]).length>1?' <span class="pill" style="--pc:var(--c-garage)">'+rp.img.length+' photos</span>':'')+'</div>';
+      '<div class="body"><p class="meta">'+esc(fmt(rp.d))+(rp.e?", resolved "+esc(fmt(rp.e)):"")+(rp.where?", "+esc(rp.where):"")+(rp.stack?", "+esc(rp.stack)+" line":"")+(rp.name?", by "+esc(rp.name):", anonymous")+'</p><h3>'+esc(rp.title)+'</h3><p>'+esc(rp.text)+'</p>'+pill(rp.cat,tcatName(rp.cat))+((rp.img||[]).length>1?' <span class="pill" style="--pc:var(--c-garage)">'+rp.img.length+' photos</span>':'')+'</div>';
     box.appendChild(el);
   });
   rf.textContent="Showing "+reps.length+" report"+(reps.length===1?"":"s")+(reps.length>6?". Scroll inside the box to see more.":"");
