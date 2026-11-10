@@ -10,7 +10,12 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://atlanticstreetresidents.com/">
 <meta property="og:image" content="https://atlanticstreetresidents.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <link rel="canonical" href="https://atlanticstreetresidents.com/">
+<link rel="alternate" hreflang="en" href="https://atlanticstreetresidents.com/">
+<link rel="alternate" hreflang="es" href="https://atlanticstreetresidents.com/?lang=es">
+<link rel="alternate" hreflang="x-default" href="https://atlanticstreetresidents.com/">
 <link rel="alternate" type="application/rss+xml" title="355 Atlantic Street: outages and repairs" href="https://api.atlanticstreetresidents.com/feed.xml">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"355 Atlantic Street: the residents' maintenance record","url":"https://atlanticstreetresidents.com/","description":"A resident-run record of outages, shutoffs, and repairs at Atlantic Station, 355 Atlantic Street, Stamford, Connecticut.","about":{"@type":"Place","name":"Atlantic Station","alternateName":"355 Atlantic Street","address":{"@type":"PostalAddress","streetAddress":"355 Atlantic Street","addressLocality":"Stamford","addressRegion":"CT","postalCode":"06901","addressCountry":"US"}},"publisher":{"@type":"Organization","name":"Residents of 355 Atlantic Street"}}</script>
 <meta name="twitter:card" content="summary_large_image">
@@ -69,20 +74,35 @@ button{font:inherit}
 .nav nav a:hover{color:var(--harbor-ink)}
 .nav nav a.on{color:var(--harbor-ink);border-bottom-color:var(--amber)}
 .navr{margin-left:auto;display:flex;align-items:center;gap:10px}
-.lang{background:none;border:1px solid rgba(255,255,255,.25);color:var(--harbor-ink);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:14px;white-space:nowrap}
+.lang{background:none;border:1px solid rgba(255,255,255,.25);color:var(--harbor-ink);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:14px;line-height:1.2;white-space:nowrap;text-decoration:none;display:inline-block}
 .cta{background:var(--harbor-ink);color:var(--harbor);text-decoration:none;font-weight:600;font-size:14px;padding:9px 14px;border-radius:8px;white-space:nowrap}
 .cta:hover{background:#fff}
 .cta .short{display:none}
-.menu{display:none;background:none;border:1px solid rgba(255,255,255,.25);color:var(--harbor-ink);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:14px}
-@media (max-width:980px){.nav nav{gap:12px;font-size:13.5px}}
-@media (max-width:900px){
-.nav nav{display:none;position:absolute;left:0;right:0;top:56px;background:var(--harbor);flex-direction:column;gap:0;padding:6px 24px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.menu{display:none;background:none;border:1px solid rgba(255,255,255,.25);color:var(--harbor-ink);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:14px;line-height:1.2;white-space:nowrap}
+.nav nav a.lang{display:none}
+/* The steps below were measured with the real fonts in both languages; Spanish labels are wider, so it steps down sooner */
+@media (max-width:1023px){.nav nav{gap:12px;font-size:13.5px}.cta .long{display:none}.cta .short{display:inline}}
+html[lang="es"] .nav nav{gap:12px;font-size:13.5px}html[lang="es"] .cta .long{display:none}html[lang="es"] .cta .short{display:inline}
+@media (max-width:879px){
+.nav nav{display:none;position:absolute;left:0;right:0;top:56px;background:var(--harbor);flex-direction:column;gap:0;margin-left:0;padding:6px 24px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
 .nav nav.open{display:flex}
 .nav nav a{padding:12px 0;font-size:16px}
 .menu{display:inline-block}
-.cta .long{display:none}.cta .short{display:inline}
 }
-@media (max-width:420px){.brand{font-size:16px}.nav .wrap{gap:8px}.navr{gap:6px}.lang,.menu{padding:7px 8px}}
+@media (max-width:1029px){
+html[lang="es"] .nav nav{display:none;position:absolute;left:0;right:0;top:56px;background:var(--harbor);flex-direction:column;gap:0;margin-left:0;padding:6px 24px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
+html[lang="es"] .nav nav.open{display:flex}
+html[lang="es"] .nav nav a{padding:12px 0;font-size:16px}
+html[lang="es"] .menu{display:inline-block}
+}
+/* With the sections in the menu there is room for the long button label again */
+@media (min-width:620px) and (max-width:879px){.cta .long{display:inline}.cta .short{display:none}}
+@media (min-width:660px) and (max-width:1029px){html[lang="es"] .cta .long{display:inline}html[lang="es"] .cta .short{display:none}}
+@media (max-width:600px){.nav nav,html[lang="es"] .nav nav{padding-left:16px;padding-right:16px}}
+@media (max-width:480px){.brand{font-size:16px}.nav .wrap{gap:8px}.navr{gap:6px}.lang,.menu{padding:7px 8px}}
+@media (max-width:420px){.nav .wrap{padding:0 12px;gap:6px}.navr{gap:5px}.brand{font-size:15px}.lang,.menu{padding:7px 7px;font-size:13px}.cta{padding:9px 10px;font-size:13px}.nav nav,html[lang="es"] .nav nav{padding-left:12px;padding-right:12px}}
+/* Smallest phones: the language switch moves into the sections menu so nothing is pushed off the edge */
+@media (max-width:374px){.navr .lang{display:none}.nav nav a.lang,html[lang="es"] .nav nav a.lang{display:block;border:0;border-top:1px solid rgba(255,255,255,.14);border-radius:0;margin-top:6px;padding:14px 0 6px;font-size:16px;color:var(--harbor-ink)}}
 /* hero */
 .hero{background:var(--harbor);color:var(--harbor-ink);padding:36px 0 40px}
 .hero .wrap{max-width:900px}
@@ -115,6 +135,18 @@ button{font:inherit}
 .updated{font-size:14px;color:var(--harbor-muted);margin:14px 0 0}
 .updated a{color:var(--harbor-ink)}
 .skel .alert li,.skel .stats b{color:transparent;background:rgba(255,255,255,.12);border-radius:6px}
+.alert li .acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0 4px}
+.alert li .acts button{font:inherit;font-size:14px;font-weight:600;background:transparent;color:var(--harbor-ink);border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:7px 12px;min-height:38px;cursor:pointer}
+.alert li .acts button:hover{background:rgba(255,255,255,.1)}
+.alert li .acts button[disabled]{opacity:.6;cursor:default}
+.alert li .acts .said{font-size:14.5px;color:var(--harbor-muted)}
+.feeds{display:flex;flex-wrap:wrap;gap:0 22px;margin:10px 0 0;padding:0;list-style:none;font-size:14.5px}
+.feeds a,.feeds button{display:inline-flex;align-items:center;min-height:40px;padding:0;background:none;border:0;font:inherit;font-size:14.5px;color:var(--harbor-ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.alerts{margin:6px 0 0;max-width:560px}
+.alerts form{display:flex;flex-wrap:wrap;gap:8px}
+.alerts input{flex:1;min-width:200px;font:inherit;font-size:16px;color:var(--harbor-ink);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:9px 12px;min-height:44px}
+.alerts input::placeholder{color:var(--harbor-muted)}
+.alerts p{margin:8px 0 0;font-size:14.5px;color:var(--harbor-muted)}
 /* welcome */
 .welcome{background:var(--bg);border-bottom:1px solid var(--line)}
 .welcome .wrap{padding-top:14px;padding-bottom:14px}
@@ -136,6 +168,10 @@ section{padding:48px 0 8px}
 .section-note{color:var(--muted);font-size:15px;margin:0 0 16px;max-width:72ch}
 .scroller{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative;border-radius:6px}
 .scrollhint{font-size:14px;color:var(--muted);margin:6px 0 0}
+/* On narrow screens the category names sit outside the scrolling chart, so they stay put while the years slide */
+.tlwrap{position:relative}
+.tl-labels{display:none;position:absolute;left:0;top:0;bottom:0;z-index:1;background:var(--bg);border-right:1px solid var(--line);pointer-events:none}
+.tl-labels span{position:absolute;right:8px;white-space:nowrap;font-size:12px;line-height:1;color:var(--ink)}
 .timeline{min-width:760px;display:block;width:100%;height:auto}
 @media (max-width:720px){.scroller.fade{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}.timeline{min-width:660px}}
 .legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin:12px 0 0;padding:0;list-style:none;font-size:14px;color:var(--muted)}
@@ -191,6 +227,7 @@ section{padding:48px 0 8px}
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 12px}
 .search{position:relative;flex:1;min-width:200px}
 .search input{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:9px 40px 9px 12px;min-height:44px}
+.search input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;display:none}
 .search .clear{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:8px 10px;display:none}
 .search.has .clear{display:block}
 select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:9px 10px;min-height:44px}
@@ -220,6 +257,10 @@ td.dt .end{display:block;font-size:14px}
 .st{display:inline-block;font-size:13px;font-weight:600;padding:1px 8px;border-radius:10px;margin-top:4px}
 .st.open{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber-ink);border:1px solid color-mix(in srgb,var(--amber) 40%,transparent)}
 .st.res{color:var(--muted);border:1px solid var(--line-strong);font-weight:500}
+td.dt .st{display:block;width:-moz-fit-content;width:fit-content}
+td.dt .end,td.dt .dbar{white-space:normal}
+td.where .end{display:block;font-size:14px}
+.dbar{flex-wrap:wrap}
 .dbar{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:13px;color:var(--ink)}
 .dbar i{display:inline-block;height:6px;border-radius:3px;background:var(--c-water);opacity:.75;min-width:3px}
 .pill{display:inline-block;padding:2px 9px;border-radius:12px;font-size:14px;line-height:1.4;color:var(--pt);background:color-mix(in srgb,var(--pc) 13%,transparent);border:1px solid color-mix(in srgb,var(--pc) 28%,transparent)}
@@ -241,7 +282,10 @@ td .ph button{padding:0;border:0;background:none;cursor:zoom-in;border-radius:6p
 mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
 .tfoot{padding:10px 2px 0;font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
 .tfoot .btn-quiet{font-weight:600}
+.tfoot .tools{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.tfoot .link{font-size:14px;min-height:36px;padding:6px 0;color:inherit}
 .empty{padding:24px 12px;color:var(--muted)}
+.print-head{display:none}
 @media (max-width:720px){
 .tbl thead{display:none}
 .tbl,.tbl tbody{display:block}
@@ -293,6 +337,31 @@ footer .flinks{display:flex;flex-wrap:wrap;gap:6px 18px}
 .lb.on{display:flex}
 .lb img{max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
 .lb .close{position:absolute;top:12px;right:12px;background:#fff;color:#111;border:0;border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer}
+/* print: ink on white, the controls left out, every row written out in full */
+@media print{
+:root:root:root{--bg:#fff;--paper:#fff;--ink:#111;--muted:#444;--line:#ccc;--line-strong:#999;--zebra:#fff;--hover:#fff;--harbor:#fff;--harbor-ink:#111;--harbor-muted:#444;--chip:#eee;--mark:#fff;--amber:#8A5A0B;--amber-ink:#6B4508;--ok:#2F855A;
+--c-water:#2B6CB0;--c-hvac:#DD6B20;--c-elev:#6B46C1;--c-win:#2C7A7B;--c-fire:#C53030;--c-amen:#B7791F;--c-garage:#5B6779;--c-pm:#38A169;--c-clean:#0E9488;--c-you:#D53F8C;--c-other:#7C8B9A;
+--t-water:#1E4E80;--t-hvac:#93410F;--t-elev:#52309A;--t-win:#1B5657;--t-fire:#9B1F1F;--t-amen:#734A0C;--t-garage:#3F4957;--t-pm:#1F5F3A;--t-clean:#0A5A52;--t-you:#9C1F60;--t-other:#4F5B68}
+html{scroll-behavior:auto}
+body{font-size:11pt;background:#fff}
+.nav,.skip,.welcome,.notice,.toolbar,.chips,.actions,.feeds,.alerts,.acts,.rowacts,.tfoot button,.tfoot .tools,.seg,.scrollhint,.tip,.toast,.lb,.tl-labels,#calMore,#calListBtn,footer .flinks{display:none!important}
+.hero{padding:0 0 10pt}
+.hero h1{font-size:26pt}
+.alert{background:none;border:1px solid #999;border-left-width:4px}
+.stats div{border-top-color:#999}
+section{padding:16pt 0 0}
+h2,h3{break-after:avoid}
+.tablebox{border:0}
+.tbl th{position:static}
+.tbl tr,.report,.chart,.cal-year{break-inside:avoid}
+td.what .x{display:block!important;-webkit-line-clamp:unset!important;overflow:visible}
+.scroller{overflow:visible!important;-webkit-mask-image:none!important;mask-image:none!important}
+.timeline,.cal-year svg.strip{min-width:0}
+.report img{max-height:2.4in;object-fit:contain}
+.print-head{display:block;font-size:10pt;color:#444;margin:0 0 8pt}
+body.print-log .hero,body.print-log main>section:not(#logSec),body.print-log footer{display:none!important}
+body.print-log #logSec{padding-top:0}
+}
 </style>
 </head>
 <body>
@@ -300,9 +369,9 @@ footer .flinks{display:flex;flex-wrap:wrap;gap:6px 18px}
 
 <header class="nav"><div class="wrap">
 <a class="brand" href="#top">355 Atlantic Street</a>
-<nav id="nav" aria-label="Sections"><a href="#tl-h" data-i18n="nav.timeline">Timeline</a><a href="#cal-h" data-i18n="nav.calendar">Calendar</a><a href="#ch-h" data-i18n="nav.patterns">Patterns</a><a href="#you-h" data-i18n="nav.tickets">Tickets</a><a href="#rep-h" data-i18n="nav.reports">Building issues</a><a href="#log-h" data-i18n="nav.log">Full log</a><a href="#meth-h" data-i18n="nav.methods">Methods</a></nav>
+<nav id="nav" aria-label="Sections"><a href="#tl-h" data-i18n="nav.timeline">Timeline</a><a href="#cal-h" data-i18n="nav.calendar">Calendar</a><a href="#ch-h" data-i18n="nav.patterns">Patterns</a><a href="#you-h" data-i18n="nav.tickets">Tickets</a><a href="#rep-h" data-i18n="nav.reports">Building issues</a><a href="#log-h" data-i18n="nav.log">Full log</a><a href="#meth-h" data-i18n="nav.methods">Methods</a><a class="lang" id="langBtn2" href="?lang=es" hreflang="es" lang="es">Español</a></nav>
 <div class="navr">
-<button class="lang" id="langBtn" type="button" lang="es">Español</button>
+<a class="lang" id="langBtn" href="?lang=es" hreflang="es" lang="es">Español</a>
 <button class="menu" id="menuBtn" type="button" aria-expanded="false" aria-controls="nav" data-i18n="nav.sections">Sections</button>
 <a class="cta" href="submit.html"><span class="long" data-i18n="cta.long">Submit a ticket or report</span><span class="short" data-i18n="cta.short">Submit</span></a>
 </div>
@@ -312,14 +381,20 @@ footer .flinks{display:flex;flex-wrap:wrap;gap:6px 18px}
 <p class="kicker" data-i18n="hero.kicker">355 Atlantic Street, Stamford, Connecticut</p>
 <h1 data-i18n="hero.h1">The residents' maintenance record</h1>
 <div class="board">
-<div class="alert" id="alert" role="region" aria-labelledby="alertH"><h2 id="alertH"><span class="dot" aria-hidden="true"></span><span data-i18n="hero.activeNow">Active now</span></h2><ul id="activeList"><li data-i18n="hero.loading">Loading the record…</li></ul></div>
-<div class="alert soon" id="soon" role="region" aria-labelledby="soonH" hidden><h2 id="soonH"><span class="dot" aria-hidden="true"></span><span data-i18n="hero.comingUp">Coming up</span></h2><ul id="soonList"></ul></div>
+<div class="alert" id="alert" role="region" aria-labelledby="alertH"><h2 id="alertH"><span class="dot" aria-hidden="true"></span><span data-i18n="hero.activeNow">Active now</span></h2><ul id="activeList"><!--b:active--><li data-i18n="hero.loading">Loading the record…</li><!--/b:active--></ul></div>
+<div class="alert soon" id="soon" role="region" aria-labelledby="soonH" hidden><h2 id="soonH"><span class="dot" aria-hidden="true"></span><span data-i18n="hero.comingUp">Coming up</span></h2><ul id="soonList"><!--b:soon--><!--/b:soon--></ul></div>
 </div>
-<ul class="facts" id="facts"></ul>
-<div class="stats" id="stats"><div><b>—</b><span data-i18n="stats.problems">outages and problems on record</span></div><div><b>—</b><span data-i18n="stats.water">unplanned water and hot water outages</span></div><div><b>—</b><span data-i18n="stats.recent">new outages and problems in the last 30 days</span></div></div>
+<ul class="facts" id="facts"><!--b:facts--><!--/b:facts--></ul>
+<div class="stats" id="stats"><!--b:stats--><div><b>—</b><span data-i18n="stats.problems">outages and problems on record</span></div><div><b>—</b><span data-i18n="stats.water">unplanned water and hot water outages</span></div><div><b>—</b><span data-i18n="stats.recent">new outages and problems in the last 30 days</span></div><!--/b:stats--></div>
 <p class="sub" data-i18n="hero.sub">Compiled from the building's own email notices, from tickets and reports residents share, and from the residents' Discord. Outage and repair notices post automatically, and announcements such as rent reminders are left out; resident tickets and reports are reviewed before they appear.</p>
 <div class="actions"><a class="btn" href="submit.html" data-i18n="hero.add">Add your ticket or report</a><a class="btn secondary" href="#log-h" data-i18n="hero.browse">Browse the log</a></div>
-<p class="updated" id="updated"></p>
+<ul class="feeds" id="feeds"><li><a href="webcal://api.atlanticstreetresidents.com/calendar.ics" data-i18n="feeds.cal">Add outages and planned work to your calendar</a></li><li><a href="https://api.atlanticstreetresidents.com/feed.xml" data-i18n="feeds.rss">News feed (RSS)</a></li><li id="alertsLi" hidden><button type="button" id="alertsBtn" aria-expanded="false" aria-controls="alertsBox" data-i18n="alerts.open">Get email alerts</button></li></ul>
+<div class="alerts" id="alertsBox" hidden>
+<form id="alertsForm" novalidate><label class="sr-only" for="alertsEmail" data-i18n="alerts.label">Email address</label><input type="email" id="alertsEmail" autocomplete="email" maxlength="120" required placeholder="Email address" data-i18n-attr="placeholder:alerts.label"><button class="btn" type="submit" id="alertsSend" data-i18n="alerts.send">Sign up</button></form>
+<p data-i18n="alerts.note">One email to confirm, then an email when a new outage is posted and when it is fixed. Every email has an unsubscribe link, and your address is never published.</p>
+<p id="alertsStatus" role="status" aria-live="polite"></p>
+</div>
+<p class="updated" id="updated"><!--b:updated--><!--/b:updated--></p>
 </div></section>
 
 <aside class="welcome" id="welcome" aria-label="How this site works" data-i18n-attr="aria-label:welcome.title"><div class="wrap">
@@ -340,14 +415,14 @@ footer .flinks{display:flex;flex-wrap:wrap;gap:6px 18px}
 <section aria-labelledby="tl-h">
 <h2 id="tl-h" data-i18n="tl.h">Every incident on record</h2>
 <p class="section-note" data-i18n="tl.note">One mark per incident: tall marks are outages, short marks planned work, faint marks announcements. Wide marks lasted several days, and striped marks are still going. Hover or tap a mark for details; click it to open that entry in the log.</p>
-<div class="scroller fade" id="tlScroll" tabindex="0" aria-labelledby="tl-h"><svg id="timeline" class="timeline" role="img" aria-label="Timeline of maintenance incidents by category"></svg></div>
+<div class="tlwrap"><div class="tl-labels" id="tlLabels" aria-hidden="true"></div><div class="scroller fade" id="tlScroll" tabindex="0" aria-labelledby="tl-h"><svg id="timeline" class="timeline" role="img" aria-label="Timeline of maintenance incidents by category"></svg></div></div>
 <p class="scrollhint" id="tlHint" data-i18n="tl.hint">Drag sideways to see other years.</p>
 <ul class="legend"><li><span class="mk u"></span><span data-i18n="tl.u">Outage or emergency</span></li><li><span class="mk s"></span><span data-i18n="tl.s">Planned work</span></li><li><span class="mk n"></span><span data-i18n="tl.n">Announcement</span></li><li><span class="mk o"></span><span data-i18n="tl.o">Still going</span></li><li><span class="mk r"></span><span data-i18n="tl.r">Resident maintenance ticket</span></li><li><span class="mk rp"></span><span data-i18n="tl.rp">Building issue report</span></li></ul>
 </section>
 
 <section aria-labelledby="cal-h">
 <h2 id="cal-h" data-i18n="cal.h">Days affected, month by month</h2>
-<p class="section-note" id="calStat"></p>
+<p class="section-note" id="calStat"><!--b:calstat--><!--/b:calstat--></p>
 <fieldset class="seg"><legend class="sr-only" data-i18n="cal.mode.label">Which incidents to show on the calendar</legend>
 <label><input type="radio" name="calmode" value="all" checked> <span data-i18n="cal.mode.all">Everything</span></label>
 <label><input type="radio" name="calmode" value="core"> <span data-i18n="cal.mode.core">Water and heat</span></label>
@@ -380,7 +455,7 @@ footer .flinks{display:flex;flex-wrap:wrap;gap:6px 18px}
 <div class="search"><input type="search" id="tq" placeholder="Search tickets" aria-label="Search tickets" data-i18n-attr="placeholder:tk.search;aria-label:tk.search"><button class="clear" type="button" aria-label="Clear search" data-i18n-attr="aria-label:clear">×</button></div>
 </div>
 <div class="tablebox">
-<table class="tbl" id="tickets"><colgroup><col style="width:130px"><col style="width:200px"><col style="width:170px"><col></colgroup><thead><tr><th data-k="d" aria-sort="descending"><button type="button" data-i18n="th.date">Date</button></th><th data-k="cat"><button type="button" data-i18n="th.cat">Category</button></th><th data-k="w"><button type="button" data-i18n="th.where">Where</button></th><th data-i18n="th.what">What happened</th></tr></thead><tbody id="ticketBody"></tbody></table>
+<table class="tbl" id="tickets"><colgroup><col style="width:130px"><col style="width:200px"><col style="width:170px"><col></colgroup><thead><tr><th data-k="d" aria-sort="descending"><button type="button" data-i18n="th.date">Date</button></th><th data-k="cat"><button type="button" data-i18n="th.cat">Category</button></th><th data-k="w"><button type="button" data-i18n="th.where">Where</button></th><th data-i18n="th.what">What happened</th></tr></thead><tbody id="ticketBody"><!--b:tickets--><!--/b:tickets--></tbody></table>
 <p class="empty" id="tempty" hidden data-i18n="tk.empty">No tickets match.</p>
 </div>
 <div class="tfoot" id="tfoot"></div>
@@ -390,13 +465,19 @@ footer .flinks{display:flex;flex-wrap:wrap;gap:6px 18px}
 <section aria-labelledby="rep-h">
 <h2 id="rep-h" data-i18n="rp.h">Reported building issues</h2>
 <p class="section-note" data-i18n="rp.note">Issues residents have seen in the building, with photos. Every one is reviewed before it appears.</p>
-<div class="reports" id="reports"></div>
+<div class="toolbar">
+<select id="rCat" aria-label="Filter building issues by category" data-i18n-attr="aria-label:rp.filter"><option value="" data-i18n="tk.allcats">All categories</option></select>
+<div class="search"><input type="search" id="rq" placeholder="Search building issues" aria-label="Search building issues" data-i18n-attr="placeholder:rp.search;aria-label:rp.search"><button class="clear" type="button" aria-label="Clear search" data-i18n-attr="aria-label:clear">×</button></div>
+</div>
+<div class="reports" id="reports"><!--b:reports--><!--/b:reports--></div>
+<p class="empty" id="rempty" hidden data-i18n="log.empty">Nothing matches those filters.</p>
 <div class="tfoot" id="rfoot"></div>
 <div class="actions"><a class="btn" href="submit.html#report" data-i18n="rp.add">Report a building issue</a></div>
 </section>
 
-<section aria-labelledby="log-h">
+<section aria-labelledby="log-h" id="logSec">
 <h2 id="log-h" data-i18n="log.h">Full incident log</h2>
+<p class="print-head" id="printHead"></p>
 <p class="section-note" data-i18n="log.note">Building notices, resident tickets and planned work in one place. The bar under a water incident shows how long it lasted; an amber edge marks something still going.</p>
 <div class="chips" id="catChips" role="group" aria-label="Filter by category" data-i18n-attr="aria-label:log.filter"></div>
 <div class="toolbar">
@@ -405,7 +486,7 @@ footer .flinks{display:flex;flex-wrap:wrap;gap:6px 18px}
 <div class="search"><input type="search" id="q" placeholder="Search, e.g. floors 17–26, elevator, leak" aria-label="Search incidents" data-i18n-attr="placeholder:log.search;aria-label:log.searchLabel"><button class="clear" type="button" aria-label="Clear search" data-i18n-attr="aria-label:clear">×</button></div>
 </div>
 <div class="tablebox">
-<table class="tbl" id="log"><colgroup><col style="width:150px"><col style="width:190px"><col style="width:120px"><col><col style="width:150px"></colgroup><thead><tr><th data-k="d" aria-sort="descending"><button type="button" data-i18n="th.date">Date</button></th><th data-k="c"><button type="button" data-i18n="th.cat">Category</button></th><th data-k="t"><button type="button" data-i18n="th.type">Type</button></th><th data-i18n="th.what">What happened</th><th data-i18n="th.where">Where</th></tr></thead><tbody id="logBody"></tbody></table>
+<table class="tbl" id="log"><colgroup><col style="width:150px"><col style="width:190px"><col style="width:120px"><col><col style="width:150px"></colgroup><thead><tr><th data-k="d" aria-sort="descending"><button type="button" data-i18n="th.date">Date</button></th><th data-k="c"><button type="button" data-i18n="th.cat">Category</button></th><th data-k="t"><button type="button" data-i18n="th.type">Type</button></th><th data-i18n="th.what">What happened</th><th data-i18n="th.where">Where</th></tr></thead><tbody id="logBody"><!--b:log--><!--/b:log--></tbody></table>
 <p class="empty" id="empty" hidden data-i18n="log.empty">Nothing matches those filters.</p>
 </div>
 <div class="tfoot" id="lfoot"></div>
@@ -452,6 +533,7 @@ footer .flinks{display:flex;flex-wrap:wrap;gap:6px 18px}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Photo" tabindex="-1"><button type="button" class="close" id="lbClose" data-i18n="close">Close</button><img alt=""></div>
 
+<!--b:data--><!--/b:data-->
 <script>
 (function(){
 "use strict";
@@ -459,9 +541,12 @@ var API="https://api.atlanticstreetresidents.com";
 var SITE="https://atlanticstreetresidents.com";
 var DAY=86400000, NL=String.fromCharCode(10);
 var TODAY=(function(){var n=new Date();return Date.UTC(n.getFullYear(),n.getMonth(),n.getDate());})();
-var narrow=window.matchMedia("(max-width:720px)");
+var narrow=window.matchMedia("(max-width:720px)"),tlPin=window.matchMedia("(max-width:840px)");
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){}return null;}
-var LANG=(function(){var q=/[?&]lang=(en|es)\b/.exec(location.search);if(q)return q[1];var s=store("asr_lang");if(s==="en"||s==="es")return s;return /^es\b/i.test(navigator.language||"")?"es":"en";})();
+var QS=(function(){var o={};location.search.replace(/^\?/,"").split("&").forEach(function(p){if(!p)return;var i=p.indexOf("=");try{o[decodeURIComponent(i<0?p:p.slice(0,i))]=i<0?"":decodeURIComponent(p.slice(i+1).replace(/\+/g," "));}catch(e){}});return o;})();
+// LANG_SET: the address names a language (?lang=es), so links made from this page keep naming it
+var LANG_SET=QS.lang==="en"||QS.lang==="es";
+var LANG=(function(){if(LANG_SET)return QS.lang;var s=store("asr_lang");if(s==="en"||s==="es")return s;return /^es\b/i.test(navigator.language||"")?"es":"en";})();
 
 // ---------- words ----------
 var I18N={en:{
@@ -486,7 +571,12 @@ var I18N={en:{
 "type.U":"Outage","type.S":"Planned work","type.N":"Announcement","type.R":"Resident ticket","type.Rs":"Ticket","type.report":"Building issue",
 "thanks.h":"A note about the people who keep this building running","thanks.p1":"The residents behind this record appreciate the hard work of the building's staff, the maintenance team and the concierge desk in particular, who show up for every one of the incidents listed here and many that never make a notice.","thanks.p2":"This site exists for informational purposes only. Its hope is simple: that awareness of how often things go wrong, and for how long, brings improved living conditions for everyone in the building.",
 "meth.h":"Methods and limitations","meth.src.h":"Where the data comes from","meth.src.p":"Three sources feed this record. The first is the building's own email notices: the messages the building's notification system sends residents, grouped into incidents so that a multi-day outage with six update emails counts once. New notices are checked automatically as they arrive. Outages, repairs and planned work are added, with the category, type and affected floors read from the notice; rent reminders, parking warnings, events and other announcements are left out. The second is residents themselves, through the tickets and reports submitted on this site or emailed to it. The third is the residents' Discord, a chat that residents started during the February 2026 shutoff: its history from February to September 2026 was read through, and the problems residents described there were summarized into entries, each noting how many people reported it. Photos from the chat were included only where they show the problem itself.","meth.count.h":"How things are counted","meth.count.l1":"An incident is an “outage” when the building called it an emergency, an outage, a failure, or a leak, and “planned work” when it was announced in advance. Everything else is an announcement.","meth.count.l2":"Floors come from the notice. When a notice named no floors, the incident is counted for the whole building.","meth.count.l3":"An outage stays “still going” until the building announces it is fixed, or a resident or the site's editor marks it resolved. Water and heat outages with no restoration notice are assumed to have ended the same day, and end dates marked “about” are estimates.","meth.count.l4":"Durations for water incidents come from the timestamps of the building's own emails. Where the building said cold water was back but hot water was not, the hot water date is the one used.","meth.keep.h":"What to keep in mind","meth.keep.p1":"Resident tickets and reports are self-reported. They describe lived experience in the words of the person who submitted them and are not verified by the building or by anyone else. They can contain mistakes, duplicates, and opinions, and they are reviewed only for relevance and privacy before they appear here, not for accuracy.","meth.keep.p2":"Entries drawn from the residents' Discord are summaries of what people said in the chat, with names, unit numbers, and anything identifying removed. Where the chat described an event the building had also announced, the entry appears as a report alongside the notice rather than as a second incident, so nothing is counted twice.","meth.keep.p3":"The building's own notices on file go back to late 2020; anything earlier appears only where residents have added it.","meth.keep.p4":"Building notices are summarized, not reproduced. The automatic reading of new notices can file something under the wrong category, miss the floors, or leave out a notice that mattered; those errors are corrected as they are noticed.","meth.keep.p5":"This site is run by residents and has no connection to the building's ownership or management. Corrections and missed notices are welcome through the report form.",
-"foot.p1":"Management changed hands three times in this period: Greystar (for owner RXR) in 2020, AVE from January 2022, Greystar again by mid-2022, and Bozzuto since June 2025.","foot.p2":"Photos submitted with tickets and reports are re-encoded in the browser before upload, which removes location and device data.","foot.p3":"About the building: Atlantic Station is the apartment tower at 355 Atlantic Street, Stamford, Connecticut 06901, in downtown Stamford near the Stamford Transportation Center, with residences on floors 6 through 26. It is managed by Bozzuto and was previously managed by Greystar and AVE for its owner, RXR. This independent, resident-run site records maintenance at Atlantic Station: hot water and heating outages, water shutoffs, elevator and garage problems, and other building issues at 355 Atlantic Street, drawn from the building's own notices and from residents' reports.","feeds.cal":"Add outages and planned work to your calendar","feeds.rss":"News feed (RSS)","foot.admin":"Admin"
+"foot.p1":"Management changed hands three times in this period: Greystar (for owner RXR) in 2020, AVE from January 2022, Greystar again by mid-2022, and Bozzuto since June 2025.","foot.p2":"Photos submitted with tickets and reports are re-encoded in the browser before upload, which removes location and device data.","foot.p3":"About the building: Atlantic Station is the apartment tower at 355 Atlantic Street, Stamford, Connecticut 06901, in downtown Stamford near the Stamford Transportation Center, with residences on floors 6 through 26. It is managed by Bozzuto and was previously managed by Greystar and AVE for its owner, RXR. This independent, resident-run site records maintenance at Atlantic Station: hot water and heating outages, water shutoffs, elevator and garage problems, and other building issues at 355 Atlantic Street, drawn from the building's own notices and from residents' reports.","feeds.cal":"Add outages and planned work to your calendar","feeds.rss":"News feed (RSS)","foot.admin":"Admin",
+"doc.title":"Atlantic Station, 355 Atlantic Street, Stamford CT: the residents' maintenance record","doc.desc":"Every outage, shutoff, and repair at Atlantic Station, the apartment building at 355 Atlantic Street in downtown Stamford, Connecticut: hot water, heat, elevators, garage, and other building issues, compiled by residents from the building's own notices and residents' reports.",
+"cf.label":"Is this still out?","cf.still":"Still out","cf.fixed":"It's fixed","cf.thanks":"Thanks. The site's editor reviews it before anything changes.","cf.err":"That didn't go through. Try again in a minute.",
+"alerts.open":"Get email alerts","alerts.label":"Email address","alerts.send":"Sign up","alerts.note":"One email to confirm, then an email when a new outage is posted and when it is fixed. Every email has an unsubscribe link, and your address is never published.","alerts.sent":"Check your inbox for a link to confirm.","alerts.bad":"That doesn't look like an email address.",
+"rp.filter":"Filter building issues by category","rp.search":"Search building issues","log.alsoReports":"{n} building issue reports also match","log.alsoReport1":"1 building issue report also matches",
+"tool.copy":"Copy link to this view","tool.csv":"Download (CSV)","tool.print":"Print","csv.end":"End","csv.details":"Details","csv.duration":"Duration","csv.status":"Status","csv.link":"Link"
 },es:{
 "skip":"Ir al registro","nav.timeline":"Cronología","nav.calendar":"Calendario","nav.patterns":"Patrones","nav.tickets":"Solicitudes","nav.reports":"Problemas del edificio","nav.log":"Registro completo","nav.methods":"Métodos","nav.sections":"Secciones","cta.long":"Enviar una solicitud o reporte","cta.short":"Enviar","lang.other":"English",
 "hero.kicker":"355 Atlantic Street, Stamford, Connecticut","hero.region":"Estado actual","hero.h1":"El registro de mantenimiento de los residentes","hero.loading":"Cargando el registro…","hero.activeNow":"Activo ahora","hero.comingUp":"Próximamente","hero.nothing":"Nada activo en este momento. No se ha reportado recientemente ninguna interrupción ni problema abierto.","hero.more":"y {n} más en el registro","hero.err":"No se pudieron cargar los datos. Inténtelo de nuevo en un minuto.",
@@ -509,7 +599,12 @@ var I18N={en:{
 "type.U":"Interrupción","type.S":"Trabajo programado","type.N":"Anuncio","type.R":"Solicitud de residente","type.Rs":"Solicitud","type.report":"Problema del edificio",
 "thanks.h":"Una nota sobre quienes mantienen el edificio en marcha","thanks.p1":"Los residentes detrás de este registro agradecen el trabajo del personal del edificio, en especial del equipo de mantenimiento y de la conserjería, que responden a cada uno de los incidentes de esta lista y a muchos que nunca llegan a un aviso.","thanks.p2":"Este sitio existe solo con fines informativos. Su esperanza es simple: que saber con qué frecuencia fallan las cosas, y por cuánto tiempo, lleve a mejores condiciones de vida para todos en el edificio.",
 "meth.h":"Métodos y limitaciones","meth.src.h":"De dónde vienen los datos","meth.src.p":"Tres fuentes alimentan este registro. La primera son los avisos por correo del propio edificio: los mensajes que el sistema de notificaciones envía a los residentes, agrupados en incidentes para que una interrupción de varios días con seis correos de actualización cuente una sola vez. Los avisos nuevos se revisan automáticamente al llegar. Se agregan las interrupciones, reparaciones y trabajos programados, con la categoría, el tipo y los pisos afectados tomados del aviso; se omiten los recordatorios de renta, advertencias de estacionamiento, eventos y otros anuncios. La segunda son los propios residentes, mediante las solicitudes y reportes enviados en este sitio o por correo. La tercera es el Discord de los residentes, un chat que empezaron durante el corte de febrero de 2026: se leyó su historial de febrero a septiembre de 2026 y los problemas descritos allí se resumieron en entradas, cada una con cuántas personas lo reportaron. Se incluyeron fotos del chat solo cuando muestran el problema en sí.","meth.count.h":"Cómo se cuentan las cosas","meth.count.l1":"Un incidente es una “interrupción” cuando el edificio lo llamó emergencia, interrupción, falla o fuga, y “trabajo programado” cuando se anunció con anticipación. Todo lo demás es un anuncio.","meth.count.l2":"Los pisos provienen del aviso. Cuando un aviso no nombró pisos, el incidente se cuenta para todo el edificio.","meth.count.l3":"Una interrupción sigue como “continúa” hasta que el edificio anuncia que se resolvió, o un residente o el editor del sitio la marca como resuelta. Las interrupciones de agua y calefacción sin aviso de restablecimiento se consideran terminadas el mismo día, y las fechas de fin marcadas como “aprox.” son estimaciones.","meth.count.l4":"La duración de los incidentes de agua proviene de la hora de los propios correos del edificio. Cuando el edificio dijo que el agua fría volvió pero el agua caliente no, se usa la fecha del agua caliente.","meth.keep.h":"Qué tener en cuenta","meth.keep.p1":"Las solicitudes y reportes de residentes son autorreportados. Describen la experiencia vivida con las palabras de quien los envió y no los verifica el edificio ni nadie más. Pueden contener errores, duplicados y opiniones, y se revisan solo por pertinencia y privacidad antes de publicarse, no por exactitud.","meth.keep.p2":"Las entradas tomadas del Discord de los residentes son resúmenes de lo que se dijo en el chat, sin nombres, números de apartamento ni nada que identifique a alguien. Cuando el chat describió un evento que el edificio también anunció, la entrada aparece como reporte junto al aviso y no como un segundo incidente, para no contar nada dos veces.","meth.keep.p3":"Los avisos del edificio en archivo se remontan a finales de 2020; cualquier cosa anterior aparece solo donde los residentes la agregaron.","meth.keep.p4":"Los avisos del edificio se resumen, no se reproducen. La lectura automática de los avisos nuevos puede archivar algo en la categoría equivocada, omitir los pisos o dejar fuera un aviso importante; esos errores se corrigen a medida que se notan.","meth.keep.p5":"Este sitio lo mantienen residentes y no tiene relación con los dueños ni la administración del edificio. Las correcciones y los avisos omitidos son bienvenidos mediante el formulario de reportes.",
-"foot.p1":"La administración cambió de manos tres veces en este periodo: Greystar (para el dueño RXR) en 2020, AVE desde enero de 2022, Greystar de nuevo a mediados de 2022 y Bozzuto desde junio de 2025.","foot.p2":"Las fotos enviadas con solicitudes y reportes se vuelven a codificar en el navegador antes de subirse, lo que elimina los datos de ubicación y del dispositivo.","foot.p3":"Sobre el edificio: Atlantic Station es la torre de apartamentos en 355 Atlantic Street, Stamford, Connecticut 06901, en el centro de Stamford cerca del Stamford Transportation Center, con residencias en los pisos 6 a 26. La administra Bozzuto y antes la administraron Greystar y AVE para su dueño, RXR. Este sitio independiente, mantenido por residentes, registra el mantenimiento en Atlantic Station: interrupciones de agua caliente y calefacción, cortes de agua, problemas de ascensores y del garaje y otros problemas del edificio en 355 Atlantic Street, a partir de los avisos del propio edificio y de los reportes de residentes.","feeds.cal":"Agregue interrupciones y trabajos programados a su calendario","feeds.rss":"Canal de noticias (RSS)","foot.admin":"Administración"
+"foot.p1":"La administración cambió de manos tres veces en este periodo: Greystar (para el dueño RXR) en 2020, AVE desde enero de 2022, Greystar de nuevo a mediados de 2022 y Bozzuto desde junio de 2025.","foot.p2":"Las fotos enviadas con solicitudes y reportes se vuelven a codificar en el navegador antes de subirse, lo que elimina los datos de ubicación y del dispositivo.","foot.p3":"Sobre el edificio: Atlantic Station es la torre de apartamentos en 355 Atlantic Street, Stamford, Connecticut 06901, en el centro de Stamford cerca del Stamford Transportation Center, con residencias en los pisos 6 a 26. La administra Bozzuto y antes la administraron Greystar y AVE para su dueño, RXR. Este sitio independiente, mantenido por residentes, registra el mantenimiento en Atlantic Station: interrupciones de agua caliente y calefacción, cortes de agua, problemas de ascensores y del garaje y otros problemas del edificio en 355 Atlantic Street, a partir de los avisos del propio edificio y de los reportes de residentes.","feeds.cal":"Agregue interrupciones y trabajos programados a su calendario","feeds.rss":"Canal de noticias (RSS)","foot.admin":"Administración",
+"doc.title":"Atlantic Station, 355 Atlantic Street, Stamford CT: el registro de mantenimiento de los residentes","doc.desc":"Cada interrupción, corte y reparación en Atlantic Station, el edificio de apartamentos en 355 Atlantic Street, en el centro de Stamford, Connecticut: agua caliente, calefacción, ascensores, garaje y otros problemas del edificio, recopilados por residentes a partir de los avisos del propio edificio y de los reportes de residentes.",
+"cf.label":"¿Sigue así?","cf.still":"Sigue igual","cf.fixed":"Ya se arregló","cf.thanks":"Gracias. El editor del sitio lo revisa antes de cambiar algo.","cf.err":"No se pudo enviar. Inténtelo de nuevo en un minuto.",
+"alerts.open":"Recibir alertas por correo","alerts.label":"Correo electrónico","alerts.send":"Suscribirse","alerts.note":"Un correo para confirmar y luego un correo cuando se publique una nueva interrupción y cuando se resuelva. Cada correo tiene un enlace para darse de baja, y su dirección nunca se publica.","alerts.sent":"Revise su correo y abra el enlace para confirmar.","alerts.bad":"Eso no parece un correo electrónico.",
+"rp.filter":"Filtrar problemas del edificio por categoría","rp.search":"Buscar problemas del edificio","log.alsoReports":"{n} reportes de problemas del edificio también coinciden","log.alsoReport1":"1 reporte de un problema del edificio también coincide",
+"tool.copy":"Copiar enlace a esta vista","tool.csv":"Descargar (CSV)","tool.print":"Imprimir","csv.end":"Fin","csv.details":"Detalles","csv.duration":"Duración","csv.status":"Estado","csv.link":"Enlace"
 }};
 function t(k,v){var s=(I18N[LANG]&&I18N[LANG][k]!=null)?I18N[LANG][k]:(I18N.en[k]!=null?I18N.en[k]:k);if(v)s=s.replace(/\{(\w+)\}/g,function(m,n){return v[n]!=null?v[n]:m;});return s;}
 var MONTHS={en:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],es:["ene","feb","mar","abr","may","jun","jul","ago","sept","oct","nov","dic"]};
@@ -575,7 +670,19 @@ function cleanTitle(s){
 function cleanText(x){
   return String(x||"").replace(/^\s*(atlantic-station\s*)?(welcome to atlantic station( west)?!?\s*)?(atlantic sta(?:tion|ton)\s*)?(\bAS\b\s*)?\.?\s*/i,"").replace(/^(dear|good (morning|afternoon|evening)|hello|hi)\b[^,.:!]{0,60}[,.:!]\s*/i,"").trim();
 }
-function placeName(w){return String(w||"").replace(/–(\d)/g,"–$1");}
+// Fixed place names and duration words in Spanish; an entry's own title and description stay as written
+var PLACES_ES={"Whole building":"Todo el edificio","Upper floors":"Pisos altos","Lower floors":"Pisos bajos","All units":"Todos los apartamentos","Selected units":"Algunos apartamentos","Some apartments":"Algunos apartamentos","Garage":"Garaje","Amenities":"Amenidades","Exterior":"Exterior","Lobby":"Vestíbulo","Pool":"Piscina","Gym":"Gimnasio","Yoga":"Yoga","Yoga room":"Sala de yoga","Package":"Paquetes","Package room":"Sala de paquetes","Trash Chute":"Ducto de basura","Chute rooms":"Cuartos de basura","Driveway":"Entrada de autos","Entrance":"Entrada","Street":"Calle","Corridor":"Pasillo","Service corridor":"Pasillo de servicio"};
+function placeName(w){
+  w=String(w||"");
+  if(LANG!=="es"||!w)return w;
+  if(PLACES_ES[w])return PLACES_ES[w];
+  return w.replace(/^One stack, floors /,"Una línea, pisos ").replace(/^Floors /,"Pisos ").replace(/^(\d{1,2})(?:st|nd|rd|th) floor$/,"Piso $1");
+}
+function durT(d){
+  d=String(d||"");
+  if(LANG!=="es"||!d)return d;
+  return d.replace(/same day \(no restoration notice\)/i,"mismo día (sin aviso de restablecimiento)").replace(/\bsame day\b/i,"mismo día").replace(/ongoing at time of notice/i,"en curso al momento del aviso").replace(/\bnot announced\b/i,"no anunciado").replace(/\bovernight\b/i,"durante la noche").replace(/\bexpected\b/i,"previsto").replace(/\bintermittent\b/i,"intermitente").replace(/\bdays\b/g,"días").replace(/\bday\b/g,"día");
+}
 // Floors as numbers: upper = 17–26, lower = 6–16
 function floorRange(w){
   w=String(w||"");
@@ -589,7 +696,37 @@ function floorRange(w){
 }
 function reachesUpper(w){var f=floorRange(w);return !!f&&f.hi>=17&&f.lo<=26;}
 function reachesLower(w){var f=floorRange(w);return !!f&&f.lo<=16&&f.hi>=6;}
-var APP={rows:[],reports:[],reportRows:[],focus:null};
+var APP={rows:[],reports:[],reportRows:[],focus:null,caps:{}};
+
+// ---------- the current view lives in the address, so a filtered view can be shared ----------
+// q, type, cats, sort: the full log.  tq, tcat, tsort: tickets.  rq, rcat: building issues.  cal, years: the calendar.
+(function(){
+  function sortOf(v){var m=/^([a-z]+)(-?)$/.exec(v||"");return m?{k:m[1],desc:m[2]==="-"}:{k:"d",desc:true};}
+  var ls=sortOf(QS.sort),ts=sortOf(QS.tsort);
+  APP.lst={sortK:ls.k,desc:ls.desc,raw:QS.q||"",term:fold((QS.q||"").trim()),cat:"",type:/^[USNR]$/.test(QS.type||"")?QS.type:"",limit:null};
+  APP.tst={sortK:ts.k,desc:ts.desc,raw:QS.tq||"",term:fold((QS.tq||"").trim()),cat:QS.tcat||"",type:"",limit:null};
+  APP.rst={raw:QS.rq||"",term:fold((QS.rq||"").trim()),cat:QS.rcat||"",limit:6};
+  if(QS.cats){var act={};CATS.forEach(function(c){act[c.k]=(","+QS.cats+",").indexOf(","+c.k+",")>=0;});if(CATS.some(function(c){return act[c.k];}))APP.logActive=act;}
+  if(/^(core|water)$/.test(QS.cal||""))APP.calMode=QS.cal;
+  if(QS.years==="all")APP.calShowAll=true;
+})();
+function viewQuery(){
+  var p=[];function add(k,v){if(v!==""&&v!=null)p.push(k+"="+encodeURIComponent(v).replace(/%20/g,"+").replace(/%2C/gi,","));}
+  if(LANG_SET)add("lang",LANG);
+  if(QS.data)add("data",QS.data);
+  var l=APP.lst,k=APP.tst,r=APP.rst;
+  add("q",l.raw.trim());add("type",l.type);
+  if(APP.logActive&&!CATS.every(function(c){return APP.logActive[c.k];}))add("cats",CATS.filter(function(c){return APP.logActive[c.k];}).map(function(c){return c.k;}).join(","));
+  if(!(l.sortK==="d"&&l.desc))add("sort",l.sortK+(l.desc?"-":""));
+  add("tq",k.raw.trim());add("tcat",k.cat);
+  if(!(k.sortK==="d"&&k.desc))add("tsort",k.sortK+(k.desc?"-":""));
+  add("rq",r.raw.trim());add("rcat",r.cat);
+  if(APP.calMode&&APP.calMode!=="all")add("cal",APP.calMode);
+  if(APP.calShowAll)add("years","all");
+  return p.length?"?"+p.join("&"):"";
+}
+var syncT=0;
+function syncUrl(){clearTimeout(syncT);syncT=setTimeout(function(){try{history.replaceState(null,"",location.pathname+viewQuery()+location.hash);}catch(e){}},250);}
 
 // ---------- tooltip, toast, lightbox ----------
 var tipEl=document.getElementById("tip");
@@ -605,30 +742,51 @@ lb.addEventListener("click",function(e){if(e.target!==lbImg)closeLb();});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeLb();hideTip();}});
 document.addEventListener("click",function(e){var b=e.target.closest("[data-zoom]");if(b){e.preventDefault();openLb(b.getAttribute("data-zoom"),b.getAttribute("data-alt"));}});
 function imgUrl(id,thumb){return API+"/img/"+encodeURIComponent(id)+(thumb?"?s=t":"");}
-function copyLink(hash){var u=SITE+"/"+hash;function done(){toast(t("copied"));}
+// An entry's own page when the site serves them (APP.pages), otherwise the entry's place in the log
+function entryUrl(hash){var m=/^#(?:entry|report)-(.+)$/.exec(hash),lq=LANG_SET?"?lang="+LANG:"";return APP.pages&&m?SITE+"/entry/"+m[1]+lq:SITE+"/"+lq+hash;}
+function copyText(u){function done(){toast(t("copied"));}
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(done,function(){toast(t("copyFail",{u:u}));});}
   else{var ta=document.createElement("textarea");ta.value=u;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");done();}catch(e){toast(t("copyFail",{u:u}));}ta.remove();}
-  try{history.replaceState(null,"",hash);}catch(e){}
 }
+function copyLink(hash){copyText(entryUrl(hash));try{history.replaceState(null,"",location.pathname+viewQuery()+hash);}catch(e){}}
+// A file of rows for a spreadsheet. Cells that a spreadsheet would run as a formula get a leading apostrophe.
+function csvRow(a){return a.map(function(v){v=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(",");}
+function saveCsv(name,lines){var blob=new Blob(["\ufeff"+lines.join("\r\n")+"\r\n"],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove();},800);}
+function statusWord(r){return r.open?t("stillGoing"):r.status==="resolved"?t("resolved"):"";}
+function rowUrl(r){return entryUrl((r.kind==="report"?"#report-":"#entry-")+encodeURIComponent(r.id));}
+function csvHead(){return csvRow([t("th.date"),t("csv.end"),t("th.cat"),t("th.type"),t("th.what"),t("csv.details"),t("th.where"),t("csv.duration"),t("csv.status"),t("csv.link")]);}
+function csvLine(r){return csvRow([r.m?r.d.slice(0,7):r.d,r.e?(r.est?"~":"")+r.e:"",(r.c==="you"||r.kind==="report")?tcatName(r.cat):catName(r.c),typeWord(r),r.s,r.x,placeName(r.w),durT(r.dur),statusWord(r),rowUrl(r)]);}
 
 // ---------- language ----------
 function applyStatic(){
   document.documentElement.lang=LANG;
+  document.title=t("doc.title");
+  var md=document.querySelector('meta[name="description"]');if(md)md.setAttribute("content",t("doc.desc"));
+  var cn=document.querySelector('link[rel="canonical"]');if(cn)cn.setAttribute("href",SITE+"/"+(LANG_SET&&LANG==="es"?"?lang=es":""));
   Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"),function(el){el.textContent=t(el.getAttribute("data-i18n"));});
   var mail=["notices","atlanticstreetresidents.com"].join("@");
   Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-html]"),function(el){el.innerHTML=t(el.getAttribute("data-i18n-html")).replace("{email}",'<a href="mailto:'+mail+'">'+mail+'</a>');});
   Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-attr]"),function(el){el.getAttribute("data-i18n-attr").split(";").forEach(function(p){var kv=p.split(":");if(kv.length===2)el.setAttribute(kv[0],t(kv[1]));});});
-  var lb2=document.getElementById("langBtn");lb2.textContent=t("lang.other");lb2.setAttribute("lang",LANG==="es"?"en":"es");
+  var other=LANG==="es"?"en":"es";
+  ["langBtn","langBtn2"].forEach(function(id){var b=document.getElementById(id);b.textContent=t("lang.other");b.setAttribute("lang",other);b.setAttribute("hreflang",other);b.setAttribute("href","?lang="+other);});
+  // Links to the submit page keep the language when the address names one
+  Array.prototype.forEach.call(document.querySelectorAll('a[href^="submit.html"]'),function(a){var h=a.getAttribute("href"),i=h.indexOf("#");a.setAttribute("href","submit.html"+(LANG_SET?"?lang="+LANG:"")+(i<0?"":h.slice(i)));});
   document.getElementById("timeline").setAttribute("aria-label",t("tl.label"));
 }
-document.getElementById("langBtn").onclick=function(){LANG=LANG==="es"?"en":"es";store("asr_lang",LANG);applyStatic();if(APP.loaded)render();};
+// The language switch is a real link (?lang=es) that also works in place, without reloading
+function switchLang(e){
+  if(e)e.preventDefault();
+  LANG=LANG==="es"?"en":"es";LANG_SET=true;store("asr_lang",LANG);
+  applyStatic();if(APP.loaded)render();syncUrl();
+}
+document.getElementById("langBtn").onclick=switchLang;document.getElementById("langBtn2").onclick=switchLang;
 
 // ---------- nav ----------
 (function(){
   var btn=document.getElementById("menuBtn"),nav=document.getElementById("nav");
   btn.onclick=function(){var open=nav.classList.toggle("open");btn.setAttribute("aria-expanded",open?"true":"false");};
   nav.addEventListener("click",function(e){if(e.target.tagName==="A"){nav.classList.remove("open");btn.setAttribute("aria-expanded","false");}});
-  var links=Array.prototype.slice.call(nav.querySelectorAll("a"));
+  var links=Array.prototype.slice.call(nav.querySelectorAll('a[href^="#"]'));
   if("IntersectionObserver" in window){
     var obs=new IntersectionObserver(function(entries){entries.forEach(function(en){if(en.isIntersecting){var id="#"+en.target.id;links.forEach(function(a){a.classList.toggle("on",a.getAttribute("href")===id);});}});},{rootMargin:"-30% 0px -60% 0px"});
     links.forEach(function(a){var el=document.querySelector(a.getAttribute("href"));if(el)obs.observe(el.closest("section")||el);});
@@ -694,21 +852,42 @@ function normReports(list){
   });
 }
 
+// The record: the archived file plus the live additions. When the page arrives with the record already inside it
+// (a script block with id "asr-data", added on the way out by the API worker), it draws at once and asks for nothing.
+function start(base,live){
+  var liveInc=live.incidents||[],ids={};liveInc.forEach(function(r){if(r&&r.id)ids[r.id]=1;});
+  APP.rows=normalize(base.filter(function(r){return !(r.id&&ids[r.id]);}).concat(liveInc));
+  APP.reports=live.reports||[];
+  APP.reportRows=normReports(APP.reports);
+  APP.banner=(live.banner&&live.banner.text)||"";
+  APP.caps=live.caps||{};
+  var first=!APP.loaded;APP.loaded=true;
+  document.getElementById("hero").classList.remove("skel");
+  render();
+  if(first&&location.hash)goHash(location.hash);
+}
+function goHash(h){
+  if(/^#(entry|report)-/.test(h)){setTimeout(function(){applyHash(h);},60);return;}
+  var el=null;try{el=document.getElementById(decodeURIComponent(h.slice(1)));}catch(e){}
+  if(el)setTimeout(function(){el.scrollIntoView({block:"start",behavior:"instant"});},60);
+}
+function inlineData(){var el=document.getElementById("asr-data");if(!el)return null;try{var d=JSON.parse(el.textContent);return d&&Array.isArray(d.base)&&d.live?d:null;}catch(e){return null;}}
 function load(){
+  var pre=inlineData();
+  if(pre){
+    APP.pages=!!pre.pages;
+    start(pre.base,pre.live);
+    // A page that sat in the browser's cache for a while: ask for the record again and redraw if it has moved on
+    if(!pre.at||Date.now()-pre.at>120000)fetch(API+"/incidents").then(function(r){if(!r.ok)throw new Error("api");return r.json();}).then(function(live){
+      function sig(x){return JSON.stringify([x.incidents,x.reports,x.banner||null]);}
+      if(sig(live)!==sig(pre.live))start(pre.base,live);
+    }).catch(function(){});
+    return;
+  }
   var base=fetch("data/incidents.json").then(function(r){return r.json();});
   var liveUrl=(/[?&]data=([\w.\-]+)/.exec(location.search)||[])[1];
   var live=fetch(liveUrl||(API+"/incidents")).then(function(r){if(!r.ok)throw new Error("api");return r.json();}).catch(function(){document.getElementById("liveNotice").classList.add("on");return {incidents:[],reports:[]};});
-  Promise.all([base,live]).then(function(res){
-    var liveInc=res[1].incidents||[],ids={};liveInc.forEach(function(r){if(r&&r.id)ids[r.id]=1;});
-    APP.rows=normalize(res[0].filter(function(r){return !(r.id&&ids[r.id]);}).concat(liveInc));
-    APP.reports=res[1].reports||[];
-    APP.reportRows=normReports(APP.reports);
-    APP.banner=(res[1].banner&&res[1].banner.text)||"";
-    APP.loaded=true;
-    document.getElementById("hero").classList.remove("skel");
-    render();
-    if(location.hash)setTimeout(function(){applyHash(location.hash);},60);
-  }).catch(function(){document.getElementById("activeList").innerHTML="<li>"+esc(t("hero.err"))+"</li>";});
+  Promise.all([base,live]).then(function(res){start(res[0],res[1]);}).catch(function(){document.getElementById("activeList").innerHTML="<li>"+esc(t("hero.err"))+"</li>";});
 }
 window.addEventListener("hashchange",function(){applyHash(location.hash);});
 document.addEventListener("click",function(e){var a=e.target.closest('a[href^="#entry-"],a[href^="#report-"]');if(a){e.preventDefault();var h=a.getAttribute("href");try{history.pushState(null,"",h);}catch(x){}applyHash(h);}});
@@ -718,6 +897,14 @@ function applyHash(h){
   if(m[1]==="report"){if(APP.focusReport)APP.focusReport(id);}
   else if(APP.focusEntry)APP.focusEntry(id);
 }
+
+// "more" belongs on a row only when its description is actually cut off at this width (read all, then write all)
+function fitMore(root){
+  var jobs=[];
+  Array.prototype.forEach.call(root.querySelectorAll("td.what"),function(td){var b=td.querySelector(".more");if(!b)return;var x=td.querySelector(".x");jobs.push([b,!(td.parentNode.classList.contains("open")||(x&&x.scrollHeight-x.clientHeight>1))]);});
+  jobs.forEach(function(j){j[0].hidden=j[1];});
+}
+function toolsHtml(list){return '<span class="tools">'+list.map(function(k){return '<button type="button" class="btn-quiet" data-tool="'+k+'">'+esc(t("tool."+k))+'</button>';}).join("")+'</span>';}
 
 function render(){
 var rows=APP.rows,reps=APP.reportRows;
@@ -741,8 +928,14 @@ function isProblem(r){return r.kind==="report"||r.t==="U"||r.t==="R";}
     var u=lastUpdate(r);
     if(u){var txt=String(u.text);if(txt.length>110)txt=txt.slice(0,108).replace(/\s+\S*$/,"")+"…";bits.push(esc(t("updateOn",{date:fmtShort(parse(u.d).getTime()),text:txt})));}
     if(r.open&&(TODAY-parse(r.lastConfirmed).getTime())>14*DAY)bits.push(esc(t("lastConfirmed",{date:fmtShort(parse(r.lastConfirmed).getTime())})));
-    return '<li><a href="'+href+'">'+esc(r.s)+'</a><span class="meta">'+bits.join(" · ")+'</span></li>';
+    return '<li><a href="'+href+'">'+esc(r.s)+'</a><span class="meta">'+bits.join(" · ")+'</span>'+askHtml(r)+'</li>';
   }
+  // One tap from a resident: still out, or fixed. It goes to the editor's review queue; nothing changes until approved.
+  function askHtml(r){
+    if(!APP.caps.confirm||!(r.kind==="report"||r.t==="U")||r.ts>TODAY)return "";
+    return '<span class="acts" role="group" aria-label="'+esc(t("cf.label"))+'" data-cf="'+esc(r.id)+'">'+(said(r.id)?'<span class="said">'+esc(t("cf.thanks"))+'</span>':'<button type="button" data-state="open">'+esc(t("cf.still"))+'</button><button type="button" data-state="resolved">'+esc(t("cf.fixed"))+'</button>')+'</span>';
+  }
+  document.getElementById("alertsLi").hidden=!APP.caps.alerts;if(!APP.caps.alerts)document.getElementById("alertsBox").hidden=true;
   if(APP.banner){al.classList.remove("ok");list.innerHTML='<li>'+esc(APP.banner)+'</li>'+open.slice(0,3).map(item).join("");}
   else if(open.length){al.classList.remove("ok");list.innerHTML=open.slice(0,4).map(item).join("")+(open.length>4?'<li class="meta"><a href="#log-h">'+esc(t("hero.more",{n:open.length-4}))+'</a></li>':'');}
   else{al.classList.add("ok");list.innerHTML="<li>"+esc(t("hero.nothing"))+"</li>";}
@@ -772,8 +965,14 @@ function isProblem(r){return r.kind==="report"||r.t==="U"||r.t==="R";}
 // ---------- Timeline ----------
 (function(){
   var svg=document.getElementById("timeline");svg.innerHTML="";
-  var mob=narrow.matches;
-  var W=1000,L=mob?100:196,R=52,top=30,lane=26,H=top+CATS.length*lane+14;
+  var mob=narrow.matches,pin=tlPin.matches,sc=document.getElementById("tlScroll"),lab=document.getElementById("tlLabels");
+  var W=1000,L=196,R=52,top=30,lane=26,H=top+CATS.length*lane+14;
+  // Narrow screens: the chart scrolls sideways, so the category names go in a fixed column beside it
+  if(pin){
+    lab.innerHTML=CATS.map(function(c){return "<span>"+esc(c.s[LANG])+"</span>";}).join("");lab.style.display="block";
+    var colW=0;Array.prototype.forEach.call(lab.children,function(el){colW=Math.max(colW,el.offsetWidth);});
+    L=Math.ceil((colW+24)/(Math.max(sc.clientWidth,mob?660:760)/W));
+  } else {lab.style.display="none";lab.innerHTML="";}
   svg.setAttribute("viewBox","0 0 "+W+" "+H);
   var defs=ns("defs",{});CATS.forEach(function(c){var pt=ns("pattern",{id:"tls-"+c.k,width:4,height:4,patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"});pt.appendChild(ns("rect",{width:4,height:4,fill:cv(c.k),"fill-opacity":.3}));pt.appendChild(ns("rect",{width:2,height:4,fill:cv(c.k)}));defs.appendChild(pt);});svg.appendChild(defs);
   var t0=START<OCT2020?Date.UTC(START_YEAR,0,1):OCT2020,t1=TODAY+45*DAY;
@@ -783,12 +982,12 @@ function isProblem(r){return r.kind==="report"||r.t==="U"||r.t==="R";}
   CATS.forEach(function(c,ci){
     var y0=top+ci*lane,list=rows.filter(function(r){return r.c===c.k;}),rr=reps.filter(function(r){return r.c===c.k;});
     svg.appendChild(ns("line",{x1:L,y1:y0+lane-4,x2:W-R,y2:y0+lane-4,stroke:"var(--line)","stroke-width":1,"stroke-dasharray":"1 3"}));
-    svg.appendChild(ns("text",{x:L-12,y:y0+lane-9,"font-size":mob?13:14,"text-anchor":"end",fill:"var(--ink)"},mob?c.s[LANG]:c.n[LANG]));
+    if(!pin)svg.appendChild(ns("text",{x:L-12,y:y0+lane-9,"font-size":14,"text-anchor":"end",fill:"var(--ink)"},c.n[LANG]));
     svg.appendChild(ns("text",{x:W-R+10,y:y0+lane-9,"font-size":13,fill:"var(--muted)"},(list.length+rr.length)?String(list.length+rr.length):""));
     rr.forEach(function(r){
       var xs=x(r.ts),xe=x(r.te),w=Math.max(4,xe-xs);
       var rect=ns("rect",{x:xs-2,y:y0+lane-5-16,width:w,height:16,rx:1,fill:r.open?"url(#tls-"+c.k+")":cv(c.k),"fill-opacity":r.open?1:.18,stroke:cv(c.k),"stroke-width":1.5,style:"cursor:pointer"});
-      attachTip(rect,fmtRow(r)+(r.open?" – "+t("stillGoing"):r.e?" – "+fmt(r.e):"")+NL+t("tl.report",{s:r.s})+(r.w?NL+r.w:""));
+      attachTip(rect,fmtRow(r)+(r.open?" – "+t("stillGoing"):r.e?" – "+fmt(r.e):"")+NL+t("tl.report",{s:r.s})+(r.w?NL+placeName(r.w):""));
       rect.addEventListener("click",function(){APP.focusReport&&APP.focusReport(r.id);});
       svg.appendChild(rect);
     });
@@ -796,14 +995,20 @@ function isProblem(r){return r.kind==="report"||r.t==="U"||r.t==="R";}
       var xs=x(r.ts),xe=x(r.te),w=Math.max(3,xe-xs),h,op;
       if(r.t==="U"||r.t==="R"){h=16;op=1;}else if(r.t==="S"){h=9;op=.6;}else{h=6;op=.35;}
       var rect=ns("rect",{x:xs-1.5,y:y0+lane-5-h,width:w,height:h,rx:1,fill:r.open?"url(#tls-"+c.k+")":cv(c.k),opacity:op,style:"cursor:pointer"});
-      attachTip(rect,fmtRow(r)+(r.open?" – "+t("stillGoing"):r.e?" – "+fmt(r.e):"")+NL+r.s+(r.w?NL+r.w:"")+(r.dur?NL+r.dur:""));
+      attachTip(rect,fmtRow(r)+(r.open?" – "+t("stillGoing"):r.e?" – "+fmt(r.e):"")+NL+r.s+(r.w?NL+placeName(r.w):"")+(r.dur?NL+durT(r.dur):""));
       rect.addEventListener("click",function(){APP.focusEntry&&APP.focusEntry(r.id);});
       svg.appendChild(rect);
     });
   });
-  var sc=document.getElementById("tlScroll");sc.addEventListener("scroll",function(){sc.classList.remove("fade");},{once:true});
-  document.getElementById("tlHint").hidden=!mob;
-  if(mob)requestAnimationFrame(function(){sc.scrollLeft=sc.scrollWidth;});
+  function place(){
+    var k=svg.getBoundingClientRect().width/W;if(!pin||!k)return;
+    lab.style.width=Math.round(L*k)+"px";
+    Array.prototype.forEach.call(lab.children,function(el,ci){el.style.top=Math.round((top+ci*lane+lane-9)*k-10)+"px";});
+  }
+  place();APP.tlPlace=pin?place:null;
+  sc.addEventListener("scroll",function(){sc.classList.remove("fade");},{once:true});
+  var hint=document.getElementById("tlHint");hint.hidden=true;
+  if(pin)requestAnimationFrame(function(){sc.scrollLeft=sc.scrollWidth;hint.hidden=!(sc.scrollWidth>sc.clientWidth+4);});
 })();
 
 // ---------- Calendar ----------
@@ -824,7 +1029,7 @@ function isProblem(r){return r.kind==="report"||r.t==="U"||r.t==="R";}
   function openDetail(k){
     var list=DAYS[k]||[];
     document.getElementById("calDetailH").textContent=cap(fmtLong(parse(k).getTime()));
-    document.getElementById("calDetailList").innerHTML=list.length?list.slice().sort(function(a,b){return rank(a)-rank(b);}).map(function(e){var r=e.r;var href=(r.kind==="report"?"#report-":"#entry-")+encodeURIComponent(r.id);var meta=[typeWord(r),catName(r.c)];if(r.w)meta.push(placeName(r.w));if(r.open)meta.push(t("stillGoing")+" · "+t("since",{date:fmtShort(r.ts)}));else if(r.te>r.ts)meta.push(fmtShort(r.ts)+" – "+fmtShort(r.te));if(r.dur)meta.push(r.dur);return '<li><a href="'+href+'">'+esc(r.s)+'</a><span class="meta">'+esc(meta.join(" · "))+'</span></li>';}).join(""):'<li>'+esc(t("cal.none"))+'</li>';
+    document.getElementById("calDetailList").innerHTML=list.length?list.slice().sort(function(a,b){return rank(a)-rank(b);}).map(function(e){var r=e.r;var href=(r.kind==="report"?"#report-":"#entry-")+encodeURIComponent(r.id);var meta=[typeWord(r),catName(r.c)];if(r.w)meta.push(placeName(r.w));if(r.open)meta.push(t("stillGoing")+" · "+t("since",{date:fmtShort(r.ts)}));else if(r.te>r.ts)meta.push(fmtShort(r.ts)+" – "+fmtShort(r.te));if(r.dur)meta.push(durT(r.dur));return '<li><a href="'+href+'">'+esc(r.s)+'</a><span class="meta">'+esc(meta.join(" · "))+'</span></li>';}).join(""):'<li>'+esc(t("cal.none"))+'</li>';
     detail.hidden=false;
   }
   document.getElementById("calDetailClose").onclick=function(){detail.hidden=true;if(APP.calReturn&&APP.calReturn.focus)APP.calReturn.focus();};
@@ -949,8 +1154,8 @@ function isProblem(r){return r.kind==="report"||r.t==="U"||r.t==="R";}
   rows.concat(reps).forEach(function(r){if(!isWater(r))return;for(var ts=r.ts;ts<=r.te;ts+=DAY){var k=iso(ts);ad[k]=1;if(reachesUpper(r.w)){fd[k]=1;if(r.t==="U"||r.t==="R")fu[k]=1;}}});
   n=Object.keys(fd).length;u=Object.keys(fu).length;a=Object.keys(ad).length;
   document.getElementById("calStat").textContent=t("cal.stat",{n:n,u:u,a:a});
-  Array.prototype.forEach.call(document.querySelectorAll('input[name="calmode"]'),function(el){el.onchange=build;});
-  document.getElementById("calMore").onclick=function(){APP.calShowAll=!APP.calShowAll;build();};
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="calmode"]'),function(el){if(APP.calMode)el.checked=el.value===APP.calMode;el.onchange=function(){APP.calMode=el.value;build();syncUrl();};});
+  document.getElementById("calMore").onclick=function(){APP.calShowAll=!APP.calShowAll;build();syncUrl();};
   var lbtn=document.getElementById("calListBtn"),lst=document.getElementById("calList");
   lbtn.onclick=function(){var show=lst.hidden;lst.hidden=!show;lbtn.setAttribute("aria-expanded",show?"true":"false");lbtn.textContent=show?t("cal.hideList"):t("cal.list");if(show)lst.innerHTML=textList(APP.calFirst);};
   lbtn.textContent=lst.hidden?t("cal.list"):t("cal.hideList");
@@ -996,18 +1201,20 @@ function barChart(id,years,data,labelU,color){
 
 // ---------- Generic table controller ----------
 function table(opts){
-  var st={sortK:opts.sortK,desc:true,term:"",cat:"",type:"",limit:opts.page};
+  var st=opts.state;if(st.limit==null)st.limit=opts.page;
   var head=opts.table.querySelector("thead");
-  head.onclick=function(e){var th=e.target.closest("th[data-k]");if(!th)return;var k=th.getAttribute("data-k");if(st.sortK===k)st.desc=!st.desc;else{st.sortK=k;st.desc=k==="d";}st.limit=opts.page;syncSel();draw();};
+  if(!head.querySelector('th[data-k="'+st.sortK+'"]')){st.sortK=opts.sortK;st.desc=true;}
+  head.onclick=function(e){var th=e.target.closest("th[data-k]");if(!th)return;var k=th.getAttribute("data-k");if(st.sortK===k)st.desc=!st.desc;else{st.sortK=k;st.desc=k==="d";}st.limit=opts.page;syncSel();draw();syncUrl();};
   function syncHead(){Array.prototype.forEach.call(head.querySelectorAll("th[data-k]"),function(th){var k=th.getAttribute("data-k");if(k===st.sortK)th.setAttribute("aria-sort",st.desc?"descending":"ascending");else th.removeAttribute("aria-sort");});}
   var sel=opts.sortSel;
   function fillSel(){if(!sel)return;sel.innerHTML=opts.sorts.map(function(s){return '<option value="'+s.v+'">'+esc(t(s.l))+'</option>';}).join("");syncSel();}
   function syncSel(){if(!sel)return;var v=st.sortK==="d"?(st.desc?"new":"old"):st.sortK;sel.value=v;}
-  if(sel)sel.onchange=function(){var v=sel.value;if(v==="new"){st.sortK="d";st.desc=true;}else if(v==="old"){st.sortK="d";st.desc=false;}else{st.sortK=v;st.desc=false;}st.limit=opts.page;draw();};
+  if(sel)sel.onchange=function(){var v=sel.value;if(v==="new"){st.sortK="d";st.desc=true;}else if(v==="old"){st.sortK="d";st.desc=false;}else{st.sortK=v;st.desc=false;}st.limit=opts.page;draw();syncUrl();};
   function cmp(a,b){var k=st.sortK,va=k==="d"?a.ts:String(a[k]||""),vb=k==="d"?b.ts:String(b[k]||"");var r=va<vb?-1:va>vb?1:0;if(r===0)r=a.ts-b.ts||a.i-b.i;return st.desc?-r:r;}
   var searchWrap=opts.search.parentElement;
-  opts.search.oninput=function(){st.term=fold(opts.search.value.trim());st.limit=opts.page;searchWrap.classList.toggle("has",!!st.term);draw();};
-  searchWrap.querySelector(".clear").onclick=function(){opts.search.value="";st.term="";searchWrap.classList.remove("has");st.limit=opts.page;draw();opts.search.focus();};
+  opts.search.value=st.raw;searchWrap.classList.toggle("has",!!st.term);
+  opts.search.oninput=function(){st.raw=opts.search.value;st.term=fold(st.raw.trim());st.limit=opts.page;searchWrap.classList.toggle("has",!!st.term);draw();syncUrl();};
+  searchWrap.querySelector(".clear").onclick=function(){opts.search.value="";st.raw="";st.term="";searchWrap.classList.remove("has");st.limit=opts.page;draw();syncUrl();opts.search.focus();};
   function list(){return opts.rows().filter(function(r){return opts.filter(r,st);}).sort(cmp);}
   function draw(){
     syncHead();
@@ -1016,9 +1223,15 @@ function table(opts){
     opts.empty.hidden=all.length>0;
     var foot='<span>'+esc(t("showing",{a:shown.length,b:all.length}))+'</span>';
     if(all.length>shown.length){foot+='<button type="button" class="btn-quiet" data-more="1">'+esc(t("showMore",{n:Math.min(opts.page,all.length-shown.length)}))+'</button><button type="button" class="btn-quiet" data-all="1">'+esc(t("showAll",{n:all.length}))+'</button>';}
+    if(opts.tools)foot+=opts.tools(st,all);
     opts.foot.innerHTML=foot;
+    fitMore(opts.body);
   }
-  opts.foot.onclick=function(e){if(e.target.closest("[data-more]")){st.limit+=opts.page;draw();}else if(e.target.closest("[data-all]")){st.limit=1e9;draw();}};
+  opts.foot.onclick=function(e){
+    if(e.target.closest("[data-more]")){st.limit+=opts.page;draw();}
+    else if(e.target.closest("[data-all]")){st.limit=1e9;draw();}
+    else{var tb=e.target.closest("[data-tool]");if(tb&&opts.tool)opts.tool(tb.getAttribute("data-tool"),st,list());}
+  };
   opts.body.onclick=function(e){
     var m=e.target.closest(".more");if(m){var tr=m.closest("tr");tr.classList.toggle("open");m.textContent=tr.classList.contains("open")?t("less"):t("more");m.setAttribute("aria-expanded",tr.classList.contains("open")?"true":"false");return;}
     var c=e.target.closest("[data-copy]");if(c){copyLink(c.getAttribute("data-copy"));return;}
@@ -1041,13 +1254,13 @@ function whenCell(r){
   var h=esc(fmtRow(r));
   if(r.open)h+='<span class="st open">'+esc(t("stillGoing"))+'</span><span class="end">'+esc(t("dayN",{n:Math.round((TODAY-r.ts)/DAY)+1}))+'</span>';
   else if(r.e&&r.e>r.d)h+='<span class="end">'+esc(r.est?t("toDate",{date:t("aboutDate",{date:fmt(r.e)})}):t("toDate",{date:fmt(r.e)}))+'</span>';
-  if(r.hours)h+='<span class="dbar" title="'+esc(r.dur)+'"><i style="width:'+Math.max(4,Math.min(100,r.hours/72*100))+'%"></i>'+esc(r.dur)+'</span>';
-  else if(r.dur)h+='<span class="end">'+esc(r.dur)+'</span>';
+  if(r.hours)h+='<span class="dbar" title="'+esc(durT(r.dur))+'"><i style="width:'+Math.max(4,Math.min(100,r.hours/72*100))+'%"></i>'+esc(durT(r.dur))+'</span>';
+  else if(r.dur)h+='<span class="end">'+esc(durT(r.dur))+'</span>';
   return h;
 }
 function whatCell(r,term){
   var long=(r.x||"").length>90,u=lastUpdate(r);
-  return '<td class="what"><strong>'+hl(r.s,term)+'</strong>'+(r.x?'<span class="x">'+hl(r.x,term)+'</span>':'')+(u?'<span class="upd">'+esc(t("updateOn",{date:fmtShort(parse(u.d).getTime()),text:u.text}))+'</span>':'')+photos(r)+'<span class="rowacts">'+(long?'<button class="more" type="button" aria-expanded="false">'+esc(t("more"))+'</button>':'')+'<button type="button" data-copy="#entry-'+esc(encodeURIComponent(r.id))+'">'+esc(t("copyLink"))+'</button></span></td>';
+  return '<td class="what"><strong>'+hl(r.s,term)+'</strong>'+(r.x?'<span class="x">'+hl(r.x,term)+'</span>':'')+(u?'<span class="upd">'+esc(t("updateOn",{date:fmtShort(parse(u.d).getTime()),text:u.text}))+'</span>':'')+photos(r)+'<span class="rowacts">'+(r.x?'<button class="more" type="button" aria-expanded="false"'+(long?'':' hidden')+'>'+esc(t("more"))+'</button>':'')+'<button type="button" data-copy="#entry-'+esc(encodeURIComponent(r.id))+'">'+esc(t("copyLink"))+'</button></span></td>';
 }
 
 // ---------- Resident tickets ----------
@@ -1055,47 +1268,74 @@ function whatCell(r,term){
   var sel=document.getElementById("tCat"),tickets=rows.filter(function(r){return r.c==="you";});
   sel.innerHTML='<option value="">'+esc(t("tk.allcats"))+'</option>';
   TICKET_CATS.forEach(function(c){if(tickets.some(function(r){return r.cat===c.k;})){var o=document.createElement("option");o.value=c.k;o.textContent=c.n[LANG];sel.appendChild(o);}});
-  var T=table({table:document.getElementById("tickets"),body:document.getElementById("ticketBody"),empty:document.getElementById("tempty"),foot:document.getElementById("tfoot"),search:document.getElementById("tq"),sortK:"d",page:10,sortSel:document.getElementById("tSort"),sorts:[{v:"new",l:"sort.new"},{v:"old",l:"sort.old"},{v:"cat",l:"sort.cat"},{v:"w",l:"sort.where"}],
+  sel.value=APP.tst.cat;if(sel.value!==APP.tst.cat)APP.tst.cat="";
+  var T=table({state:APP.tst,table:document.getElementById("tickets"),body:document.getElementById("ticketBody"),empty:document.getElementById("tempty"),foot:document.getElementById("tfoot"),search:document.getElementById("tq"),sortK:"d",page:10,sortSel:document.getElementById("tSort"),sorts:[{v:"new",l:"sort.new"},{v:"old",l:"sort.old"},{v:"cat",l:"sort.cat"},{v:"w",l:"sort.where"}],
     rows:function(){return tickets;},
-    filter:function(r,st){if(st.cat&&r.cat!==st.cat)return false;if(st.term){var hay=fold(r.s+" "+r.x+" "+r.w+" "+tcatName(r.cat)+" "+fmtRow(r));if(hay.indexOf(st.term)<0)return false;}return true;},
-    row:function(r,term){return '<tr data-id="'+esc(r.id)+'" class="'+(r.recent?"recent":"")+'"><td class="dt">'+esc(fmtRow(r))+'</td><td class="cat">'+pill(r.cat,tcatName(r.cat))+'</td><td class="where">'+esc(r.w)+(r.stack?", "+esc(t("lineOf",{x:r.stack})):"")+'</td>'+whatCell(r,term)+'</tr>';}
+    filter:function(r,st){if(st.cat&&r.cat!==st.cat)return false;if(st.term){var hay=fold(r.s+" "+r.x+" "+r.w+" "+placeName(r.w)+" "+tcatName(r.cat)+" "+fmtRow(r));if(hay.indexOf(st.term)<0)return false;}return true;},
+    row:function(r,term){return '<tr data-id="'+esc(r.id)+'" class="'+(r.recent?"recent":"")+'"><td class="dt">'+esc(fmtRow(r))+'</td><td class="cat">'+pill(r.cat,tcatName(r.cat))+'</td><td class="where">'+esc(placeName(r.w))+(r.stack?", "+esc(t("lineOf",{x:r.stack})):"")+'</td>'+whatCell(r,term)+'</tr>';},
+    tools:function(){return toolsHtml(["copy"]);},
+    tool:function(k){if(k==="copy")copyText(SITE+"/"+viewQuery()+"#you-h");}
   });
-  sel.onchange=function(){T.state.cat=sel.value;T.state.limit=10;T.draw();};
+  sel.onchange=function(){T.state.cat=sel.value;T.state.limit=10;T.draw();syncUrl();};
   T.draw();
+  APP.drawTickets=T.draw;
 })();
 
 // ---------- Reports ----------
 (function(){
-  var box=document.getElementById("reports"),rf=document.getElementById("rfoot");
-  var list=reps.slice().sort(function(a,b){return (b.open-a.open)||b.ts-a.ts;});
-  var limit=APP.repLimit||6;
+  var box=document.getElementById("reports"),rf=document.getElementById("rfoot"),empty=document.getElementById("rempty"),sel=document.getElementById("rCat"),q=document.getElementById("rq"),wrap=q.parentElement,st=APP.rst;
+  var all=reps.slice().sort(function(a,b){return (b.open-a.open)||b.ts-a.ts;});
+  function tkey(c){for(var i=0;i<TICKET_CATS.length;i++)if(TICKET_CATS[i].k===c)return c;return "other";}
+  sel.innerHTML='<option value="">'+esc(t("tk.allcats"))+'</option>';
+  TICKET_CATS.forEach(function(c){if(all.some(function(r){return tkey(r.cat)===c.k;})){var o=document.createElement("option");o.value=c.k;o.textContent=c.n[LANG];sel.appendChild(o);}});
+  sel.value=st.cat;if(sel.value!==st.cat)st.cat="";
+  q.value=st.raw;wrap.classList.toggle("has",!!st.term);
+  function hay(r){return fold(r.s+" "+r.x+" "+r.w+" "+placeName(r.w)+" "+tcatName(r.cat)+" "+fmt(r.d)+" "+(r.updates||[]).map(function(u){return u.text||"";}).join(" "));}
+  function match(term,cat){return all.filter(function(r){return (!cat||tkey(r.cat)===cat)&&(!term||hay(r).indexOf(term)>=0);});}
   function draw(){
     box.innerHTML="";
-    if(!list.length){box.innerHTML='<div class="empty-state">'+esc(t("rp.empty"))+'</div>';rf.innerHTML="";return;}
+    if(!all.length){box.innerHTML='<div class="empty-state">'+esc(t("rp.empty"))+'</div>';rf.innerHTML="";empty.hidden=true;return;}
+    var list=match(st.term,st.cat),limit=st.limit;
+    empty.hidden=list.length>0;
     list.slice(0,limit).forEach(function(rp){
       var el=document.createElement("article");el.className="report";el.id="report-"+rp.id;
       var img=(rp.img||[])[0],meta=[fmt(rp.d)];
       if(rp.open)meta.push(t("stillGoing"));else if(rp.e)meta.push(t("resolvedOn",{date:fmt(rp.e)}));
-      if(rp.w)meta.push(rp.w);if(rp.stack)meta.push(t("lineOf",{x:rp.stack}));meta.push(rp.name&&!rp.anon?t("rp.by",{name:rp.name}):t("rp.anon"));
+      if(rp.w)meta.push(placeName(rp.w));if(rp.stack)meta.push(t("lineOf",{x:rp.stack}));meta.push(rp.name&&!rp.anon?t("rp.by",{name:rp.name}):t("rp.anon"));
       var u=lastUpdate(rp);
       el.innerHTML=(img?'<button type="button" class="imgbtn" data-zoom="'+imgUrl(img)+'" data-alt="'+esc(t("rp.photoAlt",{t:rp.s}))+'" aria-label="'+esc(t("rp.openPhoto",{t:rp.s}))+'"><img src="'+imgUrl(img,true)+'" alt="'+esc(t("rp.photoAlt",{t:rp.s}))+'" loading="lazy" width="400" height="300"></button>':'')+
-        '<div class="body"><p class="meta">'+esc(meta.join(" · "))+'</p><h3>'+esc(rp.s)+'</h3><p>'+esc(rp.x)+'</p>'+(u?'<p class="upd">'+esc(t("updateOn",{date:fmtShort(parse(u.d).getTime()),text:u.text}))+'</p>':'')+
+        '<div class="body"><p class="meta">'+esc(meta.join(" · "))+'</p><h3>'+hl(rp.s,st.term)+'</h3><p>'+hl(rp.x,st.term)+'</p>'+(u?'<p class="upd">'+esc(t("updateOn",{date:fmtShort(parse(u.d).getTime()),text:u.text}))+'</p>':'')+
         '<div class="foot">'+pill(rp.c,tcatName(rp.cat))+((rp.img||[]).length>1?' <span class="pill" style="--pc:var(--c-garage);--pt:var(--t-garage)">'+esc(t("rp.photos",{n:rp.img.length}))+'</span>':'')+(rp.open?' <span class="st open">'+esc(t("stillGoing"))+'</span>':'')+'<span class="rowacts" style="margin-left:auto"><button type="button" data-copy="#report-'+esc(encodeURIComponent(rp.id))+'">'+esc(t("copyLink"))+'</button></span></div></div>';
       box.appendChild(el);
     });
     var fh='<span>'+esc(t("rp.showing",{a:Math.min(limit,list.length),b:list.length}))+'</span>';
     if(list.length>limit)fh+='<button type="button" class="btn-quiet" data-more="1">'+esc(t("showMore",{n:Math.min(6,list.length-limit)}))+'</button><button type="button" class="btn-quiet" data-all="1">'+esc(t("showAll",{n:list.length}))+'</button>';
-    rf.innerHTML=fh;
+    rf.innerHTML=fh+toolsHtml(["copy","csv"]);
   }
-  rf.onclick=function(e){if(e.target.closest("[data-more]")){limit+=6;APP.repLimit=limit;draw();}else if(e.target.closest("[data-all]")){limit=1e9;APP.repLimit=limit;draw();}};
+  q.oninput=function(){st.raw=q.value;st.term=fold(st.raw.trim());st.limit=6;wrap.classList.toggle("has",!!st.term);draw();syncUrl();};
+  wrap.querySelector(".clear").onclick=function(){q.value="";st.raw="";st.term="";st.limit=6;wrap.classList.remove("has");draw();syncUrl();q.focus();};
+  sel.onchange=function(){st.cat=sel.value;st.limit=6;draw();syncUrl();};
+  rf.onclick=function(e){
+    if(e.target.closest("[data-more]")){st.limit+=6;draw();}
+    else if(e.target.closest("[data-all]")){st.limit=1e9;draw();}
+    else{var tb=e.target.closest("[data-tool]");if(!tb)return;var k=tb.getAttribute("data-tool");
+      if(k==="copy")copyText(SITE+"/"+viewQuery()+"#rep-h");
+      else if(k==="csv")saveCsv("355-atlantic-street-building-issues-"+iso(TODAY)+".csv",[csvHead()].concat(match(st.term,st.cat).map(csvLine)));}
+  };
   box.onclick=function(e){var c=e.target.closest("[data-copy]");if(c)copyLink(c.getAttribute("data-copy"));};
+  function clearFilters(){st.raw="";st.term="";st.cat="";q.value="";sel.value="";wrap.classList.remove("has");}
   APP.focusReport=function(id){
-    var idx=-1;for(var i=0;i<list.length;i++)if(list[i].id===id){idx=i;break;}
-    if(idx<0)return;if(idx>=limit){limit=idx+1;APP.repLimit=limit;draw();}
+    function find(){var l=match(st.term,st.cat);for(var i=0;i<l.length;i++)if(l[i].id===id)return i;return -1;}
+    var idx=find();if(idx<0){clearFilters();idx=find();}
+    if(idx<0)return;if(idx>=st.limit)st.limit=idx+1;draw();
     var el=document.getElementById("report-"+id);if(!el)return;
     Array.prototype.forEach.call(box.querySelectorAll(".report.hl"),function(x){x.classList.remove("hl");});
     el.classList.add("hl");el.scrollIntoView({block:"center"});var f=el.querySelector("button");if(f)f.focus({preventScroll:true});
   };
+  // The full log's search can hand its word over: "3 building issue reports also match"
+  APP.repMatch=function(term){return match(term,"").length;};
+  APP.showReports=function(raw){clearFilters();st.raw=raw;st.term=fold(raw.trim());st.limit=6;q.value=raw;wrap.classList.toggle("has",!!st.term);draw();syncUrl();document.getElementById("rep-h").scrollIntoView({block:"start"});};
+  APP.drawReports=draw;
   draw();
 })();
 
@@ -1107,27 +1347,100 @@ function whatCell(r,term){
     if(!rows.some(function(r){return r.c===c.k;}))return;
     var b=document.createElement("button");b.type="button";b.className="chip";b.dataset.k=c.k;b.style.setProperty("--sw",cv(c.k));
     b.innerHTML='<span class="sw" aria-hidden="true"></span>'+esc(c.n[LANG]);
-    b.addEventListener("click",function(){var allOn=CATS.every(function(cc){return active[cc.k];});if(allOn){CATS.forEach(function(cc){active[cc.k]=(cc.k===c.k);});}else{active[c.k]=!active[c.k];if(!CATS.some(function(cc){return active[cc.k];}))CATS.forEach(function(cc){active[cc.k]=true;});}sync();L.state.limit=25;L.draw();});
+    b.addEventListener("click",function(){var allOn=CATS.every(function(cc){return active[cc.k];});if(allOn){CATS.forEach(function(cc){active[cc.k]=(cc.k===c.k);});}else{active[c.k]=!active[c.k];if(!CATS.some(function(cc){return active[cc.k];}))CATS.forEach(function(cc){active[cc.k]=true;});}sync();L.state.limit=25;L.draw();syncUrl();});
     chips.appendChild(b);
   });
   function sync(){Array.prototype.forEach.call(chips.children,function(b){b.setAttribute("aria-pressed",active[b.dataset.k]?"true":"false");});}
   sync();
-  var typeSel=document.getElementById("typeSel");
-  var L=table({table:document.getElementById("log"),body:document.getElementById("logBody"),empty:document.getElementById("empty"),foot:document.getElementById("lfoot"),search:document.getElementById("q"),sortK:"d",page:25,sortSel:document.getElementById("lSort"),sorts:[{v:"new",l:"sort.new"},{v:"old",l:"sort.old"},{v:"c",l:"sort.cat"},{v:"t",l:"sort.type"}],
+  var typeSel=document.getElementById("typeSel");typeSel.value=APP.lst.type;
+  var L=table({state:APP.lst,table:document.getElementById("log"),body:document.getElementById("logBody"),empty:document.getElementById("empty"),foot:document.getElementById("lfoot"),search:document.getElementById("q"),sortK:"d",page:25,sortSel:document.getElementById("lSort"),sorts:[{v:"new",l:"sort.new"},{v:"old",l:"sort.old"},{v:"c",l:"sort.cat"},{v:"t",l:"sort.type"}],
     rows:function(){return rows;},
-    filter:function(r,st){if(!active[r.c])return false;if(st.type&&r.t!==st.type)return false;if(st.term){var hay=fold(r.s+" "+r.x+" "+r.w+" "+catName(r.c)+" "+typeWord(r)+" "+fmtRow(r)+" "+(r.updates||[]).map(function(u){return u.text||"";}).join(" "));if(hay.indexOf(st.term)<0)return false;}return true;},
-    resetFilters:function(st){CATS.forEach(function(c){active[c.k]=true;});sync();st.type="";typeSel.value="";st.term="";var q=document.getElementById("q");q.value="";q.parentElement.classList.remove("has");},
+    filter:function(r,st){if(!active[r.c])return false;if(st.type&&r.t!==st.type)return false;if(st.term){var hay=fold(r.s+" "+r.x+" "+r.w+" "+placeName(r.w)+" "+catName(r.c)+" "+typeWord(r)+" "+fmtRow(r)+" "+(r.updates||[]).map(function(u){return u.text||"";}).join(" "));if(hay.indexOf(st.term)<0)return false;}return true;},
+    resetFilters:function(st){CATS.forEach(function(c){active[c.k]=true;});sync();st.type="";typeSel.value="";st.raw="";st.term="";var q=document.getElementById("q");q.value="";q.parentElement.classList.remove("has");syncUrl();},
+    tools:function(st){var n=st.term&&APP.repMatch?APP.repMatch(st.term):0;return (n?'<button type="button" class="link" data-tool="reps">'+esc(n===1?t("log.alsoReport1"):t("log.alsoReports",{n:n}))+'</button>':'')+toolsHtml(["copy","csv","print"]);},
+    tool:function(k,st,all){
+      if(k==="copy")copyText(SITE+"/"+viewQuery()+"#log-h");
+      else if(k==="csv")saveCsv("355-atlantic-street-log-"+iso(TODAY)+".csv",[csvHead()].concat(all.map(csvLine)));
+      else if(k==="print"){document.body.classList.add("print-log");window.print();}
+      else if(k==="reps")APP.showReports(st.raw);
+    },
     row:function(r,term){
       var cls=(r.active?"active":r.recent?"recent":"");
       var catHtml=r.c==="you"?pill(r.cat,tcatName(r.cat),"tk"):pill(r.c);
-      return '<tr id="entry-'+esc(r.id)+'" data-id="'+esc(r.id)+'" class="'+cls+'"><td class="dt">'+whenCell(r)+'</td><td class="cat">'+catHtml+'</td><td class="typ '+r.t.toLowerCase()+'">'+esc(typeWord(r))+'</td>'+whatCell(r,term)+'<td class="where">'+esc(r.w)+(r.stack?", "+esc(t("lineOf",{x:r.stack})):"")+(r.copies>1?'<span class="end">'+esc(t("forwardedBy",{n:r.copies}))+'</span>':'')+'</td></tr>';}
+      return '<tr id="entry-'+esc(r.id)+'" data-id="'+esc(r.id)+'" class="'+cls+'"><td class="dt">'+whenCell(r)+'</td><td class="cat">'+catHtml+'</td><td class="typ '+r.t.toLowerCase()+'">'+esc(typeWord(r))+'</td>'+whatCell(r,term)+'<td class="where">'+esc(placeName(r.w))+(r.stack?", "+esc(t("lineOf",{x:r.stack})):"")+(r.copies>1?'<span class="end">'+esc(t("forwardedBy",{n:r.copies}))+'</span>':'')+'</td></tr>';}
   });
-  typeSel.onchange=function(){L.state.type=typeSel.value;L.state.limit=25;L.draw();};
+  typeSel.onchange=function(){L.state.type=typeSel.value;L.state.limit=25;L.draw();syncUrl();};
   L.draw();
+  APP.drawLog=L.draw;
   APP.focusEntry=function(id){if(!L.reveal(id)){var r=rows.filter(function(x){return x.id===id;})[0];if(!r)document.getElementById("log-h").scrollIntoView({block:"start"});}};
 })();
 }
 narrow.addEventListener?narrow.addEventListener("change",function(){if(APP.loaded)render();}):null;
+tlPin.addEventListener?tlPin.addEventListener("change",function(){if(APP.loaded)render();}):null;
+
+// ---------- still out / fixed ----------
+// What this browser already answered today, so the two buttons don't come back on the next visit
+function saidMap(){var m={};try{m=JSON.parse(store("asr_said")||"{}")||{};}catch(e){m={};}var day=iso(TODAY),out={};for(var k in m)if(String(m[k]).slice(0,10)===day)out[k]=m[k];return out;}
+function said(id){return !!saidMap()[id];}
+document.getElementById("activeList").addEventListener("click",function(e){
+  var b=e.target.closest("[data-cf] button");if(!b)return;
+  var box=b.closest("[data-cf]"),id=box.getAttribute("data-cf"),state=b.getAttribute("data-state"),btns=box.querySelectorAll("button");
+  Array.prototype.forEach.call(btns,function(x){x.disabled=true;});
+  fetch(API+"/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:id,state:state,lang:LANG})})
+  .then(function(r){return r.json();})
+  .then(function(r){
+    if(!r.ok)throw new Error("refused");
+    var m=saidMap();m[id]=iso(TODAY)+"|"+state;store("asr_said",JSON.stringify(m));
+    box.innerHTML='<span class="said" role="status">'+esc(t("cf.thanks"))+'</span>';
+  })
+  .catch(function(){Array.prototype.forEach.call(btns,function(x){x.disabled=false;});toast(t("cf.err"));});
+});
+
+// ---------- email alerts (shown only when the API says they are switched on) ----------
+(function(){
+  var btn=document.getElementById("alertsBtn"),box=document.getElementById("alertsBox"),form=document.getElementById("alertsForm"),st=document.getElementById("alertsStatus"),em=document.getElementById("alertsEmail"),send=document.getElementById("alertsSend");
+  btn.onclick=function(){var show=box.hidden;box.hidden=!show;btn.setAttribute("aria-expanded",show?"true":"false");if(show&&!form.hidden)em.focus();};
+  form.onsubmit=function(e){
+    e.preventDefault();
+    var v=em.value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){st.textContent=t("alerts.bad");em.focus();return;}
+    send.disabled=true;st.textContent="";
+    fetch(API+"/alerts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:v,lang:LANG})})
+    .then(function(r){return r.json();})
+    .then(function(r){if(!r.ok)throw new Error("refused");form.hidden=true;st.textContent=t("alerts.sent");})
+    .catch(function(){send.disabled=false;st.textContent=t("cf.err");});
+  };
+})();
+
+// ---------- printing: every row, written out in full; the log's Print button prints the log alone ----------
+(function(){
+  var saved=null;
+  function redraw(){if(APP.drawLog)APP.drawLog();if(APP.drawTickets)APP.drawTickets();if(APP.drawReports)APP.drawReports();}
+  window.addEventListener("beforeprint",function(){
+    if(!APP.loaded||saved)return;
+    saved=[APP.lst.limit,APP.tst.limit,APP.rst.limit];
+    APP.lst.limit=APP.tst.limit=APP.rst.limit=1e9;redraw();
+    var l=APP.lst,bits=[document.title,SITE.replace(/^https?:\/\//,""),fmt(TODAY)];
+    if(l.raw.trim())bits.push("“"+l.raw.trim()+"”");
+    if(l.type)bits.push(t("type."+l.type));
+    if(APP.logActive&&!CATS.every(function(c){return APP.logActive[c.k];}))bits.push(CATS.filter(function(c){return APP.logActive[c.k];}).map(function(c){return c.n[LANG];}).join(", "));
+    document.getElementById("printHead").textContent=bits.join(" · ");
+  });
+  window.addEventListener("afterprint",function(){
+    document.body.classList.remove("print-log");
+    if(!saved)return;
+    APP.lst.limit=saved[0];APP.tst.limit=saved[1];APP.rst.limit=saved[2];saved=null;redraw();
+  });
+})();
+
+// ---------- after a resize or a late font: re-check which rows need "more", and re-seat the timeline's names ----------
+(function(){
+  var h=0;
+  function again(){if(!APP.loaded)return;fitMore(document.getElementById("logBody"));fitMore(document.getElementById("ticketBody"));if(APP.tlPlace)APP.tlPlace();}
+  window.addEventListener("resize",function(){clearTimeout(h);h=setTimeout(again,150);});
+  if(document.fonts&&document.fonts.ready&&document.fonts.ready.then)document.fonts.ready.then(again);
+})();
+
 applyStatic();
 load();
 })();

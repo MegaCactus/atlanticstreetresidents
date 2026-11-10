@@ -30,7 +30,8 @@ h1,h2{font-family:"Fraunces","Iowan Old Style",Georgia,serif;font-weight:500;let
 .nav a.back{color:var(--harbor-muted);text-decoration:none;font-size:15px;padding:10px 0;white-space:nowrap}
 .nav a.back .s{display:none}
 @media (max-width:480px){.brand{font-size:16px;white-space:nowrap}.nav a.back .l{display:none}.nav a.back .s{display:inline}.navr{gap:8px}}
-.lang{background:none;border:1px solid rgba(255,255,255,.25);color:var(--harbor-ink);border-radius:8px;padding:7px 10px;cursor:pointer;font:inherit;font-size:14px}
+.lang{background:none;border:1px solid rgba(255,255,255,.25);color:var(--harbor-ink);border-radius:8px;padding:7px 10px;cursor:pointer;font:inherit;font-size:14px;line-height:1.2;white-space:nowrap;text-decoration:none;display:inline-block}
+@media (max-width:360px){.nav .wrap{gap:8px;padding:0 12px}.brand{font-size:15px}.lang{padding:7px 8px}.nav a.back{font-size:14px}}
 main{padding:32px 0 72px}
 h1{font-size:36px;line-height:1.1}
 .lead{color:var(--muted);margin:12px 0 0;max-width:60ch}
@@ -93,7 +94,7 @@ details fieldset{margin-top:6px}
 </head>
 <body>
 <a class="skip" href="#main" data-i18n="skip">Skip to the form</a>
-<header class="nav"><div class="wrap"><a class="brand" href="index.html">355 Atlantic Street</a><div class="navr"><button class="lang" id="langBtn" type="button" lang="es">Español</button><a class="back" href="index.html"><span class="l" data-i18n="back">Back to the record</span><span class="s" data-i18n="backShort">Record</span></a></div></div></header>
+<header class="nav"><div class="wrap"><a class="brand" href="index.html">355 Atlantic Street</a><div class="navr"><a class="lang" id="langBtn" href="?lang=es" hreflang="es" lang="es">Español</a><a class="back" href="index.html"><span class="l" data-i18n="back">Back to the record</span><span class="s" data-i18n="backShort">Record</span></a></div></div></header>
 <main class="wrap" id="main" tabindex="-1">
 <h1 data-i18n="h1">Add your ticket or report</h1>
 <p class="lead" data-i18n="lead">A maintenance ticket is a problem inside your apartment that you reported to the building. A building issue is anything happening in the building you want on the record, with photos. Everything is reviewed before it appears.</p>
@@ -213,7 +214,10 @@ details fieldset{margin-top:6px}
 "use strict";
 var API="https://api.atlanticstreetresidents.com";
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){}return null;}
-var LANG=(function(){var q=/[?&]lang=(en|es)\b/.exec(location.search);if(q)return q[1];var s=store("asr_lang");if(s==="en"||s==="es")return s;return /^es\b/i.test(navigator.language||"")?"es":"en";})();
+var LANG_Q=/[?&]lang=(en|es)\b/.exec(location.search);
+// LANG_SET: the address names a language (?lang=es), so the links back to the record keep naming it
+var LANG_SET=!!LANG_Q;
+var LANG=(function(){if(LANG_Q)return LANG_Q[1];var s=store("asr_lang");if(s==="en"||s==="es")return s;return /^es\b/i.test(navigator.language||"")?"es":"en";})();
 var I18N={en:{
 "skip":"Skip to the form","back":"Back to the record","backShort":"← Record","lang.other":"Español","h1":"Add your ticket or report","lead":"A maintenance ticket is a problem inside your apartment that you reported to the building. A building issue is anything happening in the building you want on the record, with photos. Everything is reviewed before it appears.",
 "kind.legend":"What are you adding?","kind.ticket":"Maintenance ticket","kind.ticket.d":"A problem in your apartment, like no hot water or a sink coming off the wall.","kind.report":"Building issue","kind.report.d":"Something in the building: a leak in a hallway, a broken elevator or gate, a closed amenity.",
@@ -225,7 +229,7 @@ var I18N={en:{
 "by":"Post this report as","by.anon":"Anonymous","by.name":"With my name","by.nameLabel":"Name as it should appear",
 "more":"Add photos or an email for replies","photos":"Photos","photos.hint":"Up to three. They are resized and stripped of location and device data before they leave your phone.","photos.drop":"Tap to add photos, or drop them here","photo.alt":"Selected photo {n}","photo.remove":"Remove photo {n}","contact":"Email, if you want a reply (never published)",
 "send":"Send for review","sending":"Sending…","sendingPhotos":"Sending with {n} photo(s)…",
-"err.title":"Give it a one-line title first.","err.text":"Add a few words of detail (at least 10 characters).","err.cat":"Choose a category.","err.unit":"That looks like a unit number. Remove it so the record stays anonymous.","err.end":"The fix date can't be before the start date.","err.net":"Something went wrong. Check your connection and try again.",
+"err.title":"Give it a one-line title first.","err.text":"Add a few words of detail (at least 10 characters).","err.cat":"Choose a category.","err.where":"Choose where it happened.","err.unit":"That looks like a unit number. Remove it so the record stays anonymous.","err.end":"The fix date can't be before the start date.","err.net":"Something went wrong. Check your connection and try again.",
 "done.h":"Held for review","done.p":"Thanks. Here is what happens next:","done.1":"The site's editor gets an email with your submission right away.","done.2":"It is checked for relevance and for anything that could identify a resident.","done.3t":"Once approved, it appears in the <a href=\"index.html#you-h\">resident maintenance tickets</a> and the full log.","done.3r":"Once approved, it appears under <a href=\"index.html#rep-h\">reported building issues</a>.","done.back":"Back to the record","done.again":"Add another"
 },es:{
 "skip":"Ir al formulario","back":"Volver al registro","backShort":"← Registro","lang.other":"English","h1":"Agregue su solicitud o reporte","lead":"Una solicitud de mantenimiento es un problema dentro de su apartamento que reportó al edificio. Un problema del edificio es cualquier cosa que esté pasando en el edificio y que quiera dejar registrada, con fotos. Todo se revisa antes de publicarse.",
@@ -238,7 +242,7 @@ var I18N={en:{
 "by":"Publicar este reporte como","by.anon":"Anónimo","by.name":"Con mi nombre","by.nameLabel":"Nombre como debe aparecer",
 "more":"Agregar fotos o un correo para respuestas","photos":"Fotos","photos.hint":"Hasta tres. Se reducen y se les quitan los datos de ubicación y del dispositivo antes de salir de su teléfono.","photos.drop":"Toque para agregar fotos, o suéltelas aquí","photo.alt":"Foto seleccionada {n}","photo.remove":"Quitar la foto {n}","contact":"Correo, si quiere una respuesta (nunca se publica)",
 "send":"Enviar para revisión","sending":"Enviando…","sendingPhotos":"Enviando con {n} foto(s)…",
-"err.title":"Primero escriba un título de una línea.","err.text":"Agregue algunos detalles (al menos 10 caracteres).","err.cat":"Elija una categoría.","err.unit":"Eso parece un número de apartamento. Quítelo para que el registro siga siendo anónimo.","err.end":"La fecha de arreglo no puede ser anterior a la de inicio.","err.net":"Algo salió mal. Revise su conexión e inténtelo de nuevo.",
+"err.title":"Primero escriba un título de una línea.","err.text":"Agregue algunos detalles (al menos 10 caracteres).","err.cat":"Elija una categoría.","err.where":"Elija dónde ocurrió.","err.unit":"Eso parece un número de apartamento. Quítelo para que el registro siga siendo anónimo.","err.end":"La fecha de arreglo no puede ser anterior a la de inicio.","err.net":"Algo salió mal. Revise su conexión e inténtelo de nuevo.",
 "done.h":"En revisión","done.p":"Gracias. Esto es lo que sigue:","done.1":"El editor del sitio recibe de inmediato un correo con su envío.","done.2":"Se revisa que sea pertinente y que no tenga nada que identifique a un residente.","done.3t":"Una vez aprobado, aparece en las <a href=\"index.html#you-h\">solicitudes de mantenimiento de residentes</a> y en el registro completo.","done.3r":"Una vez aprobado, aparece en <a href=\"index.html#rep-h\">problemas del edificio reportados</a>.","done.back":"Volver al registro","done.again":"Agregar otro"
 }};
 function t(k,v){var s=(I18N[LANG]&&I18N[LANG][k]!=null)?I18N[LANG][k]:(I18N.en[k]!=null?I18N.en[k]:k);if(v)s=s.replace(/\{(\w+)\}/g,function(m,n){return v[n]!=null?v[n]:m;});return s;}
@@ -248,11 +252,15 @@ function kind(){return document.querySelector('input[name="kind"]:checked').valu
 function applyLang(){
   document.documentElement.lang=LANG;
   Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"),function(el){el.textContent=t(el.getAttribute("data-i18n"));});
-  $("langBtn").textContent=t("lang.other");$("langBtn").setAttribute("lang",LANG==="es"?"en":"es");
+  var other=LANG==="es"?"en":"es",lb=$("langBtn");
+  lb.textContent=t("lang.other");lb.setAttribute("lang",other);lb.setAttribute("hreflang",other);lb.setAttribute("href","?lang="+other+location.hash);
   Array.prototype.forEach.call(document.querySelectorAll("#letters input"),function(b){var sp=b.nextElementSibling;if(b.value)sp.setAttribute("aria-label",t("line.label",{x:b.value}));else sp.textContent=t("line.none");});
-  setKind(kind(),true);suggest();drawThumbs();
+  setKind(kind());suggest();drawThumbs();
 }
-$("langBtn").onclick=function(){LANG=LANG==="es"?"en":"es";store("asr_lang",LANG);applyLang();};
+// Links back to the record keep the language when the address names one
+function backLinks(){Array.prototype.forEach.call(document.querySelectorAll('a[href^="index.html"],a[href^="submit.html"]'),function(a){var h=a.getAttribute("href").replace(/\?lang=(en|es)/,""),i=h.indexOf("#"),page=h.slice(0,i<0?h.length:i);a.setAttribute("href",page+(LANG_SET?"?lang="+LANG:"")+(i<0?"":h.slice(i)));});}
+// The language switch is a real link (?lang=es) that also works in place, keeping what has been typed
+$("langBtn").onclick=function(e){e.preventDefault();LANG=LANG==="es"?"en":"es";LANG_SET=true;store("asr_lang",LANG);applyLang();try{history.replaceState(null,"","?lang="+LANG+location.hash);}catch(x){}};
 
 // Unit-line letters as a radio group
 var L=$("letters");
@@ -260,18 +268,19 @@ var L=$("letters");
 (function(){var lab=document.createElement("label");lab.className="choice none";lab.innerHTML='<input type="radio" name="line" value="" checked><span></span>';L.appendChild(lab);})();
 L.addEventListener("change",function(){var c=document.querySelector('input[name="line"]:checked');$("stack").value=c?c.value:"";});
 
-function setWhere(w){Array.prototype.forEach.call(document.querySelectorAll('input[name="where"]'),function(r){r.checked=r.value===w;});}
-function setKind(k,keepWhere){
+function setKind(k){
   Array.prototype.forEach.call(document.querySelectorAll('input[name="kind"]'),function(r){r.checked=r.value===k;});
   $("byWrap").hidden=k!=="report";
   $("titleLabel").textContent=k==="ticket"?t("title.ticket"):t("title.report");
   $("title").placeholder=k==="ticket"?t("ph.ticket"):t("ph.report");
   $("textHint").textContent=k==="ticket"?t("hint.ticket"):t("hint.report");
-  if(!keepWhere)setWhere(k==="ticket"?"Floors 17–26":"Whole building");
   $("done3").innerHTML=k==="ticket"?t("done.3t"):t("done.3r");
+  backLinks();
 }
-$("kindSet").addEventListener("change",function(){setKind(kind());});
-window.addEventListener("hashchange",function(){setKind(location.hash==="#report"?"report":"ticket");});
+// A building issue is the kind that comes with photos, so the photo area is already open for it
+function pickKind(k){setKind(k);if(k==="report")$("moreWrap").open=true;}
+$("kindSet").addEventListener("change",function(){pickKind(kind());});
+window.addEventListener("hashchange",function(){pickKind(location.hash==="#report"?"report":"ticket");});
 
 // Local date, not UTC
 function localISO(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
@@ -316,12 +325,13 @@ form.onsubmit=function(e){
   if(title.length<4)return fail(t("err.title"),$("title"));
   if(text.length<10)return fail(t("err.text"),$("text"));
   if(!cat)return fail(t("err.cat"),$("cat"));
+  var whereEl=document.querySelector('input[name="where"]:checked');
+  if(!whereEl)return fail(t("err.where"),document.querySelector('input[name="where"]'));
   if(/(^|[^A-Za-z0-9])[0-9]{1,2}[A-Z]([^A-Za-z0-9]|$)/.test(title+" "+text))return fail(t("err.unit"),$("text"));
   var still=document.querySelector('input[name="still"]:checked').value,end=still==="resolved"?$("end").value:"",start=$("date").value;
   if(end&&start&&end<start)return fail(t("err.end"),$("end"));
-  var whereEl=document.querySelector('input[name="where"]:checked');
   var anon=document.querySelector('input[name="anon"]:checked').value==="1";
-  var body={kind:kind(),title:title,text:text,cat:cat,where:whereEl?whereEl.value:"Whole building",date:start,status:still,end:end,stack:$("stack").value,anon:anon,name:anon?"":$("name").value.trim(),contact:$("contact").value.trim(),images:images,thumbs:thumbs,website:form.website.value,lang:LANG};
+  var body={kind:kind(),title:title,text:text,cat:cat,where:whereEl.value,date:start,status:still,end:end,stack:$("stack").value,anon:anon,name:anon?"":$("name").value.trim(),contact:$("contact").value.trim(),images:images,thumbs:thumbs,website:form.website.value,lang:LANG};
   send.disabled=true;status.textContent=images.length?t("sendingPhotos",{n:images.length}):t("sending");
   fetch(API+"/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
   .then(function(r){return r.json();})
@@ -331,7 +341,7 @@ form.onsubmit=function(e){
   })
   .catch(function(err){send.disabled=false;fail(err.message||t("err.net"));});
 };
-setKind(location.hash==="#report"?"report":"ticket");
+pickKind(location.hash==="#report"?"report":"ticket");
 applyLang();
 })();
 </script>
