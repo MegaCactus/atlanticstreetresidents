@@ -539,6 +539,9 @@ body.print-log #logSec{padding-top:0}
 "use strict";
 var API="https://api.atlanticstreetresidents.com";
 var SITE="https://atlanticstreetresidents.com";
+// Each entry also has a page of its own at SITE/entry/<id>, drawn by the API worker (two Cloudflare routes, /entry/* and
+// /sitemap.xml, point at it). "Copy link" and the CSV give those addresses. Set this to false if the routes are removed.
+var ENTRY_PAGES=true;
 var DAY=86400000, NL=String.fromCharCode(10);
 var TODAY=(function(){var n=new Date();return Date.UTC(n.getFullYear(),n.getMonth(),n.getDate());})();
 var narrow=window.matchMedia("(max-width:720px)"),tlPin=window.matchMedia("(max-width:840px)");
@@ -742,8 +745,8 @@ lb.addEventListener("click",function(e){if(e.target!==lbImg)closeLb();});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeLb();hideTip();}});
 document.addEventListener("click",function(e){var b=e.target.closest("[data-zoom]");if(b){e.preventDefault();openLb(b.getAttribute("data-zoom"),b.getAttribute("data-alt"));}});
 function imgUrl(id,thumb){return API+"/img/"+encodeURIComponent(id)+(thumb?"?s=t":"");}
-// An entry's own page when the site serves them (APP.pages), otherwise the entry's place in the log
-function entryUrl(hash){var m=/^#(?:entry|report)-(.+)$/.exec(hash),lq=LANG_SET?"?lang="+LANG:"";return APP.pages&&m?SITE+"/entry/"+m[1]+lq:SITE+"/"+lq+hash;}
+// An entry's own page when the site serves them (ENTRY_PAGES), otherwise the entry's place in the log
+function entryUrl(hash){var m=/^#(?:entry|report)-(.+)$/.exec(hash),lq=LANG_SET?"?lang="+LANG:"";return (APP.pages||ENTRY_PAGES)&&m?SITE+"/entry/"+m[1]+lq:SITE+"/"+lq+hash;}
 function copyText(u){function done(){toast(t("copied"));}
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(done,function(){toast(t("copyFail",{u:u}));});}
   else{var ta=document.createElement("textarea");ta.value=u;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");done();}catch(e){toast(t("copyFail",{u:u}));}ta.remove();}
