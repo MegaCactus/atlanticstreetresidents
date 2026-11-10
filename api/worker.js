@@ -3,16 +3,26 @@ import { EmailMessage } from "cloudflare:email";
 // 355 Atlantic Street residents API (asr-api)
 // Bindings: DB (KV: photos, rate limits, the signing key, and a mirror of the records), SQL (D1, optional: the
 // records, written with compare-and-swap so two emails that arrive together can't erase each other), EMAIL (send_email).
-// Vars: OWNER_EMAIL, FROM_EMAIL, SITE_ORIGIN, API_ORIGIN, TRUSTED_SENDERS, ADMIN_USER, ADMIN_HASH, IMPORT_KEY.
+// Vars: OWNER_EMAIL, FROM_EMAIL, SITE_ORIGIN, API_ORIGIN, TRUSTED_SENDERS, ADMIN_USER, ADMIN_HASH, IMPORT_KEY,
+// ALERTS (optional: "on" turns on email alerts to subscribers; see alertsOn).
 // Cron trigger (hourly): ends water/heat outages that never got a restoration email, and sends "still out?" check-ins.
+// Routes: api.atlanticstreetresidents.com (everything in route() below), plus three paths on the site's own address
+// that this Worker answers instead of GitHub Pages: /, /entry/* and /sitemap.xml (see sitePages).
 
 const CATS = ["water","hvac","elev","win","fire","amen","garage","pm","clean","you","other"];
 const ORIGINS = ["https://atlanticstreetresidents.com","http://atlanticstreetresidents.com","https://www.atlanticstreetresidents.com","http://www.atlanticstreetresidents.com","http://localhost:8125"];
 
 export default {
   async fetch(request, env, ctx) {
+    // The site's own address reaches this Worker on a few routes; those requests are a separate matter (sitePages)
+    if (isSiteHost(request, env)) return sitePages(request, env, ctx);
     try { await migrate(env, ctx); } catch (e) { console.log("migration failed: " + (e && e.message)); }
-    try { return await route(request, env, ctx); }
+    try {
+      const res = await route(request, env, ctx);
+      // After anything that can change the public record, look at what changed (search engines, email alerts)
+      if (request.method === "POST" && /^\/(admin\/act|a|s|g)\/?$/.test(new URL(request.url).pathname) && ctx && ctx.waitUntil) ctx.waitUntil(announce(env, ctx).catch(e => console.log("announce failed: " + (e && e.message))));
+      return res;
+    }
     catch (e) { return json({ ok: false, error: String(e && e.message || e) }, 500, request); }
   },
   async email(message, env, ctx) {
@@ -20,10 +30,12 @@ export default {
     try { await ingestEmail(message, env, ctx); }
     catch (e) { console.log("ingest failed: " + (e && e.message) + " " + (e && e.stack)); }
     try { await message.forward(env.OWNER_EMAIL); } catch (e) { console.log("forward failed: " + (e && e.message)); }
+    try { await announce(env, ctx); } catch (e) { console.log("announce failed: " + (e && e.message)); }
   },
   async scheduled(event, env, ctx) {
     try { await migrate(env, ctx); } catch (e) { console.log("migration failed: " + (e && e.message)); }
     await runSchedule(env, ctx, true);
+    try { await announce(env, ctx); } catch (e) { console.log("announce failed: " + (e && e.message)); }
   }
 };
 
@@ -189,6 +201,9 @@ async function route(request, env, ctx) {
   if (path === "/calendar.ics" && request.method === "GET") return feedIcs(env);
   if (path === "/feed.xml" && request.method === "GET") return feedRss(env);
   if (path === "/submit" && request.method === "POST") return submit(request, env, ctx);
+  if (path === "/confirm" && request.method === "POST") return confirmTap(request, env, ctx);
+  if (path === "/alerts" && request.method === "POST") return alertsSignup(request, env, ctx);
+  if ((path === "/alerts/confirm" || path === "/alerts/stop") && (request.method === "GET" || request.method === "POST")) return alertsLink(url, env, request, ctx, path === "/alerts/stop");
   if (path === "/a" && (request.method === "GET" || request.method === "POST")) return actFromLink(url, env, request, ctx);
   if (path === "/s" && (request.method === "GET" || request.method === "POST")) return statusLink(url, env, request, ctx);
   if (path === "/g" && (request.method === "GET" || request.method === "POST")) return publishHeldLink(url, env, request, ctx);
@@ -208,8 +223,8 @@ async function publicRecord(request, env, ctx) {
   try { pub = await readDoc(env, "pub"); }
   catch (e) { console.log("record read failed, using the mirror: " + (e && e.message)); pub = fixShape("pub", await env.DB.get("pub", "json")); }
   sweepSoon(env, ctx);
-  const out = { incidents: pub.incidents, reports: pub.reports };
-  if (pub.banner) out.banner = pub.banner;
+  const out = sitePub(pub);
+  out.caps = caps(env);
   return json(out, 200, request, { "Cache-Control": "public, max-age=60" });
 }
 async function serveImage(url, path, env) {
@@ -400,6 +415,15 @@ function publishPending(pub, items) {
   for (const raw of items) {
     if (findAnywhere(pub, raw.id) || seenEmail(pub, "p:" + raw.id)) continue;
     const item = Object.assign({}, raw); delete item.ip; delete item.contact;
+    // A resident's one-tap answer on an active entry: "it's fixed" closes it, "still out" adds a dated confirmation
+    if (item.kind === "confirm") {
+      const x = findAnywhere(pub, item.ref), day = String(item.d).slice(0, 10);
+      if (!x) continue;
+      if (item.state === "resolved") { if (x.status === "resolved") continue; closeEntry(x, day, item.at, ""); x.checkedAt = day; }
+      else { x.status = "open"; x.e = ""; if (x.dur && /no restoration notice/.test(x.dur)) x.dur = ""; addUpdate(x, day, "Residents confirm it is still out.", "p:" + item.id); x.checkedAt = day; }
+      n++;
+      continue;
+    }
     // A building update or restoration attaches to the open entry it belongs to, when there is one
     if (item.kind === "incident" && (item.gk === "restored" || item.gk === "update")) {
       const day = String(item.d).slice(0, 10);
@@ -550,7 +574,9 @@ async function adminList(request, env, ctx) {
   const pend = await readListDoc(env, "pend");
   const pub = await readDoc(env, "pub");
   const held = await readListDoc(env, "held");
-  return json({ ok: true, today: todayNY(), pending: pend, incidents: pub.incidents, reports: pub.reports, banner: pub.banner || null, held: held.slice(0, 60), store: env.SQL ? "d1" : "kv" });
+  const subs = alertsOn(env) ? await readListDoc(env, "subs") : [];
+  return json({ ok: true, today: todayNY(), pending: pend, incidents: pub.incidents, reports: pub.reports, banner: pub.banner || null, held: held.slice(0, 60), store: env.SQL ? "d1" : "kv",
+    alerts: { on: alertsOn(env), confirmed: subs.filter(s => s.ok).length, waiting: subs.filter(s => !s.ok).length } });
 }
 function applyPendingEdit(it, e) {
   if (e.s != null) { const t = String(e.s).trim().slice(0, 140); if (t) { if (it.kind === "report") it.title = t; else it.s = t; } }
@@ -810,6 +836,7 @@ details.box summary{cursor:pointer;font-weight:600}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <main>
 <p id="thumbState" aria-live="polite"></p>
+<p class="meta" id="alertsLine"></p>
 <h2>Waiting for review <span id="pc"></span> <button class="secondary small" style="margin-left:12px" data-do="approveAll">Approve everything waiting</button></h2>
 <div id="pending"></div>
 <h2>Still going <span id="oc"></span></h2>
@@ -871,6 +898,7 @@ function load(){
     var held=d.held||[];
     document.getElementById("hc").textContent="("+held.length+")";
     document.getElementById("held").innerHTML=held.length?held.map(heldRow).join(""):'<p class="empty">None so far.</p>';
+    document.getElementById("alertsLine").textContent=d.alerts?(d.alerts.on?"Email alerts are on: "+d.alerts.confirmed+" subscribed, "+d.alerts.waiting+" waiting to confirm.":"Email alerts are off. The site hides the sign-up until the ALERTS variable is set to on."):"";
     document.getElementById("bannerText").value=(d.banner&&d.banner.text)||"";
     document.getElementById("bannerState").textContent=(d.banner&&d.banner.text)?"Custom text is showing on the site.":"Automatic.";
     renderBannerNow(d);
@@ -907,6 +935,12 @@ function heldRow(h){
     '<div class="row"><button class="small" data-do="postHeld">Post it on the site</button><button class="small danger" data-do="dropHeld">Remove from this list</button></div></div></div>';
 }
 function card(it){
+  if(it.kind==="confirm"){
+    var ref=BY[it.ref];
+    return '<div class="item row" data-id="'+esc(it.id)+'" data-pending="1"><div><p class="meta">One-tap answer from the site · '+esc(String(it.at||"").slice(0,16).replace("T"," "))+' · '+(it.copies>1?it.copies+' taps':'1 tap')+'</p><strong>'+esc(it.s)+'</strong>'+
+      (ref?'<p class="meta" style="margin-top:6px">On the site since '+esc(fmtD(ref.d))+(ref.status==="open"?', shown as still going':'')+'. Approving '+(it.state==="resolved"?'marks it resolved on '+esc(fmtD(it.d))+'.':'keeps it open and adds the update “Residents confirm it is still out.” dated '+esc(fmtD(it.d))+'.')+'</p>':'<p class="meta" style="margin-top:6px">The entry it is about is no longer on the site. Reject this.</p>')+
+      '<div class="row"><button data-do="approve">Approve</button><button class="danger" data-do="reject">Reject</button></div></div></div>';
+  }
   var kind=(it.src==="discord"?"Discord ":"")+(it.kind==="report"?"Report":(it.kind==="incident"?(it.via===""?"Building email":"Notice"):"Ticket"));
   var who=it.kind==="report"?(it.anon?"anonymous":(it.name||"no name")):"";
   var state=it.state||"";
@@ -1690,6 +1724,618 @@ async function feedRss(env) {
     items.slice(0, 50).map(i => "<item><title>" + xmlEsc(i.title) + "</title><link>" + xmlEsc(env.SITE_ORIGIN + "/" + i.link) + '</link><guid isPermaLink="false">' + xmlEsc(i.guid) + "</guid><pubDate>" + i.date + "</pubDate><description>" + xmlEsc(String(i.desc).slice(0, 600)) + "</description></item>").join("") +
     "</channel></rss>";
   return new Response(body, { headers: { "Content-Type": "application/rss+xml; charset=utf-8", "Cache-Control": "public, max-age=600", "Access-Control-Allow-Origin": "*" } });
+}
+
+// ---------- one tap from the site: "still out" or "it's fixed" on an active entry ----------
+// Anyone can tap, so a tap changes nothing by itself: it becomes one item in the review queue (more taps for the
+// same answer only raise its count), and the owner gets one email with approve and reject links.
+function isAskable(x, today) {
+  if (!x || x.c === "you" || !(x.title !== undefined || x.t === "U") || !validDate(String(x.d).slice(0, 10))) return false;
+  const age = daysBetween(String(x.d).slice(0, 10), today);
+  if (age < 0 || x.banner === "hide") return false;
+  if (x.status === "open" || (x.banner === "pin" && (!x.pinUntil || x.pinUntil >= today))) return true;
+  return !x.status && !x.e && age <= (x.title !== undefined ? 7 : 3);
+}
+async function confirmTap(request, env, ctx) {
+  const ip = request.headers.get("CF-Connecting-IP") || "0";
+  let body;
+  try { body = await request.json(); } catch (e) { return json({ ok: false, error: "The answer could not be read." }, 400, request); }
+  const ref = String(body.id || "").slice(0, 80);
+  const state = body.state === "resolved" ? "resolved" : body.state === "open" ? "open" : "";
+  if (!ref || !state) return json({ ok: false, error: "The answer could not be read." }, 400, request);
+  const today = todayNY();
+  // One answer per connection, per entry, per day; a repeat is thanked and dropped
+  const seenKey = "cf:" + (await sha(ip + "|" + ref)).slice(0, 32) + ":" + today;
+  if (await env.DB.get(seenKey)) return json({ ok: true }, 200, request);
+  const rlKey = "cfr:" + ip + ":" + new Date().toISOString().slice(0, 13);
+  const count = parseInt((await env.DB.get(rlKey)) || "0", 10);
+  if (count >= 12) return json({ ok: false, error: "Too many answers from this connection. Try again in an hour." }, 429, request);
+  const x = findAnywhere(await readDoc(env, "pub"), ref);
+  if (!isAskable(x, today)) return json({ ok: false, error: "That entry is not waiting on an answer." }, 404, request);
+  await env.DB.put(rlKey, String(count + 1), { expirationTtl: 3600 });
+  await env.DB.put(seenKey, "1", { expirationTtl: 2 * 86400 });
+  const title = (state === "resolved" ? "Fixed: " : "Still out: ") + (x.s || x.title || "");
+  let made = null, full = false;
+  await mutateDoc(env, "pend", pend => {
+    made = null; full = false;
+    const same = pend.find(p => p.kind === "confirm" && p.ref === ref && p.state === state);
+    if (same) { same.copies = (same.copies || 1) + 1; same.d = today; same.at = new Date().toISOString(); return; }
+    if (pend.length >= PEND_MAX) { full = true; return false; }
+    made = { id: id(), kind: "confirm", ref: ref, state: state, s: title.slice(0, 160), d: today, at: new Date().toISOString(), status: "pending", copies: 1, img: [], ip: ip.slice(0, 64) };
+    pend.unshift(made);
+  }, ctx);
+  if (full) return json({ ok: false, error: "The review queue is full. Try again tomorrow." }, 503, request);
+  if (made) {
+    try {
+      const approve = env.API_ORIGIN + "/a?id=" + made.id + "&act=approve&t=" + encodeURIComponent(await sign(env, { p: "act", id: made.id, act: "approve", exp: Date.now() + 30 * 86400000 }));
+      const reject = env.API_ORIGIN + "/a?id=" + made.id + "&act=reject&t=" + encodeURIComponent(await sign(env, { p: "act", id: made.id, act: "reject", exp: Date.now() + 30 * 86400000 }));
+      await sendMail(env, "[Review] A resident says " + (state === "resolved" ? "it's fixed: " : "it's still out: ") + (x.s || x.title || ""),
+        "Someone tapped \"" + (state === "resolved" ? "It's fixed" : "Still out") + "\" on the site for:\n\n" + (x.s || x.title || "") + " (on the site since " + String(x.d).slice(0, 10) + ")\n\n" +
+        (state === "resolved" ? "Approving marks it resolved on " + today + "." : "Approving keeps it open and adds the update \"Residents confirm it is still out.\" dated " + today + ".") +
+        "\n\nApprove: " + approve + "\nReject: " + reject + "\n\nMore taps for the same answer raise the count on the review page instead of sending another email: " + env.API_ORIGIN + "/admin\n");
+    } catch (e) { console.log("notify failed: " + (e && e.message)); }
+  }
+  return json({ ok: true }, 200, request);
+}
+async function sha(text) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(b)).map(v => v.toString(16).padStart(2, "0")).join("");
+}
+
+// ---------- email alerts: off unless the ALERTS variable is set to "on" ----------
+// An alert goes to people's own addresses, which the owner-only EMAIL binding cannot do. Turning this on needs
+// Cloudflare Email Sending for the domain (a paid Workers feature) and an EMAIL binding that is not limited to one
+// destination; then set the variable ALERTS to "on". While it is off the site hides the sign-up and /alerts refuses.
+// Addresses live in the "subs" record (never on the public record): { h: hash, email, lang, at, ok }.
+function alertsOn(env) { return env.ALERTS === "on"; }
+const SUBS_MAX = 500, ALERT_BATCH = 40;
+const AW = {
+  en: { confirmSubject: "Confirm email alerts for 355 Atlantic Street", confirmBody: "Someone asked for email alerts from the residents' maintenance record at 355 Atlantic Street to be sent to this address.\n\nTo start them, confirm here:\n{link}\n\nIf that wasn't you, ignore this email and nothing more will be sent.\n",
+    askH: "Start the email alerts?", askP: "You get an email when a new outage is posted and when it is fixed.", askB: "Yes, start them", doneH: "Email alerts are on.", stopH: "Stop the email alerts?", stopB: "Stop the alerts", stoppedH: "Email alerts are off for this address.", badH: "That link is invalid or has expired.", backA: "Back to the record",
+    newS: "Outage: {title}", fixedS: "Resolved: {title}", fixedL: "Resolved {date}{dur}.", foot: "You asked for these alerts at atlanticstreetresidents.com. To stop them:\n{link}\n" },
+  es: { confirmSubject: "Confirme las alertas por correo de 355 Atlantic Street", confirmBody: "Alguien pidió que las alertas por correo del registro de mantenimiento de los residentes de 355 Atlantic Street se envíen a esta dirección.\n\nPara activarlas, confirme aquí:\n{link}\n\nSi no fue usted, ignore este correo y no se enviará nada más.\n",
+    askH: "¿Activar las alertas por correo?", askP: "Recibirá un correo cuando se publique una nueva interrupción y cuando se resuelva.", askB: "Sí, activarlas", doneH: "Las alertas por correo están activadas.", stopH: "¿Dejar de recibir las alertas por correo?", stopB: "Detener las alertas", stoppedH: "Las alertas por correo están desactivadas para esta dirección.", badH: "Ese enlace no es válido o ya venció.", backA: "Volver al registro",
+    newS: "Interrupción: {title}", fixedS: "Resuelto: {title}", fixedL: "Resuelto el {date}{dur}.", foot: "Usted pidió estas alertas en atlanticstreetresidents.com. Para dejar de recibirlas:\n{link}\n" }
+};
+function aw(lang, k, v) { let s = (AW[lang === "es" ? "es" : "en"])[k]; if (v) s = s.replace(/\{(\w+)\}/g, (m, n) => v[n] != null ? v[n] : m); return s; }
+async function sendTo(env, to, subject, text) { await env.EMAIL.send({ from: env.FROM_EMAIL, to: to, subject: subject.replace(/[\r\n]/g, " "), text: text }); }
+async function alertsSignup(request, env, ctx) {
+  if (!alertsOn(env)) return json({ ok: false, error: "Email alerts are not switched on." }, 503, request);
+  const ip = request.headers.get("CF-Connecting-IP") || "0";
+  const rlKey = "alr:" + ip + ":" + new Date().toISOString().slice(0, 13);
+  const count = parseInt((await env.DB.get(rlKey)) || "0", 10);
+  if (count >= 5) return json({ ok: false, error: "Too many sign-ups from this connection. Try again in an hour." }, 429, request);
+  await env.DB.put(rlKey, String(count + 1), { expirationTtl: 3600 });
+  let body;
+  try { body = await request.json(); } catch (e) { return json({ ok: false, error: "The sign-up could not be read." }, 400, request); }
+  const email = String(body.email || "").trim();
+  if (email.length > 120 || !/^[^@\s<>"',;:\\()\[\]]+@[^@\s<>"',;:\\()\[\]]+\.[A-Za-z]{2,}$/.test(email)) return json({ ok: false, error: "That doesn't look like an email address." }, 400, request);
+  const lang = body.lang === "es" ? "es" : "en", h = await sha("sub|" + email.toLowerCase()), now = Date.now();
+  let send = false, full = false;
+  await mutateDoc(env, "subs", subs => {
+    send = false; full = false;
+    const s = subs.find(v => v.h === h);
+    if (s) {
+      // Already on the list: say nothing different (so nobody can test who is subscribed), and don't re-send within 10 minutes
+      if (s.ok || (s.sent && now - s.sent < 600000)) return false;
+      s.sent = now; s.lang = lang; send = true; return;
+    }
+    if (subs.length >= SUBS_MAX) { full = true; return false; }
+    subs.push({ h: h, email: email, lang: lang, at: new Date(now).toISOString(), ok: false, sent: now });
+    send = true;
+  }, ctx);
+  if (full) return json({ ok: false, error: "The alerts list is full." }, 503, request);
+  if (send) {
+    try { await sendTo(env, email, aw(lang, "confirmSubject"), aw(lang, "confirmBody", { link: await link(env, "/alerts/confirm", { p: "sub", h: h }, 7) })); }
+    catch (e) { console.log("alerts: confirmation not sent: " + (e && e.message)); return json({ ok: false, error: "The confirmation email could not be sent." }, 502, request); }
+  }
+  return json({ ok: true }, 200, request);
+}
+// The links in those emails. Each opens a page with one button, so a mail scanner that only follows links changes nothing.
+async function alertsLink(url, env, request, ctx, stop) {
+  const p = await verify(env, url.searchParams.get("t"));
+  const subs = p && (p.p === (stop ? "unsub" : "sub")) && p.h ? await readListDoc(env, "subs") : [];
+  const s = p ? subs.find(v => v.h === p.h) : undefined;
+  const lang = s ? s.lang : (url.searchParams.get("lang") === "es" ? "es" : "en");
+  const back = "<p><a href='" + esc(env.SITE_ORIGIN) + "/'>" + esc(aw(lang, "backA")) + "</a></p>";
+  if (!s) return html(page(aw(lang, stop ? "stoppedH" : "badH"), back), stop ? 200 : 400);
+  if (request.method === "GET") return html(page(aw(lang, stop ? "stopH" : "askH"), (stop ? "" : "<p>" + esc(aw(lang, "askP")) + "</p>") + "<form method=post><button>" + esc(aw(lang, stop ? "stopB" : "askB")) + "</button></form>" + back));
+  await mutateDoc(env, "subs", list => {
+    const i = list.findIndex(v => v.h === p.h); if (i < 0) return false;
+    if (stop) list.splice(i, 1); else { if (list[i].ok) return false; list[i].ok = true; delete list[i].sent; }
+  }, ctx);
+  return html(page(aw(lang, stop ? "stoppedH" : "doneH"), back));
+}
+
+// ---------- telling the world what changed: search engines (IndexNow) and, when alerts are on, subscribers ----------
+// sys.known remembers each published entry as "status|end|updates"; whatever differs since the last look is news.
+const INDEXNOW_KEY = "dc6d40d45a6b92e224bbc1699e653848";   // also served as /<key>.txt on the site, which is how IndexNow checks it
+async function pingIndexNow(env, ids) {
+  const site = env.SITE_ORIGIN;
+  const urls = [site + "/"].concat([...new Set(ids)].slice(0, 2000).map(i => site + "/entry/" + encodeURIComponent(i)));
+  try {
+    const r = await fetch("https://api.indexnow.org/indexnow", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ host: new URL(site).hostname, key: INDEXNOW_KEY, keyLocation: site + "/" + INDEXNOW_KEY + ".txt", urlList: urls }) });
+    console.log("indexnow: " + r.status + " for " + urls.length + " addresses");
+  } catch (e) { console.log("indexnow failed: " + (e && e.message)); }
+}
+async function announce(env, ctx) {
+  const pub = await readDoc(env, "pub"), today = todayNY();
+  const mark = x => (x.status || "") + "|" + (x.e || "") + "|" + ((x.updates || []).length);
+  let changed = [], jobs = [], pages = false;
+  await mutateDoc(env, "sys", sys => {
+    changed = []; jobs = []; pages = !!sys.pages;
+    const first = !sys.known, known = sys.known || {}, told = sys.told || {}, next = {}, nextTold = {};
+    for (const x of pub.incidents.concat(pub.reports)) {
+      if (!x || !x.id) continue;
+      const m = mark(x), was = known[x.id];
+      next[x.id] = m;
+      if (told[x.id] && x.status !== "resolved") nextTold[x.id] = told[x.id];
+      if (was === m) continue;
+      changed.push(x.id);
+      if (first || x.title !== undefined || x.t !== "U" || x.c === "you") continue;
+      const start = String(x.d).slice(0, 10);
+      if (was === undefined && x.status !== "resolved" && validDate(start) && daysBetween(start, today) >= 0 && daysBetween(start, today) <= 2) { jobs.push({ k: "new", id: x.id, n: 0 }); nextTold[x.id] = today; }
+      else if (told[x.id] && x.status === "resolved") jobs.push({ k: "fixed", id: x.id, n: 0 });
+    }
+    const gone = Object.keys(known).some(k => !(k in next));
+    if (!first && !changed.length && !gone) return false;
+    sys.known = next; sys.told = nextTold;
+    if (jobs.length && alertsOn(env)) sys.outbox = (sys.outbox || []).concat(jobs).slice(-50);
+    if (first) changed = [];
+  }, ctx);
+  if (changed.length && pages) await pingIndexNow(env, changed);
+  await sendAlerts(env, ctx);
+}
+// Work through the outbox a batch at a time (the hourly schedule and page loads pick up where this stops).
+// A batch is marked as sent before it is sent: a failure drops an email, it never sends one twice.
+async function sendAlerts(env, ctx) {
+  if (!alertsOn(env)) return;
+  if (!((await readDoc(env, "sys")).outbox || []).length) return;
+  const subs = (await readListDoc(env, "subs")).filter(s => s.ok && s.email);
+  const pub = await readDoc(env, "pub");
+  let left = ALERT_BATCH;
+  while (left > 0) {
+    let job = null, from = 0, to = 0;
+    await mutateDoc(env, "sys", sys => {
+      job = null;
+      const box = sys.outbox || [];
+      if (!box.length) return false;
+      job = Object.assign({}, box[0]); from = job.n || 0; to = Math.min(subs.length, from + left);
+      if (to >= subs.length) box.shift(); else box[0].n = to;
+      sys.outbox = box;
+    }, ctx);
+    if (!job) break;
+    const x = findAnywhere(pub, job.id);
+    if (x) for (const s of subs.slice(from, to)) {
+      try {
+        const title = feedTitle(x), where = x.w || x.where || "", stop = await link(env, "/alerts/stop", { p: "unsub", h: s.h }, 3650);
+        const url = env.SITE_ORIGIN + "/#entry-" + encodeURIComponent(x.id);
+        const text = job.k === "fixed"
+          ? title + "\n" + aw(s.lang, "fixedL", { date: String(x.e || "").replace(/^~/, "") || todayNY(), dur: x.dur ? " (" + x.dur + ")" : "" }) + "\n\n" + url + "\n\n" + aw(s.lang, "foot", { link: stop })
+          : title + "\n" + [where, String(x.d).slice(0, 10)].filter(Boolean).join(" · ") + "\n\n" + String(x.x || "").slice(0, 600) + "\n\n" + url + "\n\n" + aw(s.lang, "foot", { link: stop });
+        await sendTo(env, s.email, aw(s.lang, job.k === "fixed" ? "fixedS" : "newS", { title: title }), text);
+      } catch (e) { console.log("alert not sent: " + (e && e.message)); }
+    }
+    left -= Math.max(1, to - from);
+  }
+}
+
+// ---------- the site's own pages: the homepage with the record written into it, a page per entry, the sitemap ----------
+// The site is static files on GitHub Pages. Three routes on its own address point at this Worker instead (Cloudflare
+// dashboard: Workers & Pages > asr-api > Settings > Domains & Routes):
+//   atlanticstreetresidents.com/             the homepage: fetched from GitHub Pages, handed on with the record inside it
+//   atlanticstreetresidents.com/entry/*      one page per entry, so each has its own address, title and link preview
+//   atlanticstreetresidents.com/sitemap.xml  every entry page, for search engines
+// Anything else on that address, and anything that goes wrong here, goes straight through to GitHub Pages. The site
+// works the same with or without these routes; without them it draws a moment later and search engines see less.
+function isSiteHost(request, env) {
+  try { return new URL(request.url).hostname === new URL(env.SITE_ORIGIN).hostname; } catch (e) { return false; }
+}
+async function sitePages(request, env, ctx) {
+  if (ctx && ctx.passThroughOnException) ctx.passThroughOnException();
+  if (request.method === "GET" || request.method === "HEAD") {
+    try {
+      const url = new URL(request.url), path = url.pathname;
+      let res = null;
+      if (path === "/" || path === "/index.html") res = await bakeHome(env, ctx, url);
+      else if (path.startsWith("/entry/")) res = await entryPage(env, ctx, url);
+      else if (path === "/sitemap.xml") res = await siteMap(env);
+      if (res) { notePages(env, ctx); return res; }
+    } catch (e) { console.log("site page failed, passing through: " + (e && e.message)); }
+  }
+  return fetch(request);
+}
+// The first time one of these pages is served, remember that the site has them (announce() only tells search
+// engines about entry pages once they exist), and tell the search engines about all of them once.
+let PAGES_NOTED = false;
+function notePages(env, ctx) {
+  if (PAGES_NOTED) return;
+  PAGES_NOTED = true;
+  const p = (async () => {
+    let fresh = false;
+    await mutateDoc(env, "sys", sys => { fresh = false; if (sys.pages) return false; sys.pages = todayNY(); fresh = true; }, ctx);
+    if (fresh) { const pub = await readDoc(env, "pub"); await pingIndexNow(env, pub.incidents.concat(pub.reports).map(x => x.id).concat((await baseRows(env)).map((r, i) => r.id || "b" + i))); }
+  })().catch(e => console.log("notePages failed: " + (e && e.message)));
+  if (ctx && ctx.waitUntil) ctx.waitUntil(p);
+}
+
+// The archived rows (data/incidents.json on the site) and the homepage file, each kept in memory for a short while
+let BASE_CACHE = null;
+let HOME_CACHE = null;
+async function baseRows(env) {
+  if (BASE_CACHE && Date.now() - BASE_CACHE.at < 300000) return BASE_CACHE.rows;
+  try {
+    const r = await fetch(env.SITE_ORIGIN + "/data/incidents.json");
+    if (!r.ok) throw new Error("archive: status " + r.status);
+    const rows = await r.json();
+    if (!Array.isArray(rows)) throw new Error("archive: not a list");
+    BASE_CACHE = { at: Date.now(), rows: rows };
+    return rows;
+  } catch (e) {
+    if (BASE_CACHE) return BASE_CACHE.rows;   // a stale copy beats no page
+    throw e;
+  }
+}
+async function originHome(env) {
+  if (HOME_CACHE && Date.now() - HOME_CACHE.at < 60000) return HOME_CACHE.html;
+  try {
+    const r = await fetch(env.SITE_ORIGIN + "/index.html", { headers: { "Accept": "text/html" } });
+    if (!r.ok) throw new Error("homepage: status " + r.status);
+    const text = await r.text();
+    if (text.indexOf("</html>") < 0) throw new Error("homepage: incomplete");
+    HOME_CACHE = { at: Date.now(), html: text };
+    return text;
+  } catch (e) {
+    if (HOME_CACHE) return HOME_CACHE.html;
+    throw e;
+  }
+}
+// What the API can do for the page: the page shows the still out / fixed buttons and the alerts sign-up only when told
+function caps(env) { return { confirm: true, alerts: alertsOn(env) }; }
+function safeJson(v) { return JSON.stringify(v).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029"); }
+function sitePub(pub) { const live = { incidents: pub.incidents, reports: pub.reports }; if (pub.banner) live.banner = pub.banner; return live; }
+// The record as the homepage sees it: archived rows plus live ones, through the page's own normalize().
+// Worked out at most once every 30 seconds per language (and so is the finished homepage, below): a burst of
+// visitors or a crawler walking every entry page costs one read of the record, not one each.
+let REC_CACHE = null;
+let BAKED = null;
+const SITE_FRESH_MS = 30000;
+async function siteRecord(env, lang) {
+  const today = todayNY(), key = today + "|" + (lang === "es" ? "es" : "en");
+  const hit = REC_CACHE && REC_CACHE[key];
+  if (hit && Date.now() - hit.at < SITE_FRESH_MS) return hit.v;
+  const [base, pub] = await Promise.all([baseRows(env), readDoc(env, "pub")]);
+  const C = siteCore(Date.parse(today + "T00:00:00Z"), lang === "es" ? "es" : "en");
+  const ids = new Set(pub.incidents.filter(r => r && r.id).map(r => r.id));
+  const rows = C.normalize(base.filter(r => !(r.id && ids.has(r.id))).concat(pub.incidents));
+  const reps = C.normReports(pub.reports);
+  const v = { C: C, base: base, pub: pub, rows: rows, reps: reps, today: today, TODAY: Date.parse(today + "T00:00:00Z") };
+  if (!REC_CACHE || !Object.keys(REC_CACHE).every(k => k.slice(0, 10) === today)) REC_CACHE = {};
+  REC_CACHE[key] = { at: Date.now(), v: v };
+  return v;
+}
+
+// >>> copied from index.html by api/gen-site.mjs: change index.html and run it again, never edit this block by hand
+function siteCore(TODAY, LANG) {
+var DAY=86400000;
+var I18N={"en":{"skip":"Skip to the record","hero.kicker":"355 Atlantic Street, Stamford, Connecticut","hero.h1":"The residents' maintenance record","hero.nothing":"Nothing active right now. No outage or open building issue has been reported recently.","hero.more":"and {n} more in the log","hero.add":"Add your ticket or report","hero.browse":"Browse the log","hero.updated":"Last updated {date}. Building notices post within minutes of arriving.","lang.other":"Español","since":"since {date}","dayN":"day {n}","started":"started {date}","updateOn":"update {date}: {text}","lastConfirmed":"last confirmed {date}","nowThrough":"now through {date}","stillGoing":"Still going","resolvedOn":"Resolved {date}","resolved":"Resolved","toDate":"to {date}","aboutDate":"about {date}","facts.upper":"Upper floors (17–26), water or hot water: last interrupted {when}","facts.lower":"Floors 6–16: last interrupted {when}","ago.today":"today","ago.yesterday":"yesterday","ago.days":"{n} days ago","never":"never","stats.problems":"outages and problems on record","stats.water":"unplanned water and hot water outages","stats.recent":"new outages and problems in the last 30 days","cal.stat":"Each square is a day. Water or hot water was interrupted on the upper floors on {n} separate days, {u} of them unplanned; across all floors, {a} days.","type.U":"Outage","type.S":"Planned work","type.N":"Announcement","type.R":"Resident ticket","type.Rs":"Ticket","type.report":"Building issue","rp.anon":"anonymous","rp.by":"by {name}","rp.photoAlt":"Photo: {t}","rp.add":"Report a building issue","tk.add":"Add a ticket from your apartment","lineOf":"{x} line","forwardedBy":"forwarded by {n}","th.date":"Date","th.cat":"Category","th.where":"Where","th.type":"Type","meth.keep.p1":"Resident tickets and reports are self-reported. They describe lived experience in the words of the person who submitted them and are not verified by the building or by anyone else. They can contain mistakes, duplicates, and opinions, and they are reviewed only for relevance and privacy before they appear here, not for accuracy.","meth.keep.p2":"Entries drawn from the residents' Discord are summaries of what people said in the chat, with names, unit numbers, and anything identifying removed. Where the chat described an event the building had also announced, the entry appears as a report alongside the notice rather than as a second incident, so nothing is counted twice.","meth.keep.p4":"Building notices are summarized, not reproduced. The automatic reading of new notices can file something under the wrong category, miss the floors, or leave out a notice that mattered; those errors are corrected as they are noticed.","meth.keep.p5":"This site is run by residents and has no connection to the building's ownership or management. Corrections and missed notices are welcome through the report form.","foot.p3":"About the building: Atlantic Station is the apartment tower at 355 Atlantic Street, Stamford, Connecticut 06901, in downtown Stamford near the Stamford Transportation Center, with residences on floors 6 through 26. It is managed by Bozzuto and was previously managed by Greystar and AVE for its owner, RXR. This independent, resident-run site records maintenance at Atlantic Station: hot water and heating outages, water shutoffs, elevator and garage problems, and other building issues at 355 Atlantic Street, drawn from the building's own notices and from residents' reports.","doc.title":"Atlantic Station, 355 Atlantic Street, Stamford CT: the residents' maintenance record","doc.desc":"Every outage, shutoff, and repair at Atlantic Station, the apartment building at 355 Atlantic Street in downtown Stamford, Connecticut: hot water, heat, elevators, garage, and other building issues, compiled by residents from the building's own notices and residents' reports."},"es":{"skip":"Ir al registro","hero.kicker":"355 Atlantic Street, Stamford, Connecticut","hero.h1":"El registro de mantenimiento de los residentes","hero.nothing":"Nada activo en este momento. No se ha reportado recientemente ninguna interrupción ni problema abierto.","hero.more":"y {n} más en el registro","hero.add":"Agregar su solicitud o reporte","hero.browse":"Ver el registro","hero.updated":"Última actualización: {date}. Los avisos del edificio se publican minutos después de llegar.","lang.other":"English","since":"desde el {date}","dayN":"día {n}","started":"comenzó el {date}","updateOn":"novedad del {date}: {text}","lastConfirmed":"confirmado por última vez el {date}","nowThrough":"ahora, hasta el {date}","stillGoing":"Continúa","resolvedOn":"Resuelto el {date}","resolved":"Resuelto","toDate":"hasta el {date}","aboutDate":"aprox. {date}","facts.upper":"Pisos altos (17–26), agua o agua caliente: última interrupción {when}","facts.lower":"Pisos 6–16: última interrupción {when}","ago.today":"hoy","ago.yesterday":"ayer","ago.days":"hace {n} días","never":"nunca","stats.problems":"interrupciones y problemas registrados","stats.water":"interrupciones imprevistas de agua y agua caliente","stats.recent":"interrupciones y problemas nuevos en los últimos 30 días","cal.stat":"Cada cuadro es un día. El agua o el agua caliente se interrumpió en los pisos altos durante {n} días distintos, {u} de ellos de forma imprevista; en todos los pisos, {a} días.","type.U":"Interrupción","type.S":"Trabajo programado","type.N":"Anuncio","type.R":"Solicitud de residente","type.Rs":"Solicitud","type.report":"Problema del edificio","rp.anon":"anónimo","rp.by":"por {name}","rp.photoAlt":"Foto: {t}","rp.add":"Reportar un problema del edificio","tk.add":"Agregar una solicitud de su apartamento","lineOf":"línea {x}","forwardedBy":"reenviado por {n}","th.date":"Fecha","th.cat":"Categoría","th.where":"Dónde","th.type":"Tipo","meth.keep.p1":"Las solicitudes y reportes de residentes son autorreportados. Describen la experiencia vivida con las palabras de quien los envió y no los verifica el edificio ni nadie más. Pueden contener errores, duplicados y opiniones, y se revisan solo por pertinencia y privacidad antes de publicarse, no por exactitud.","meth.keep.p2":"Las entradas tomadas del Discord de los residentes son resúmenes de lo que se dijo en el chat, sin nombres, números de apartamento ni nada que identifique a alguien. Cuando el chat describió un evento que el edificio también anunció, la entrada aparece como reporte junto al aviso y no como un segundo incidente, para no contar nada dos veces.","meth.keep.p4":"Los avisos del edificio se resumen, no se reproducen. La lectura automática de los avisos nuevos puede archivar algo en la categoría equivocada, omitir los pisos o dejar fuera un aviso importante; esos errores se corrigen a medida que se notan.","meth.keep.p5":"Este sitio lo mantienen residentes y no tiene relación con los dueños ni la administración del edificio. Las correcciones y los avisos omitidos son bienvenidos mediante el formulario de reportes.","foot.p3":"Sobre el edificio: Atlantic Station es la torre de apartamentos en 355 Atlantic Street, Stamford, Connecticut 06901, en el centro de Stamford cerca del Stamford Transportation Center, con residencias en los pisos 6 a 26. La administra Bozzuto y antes la administraron Greystar y AVE para su dueño, RXR. Este sitio independiente, mantenido por residentes, registra el mantenimiento en Atlantic Station: interrupciones de agua caliente y calefacción, cortes de agua, problemas de ascensores y del garaje y otros problemas del edificio en 355 Atlantic Street, a partir de los avisos del propio edificio y de los reportes de residentes.","doc.title":"Atlantic Station, 355 Atlantic Street, Stamford CT: el registro de mantenimiento de los residentes","doc.desc":"Cada interrupción, corte y reparación en Atlantic Station, el edificio de apartamentos en 355 Atlantic Street, en el centro de Stamford, Connecticut: agua caliente, calefacción, ascensores, garaje y otros problemas del edificio, recopilados por residentes a partir de los avisos del propio edificio y de los reportes de residentes."}};
+var MONTHS={en:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],es:["ene","feb","mar","abr","may","jun","jul","ago","sept","oct","nov","dic"]};
+var WDAYS={en:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],es:["dom","lun","mar","mié","jue","vie","sáb"]};
+var CATS=[
+{k:"you",n:{en:"Resident maintenance tickets",es:"Solicitudes de residentes"},s:{en:"Tickets",es:"Solicitudes"}},
+{k:"water",n:{en:"Hot water & plumbing",es:"Agua caliente y plomería"},s:{en:"Water",es:"Agua"}},
+{k:"hvac",n:{en:"Heating & cooling",es:"Calefacción y aire"},s:{en:"Heat & AC",es:"Calefacción"}},
+{k:"elev",n:{en:"Elevators",es:"Ascensores"},s:{en:"Elevators",es:"Ascensores"}},
+{k:"win",n:{en:"Windows & exterior",es:"Ventanas y exterior"},s:{en:"Windows",es:"Ventanas"}},
+{k:"fire",n:{en:"Fire & life safety",es:"Incendios y seguridad"},s:{en:"Fire safety",es:"Seguridad"}},
+{k:"amen",n:{en:"Amenities & systems",es:"Amenidades y sistemas"},s:{en:"Amenities",es:"Amenidades"}},
+{k:"garage",n:{en:"Garage & common areas",es:"Garaje y áreas comunes"},s:{en:"Garage",es:"Garaje"}},
+{k:"clean",n:{en:"Cleaning",es:"Limpieza"},s:{en:"Cleaning",es:"Limpieza"}},
+{k:"pm",n:{en:"Preventive maintenance",es:"Mantenimiento preventivo"},s:{en:"Maintenance",es:"Mantenim."}},
+{k:"other",n:{en:"Other notices",es:"Otros avisos"},s:{en:"Other",es:"Otros"}}
+];
+var TICKET_CATS=[{k:"water",n:{en:"Hot water & plumbing",es:"Agua caliente y plomería"}},{k:"hvac",n:{en:"Heating & cooling",es:"Calefacción y aire"}},{k:"elev",n:{en:"Elevators",es:"Ascensores"}},{k:"fire",n:{en:"Fire & life safety",es:"Incendios y seguridad"}},{k:"win",n:{en:"Windows & exterior",es:"Ventanas y exterior"}},{k:"amen",n:{en:"Amenities & systems",es:"Amenidades y sistemas"}},{k:"garage",n:{en:"Garage & common areas",es:"Garaje y áreas comunes"}},{k:"clean",n:{en:"Cleaning",es:"Limpieza"}},{k:"other",n:{en:"Something else",es:"Otra cosa"}}];
+var PLACES_ES={"Whole building":"Todo el edificio","Upper floors":"Pisos altos","Lower floors":"Pisos bajos","All units":"Todos los apartamentos","Selected units":"Algunos apartamentos","Some apartments":"Algunos apartamentos","Garage":"Garaje","Amenities":"Amenidades","Exterior":"Exterior","Lobby":"Vestíbulo","Pool":"Piscina","Gym":"Gimnasio","Yoga":"Yoga","Yoga room":"Sala de yoga","Package":"Paquetes","Package room":"Sala de paquetes","Trash Chute":"Ducto de basura","Chute rooms":"Cuartos de basura","Driveway":"Entrada de autos","Entrance":"Entrada","Street":"Calle","Corridor":"Pasillo","Service corridor":"Pasillo de servicio"};
+function t(k,v){var s=(I18N[LANG]&&I18N[LANG][k]!=null)?I18N[LANG][k]:(I18N.en[k]!=null?I18N.en[k]:k);if(v)s=s.replace(/\{(\w+)\}/g,function(m,n){return v[n]!=null?v[n]:m;});return s;}
+function catOf(k){for(var i=0;i<CATS.length;i++)if(CATS[i].k===k)return CATS[i];return CATS[CATS.length-1];}
+function catName(k){return catOf(k).n[LANG];}
+function catShort(k){return catOf(k).s[LANG];}
+function tcatName(k){for(var i=0;i<TICKET_CATS.length;i++)if(TICKET_CATS[i].k===k)return TICKET_CATS[i].n[LANG];return TICKET_CATS[TICKET_CATS.length-1].n[LANG];}
+function parse(d){var p=String(d).split("-");return new Date(Date.UTC(+p[0],+p[1]-1,+(p[2]||15)));}
+function iso(ts){return new Date(ts).toISOString().slice(0,10);}
+function fmt(d){var x=typeof d==="number"?new Date(d):parse(d);return LANG==="es"?(x.getUTCDate()+" "+MONTHS.es[x.getUTCMonth()]+" "+x.getUTCFullYear()):(MONTHS.en[x.getUTCMonth()]+" "+x.getUTCDate()+", "+x.getUTCFullYear());}
+function fmtShort(ts){var x=new Date(ts);var yr=x.getUTCFullYear()!==new Date(TODAY).getUTCFullYear()?(LANG==="es"?" "+x.getUTCFullYear():", "+x.getUTCFullYear()):"";return LANG==="es"?(x.getUTCDate()+" "+MONTHS.es[x.getUTCMonth()]+yr):(MONTHS.en[x.getUTCMonth()]+" "+x.getUTCDate()+yr);}
+function fmtDay(ts){var x=new Date(ts);return WDAYS[LANG][x.getUTCDay()]+" "+fmtShort(ts);}
+function fmtRow(r){if(r.m){var x=parse(r.d);return MONTHS[LANG][x.getUTCMonth()]+" "+x.getUTCFullYear();}return fmt(r.d);}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function hoursOf(dur){var m=/([0-9]+(?:[.,][0-9]+)?)(?:[ ]*[–-][ ]*([0-9]+))?[ ]*(h|hour|day|d|min)/i.exec(dur||"");if(!m)return /same day/i.test(dur||"")?4:0;var v=parseFloat(m[1].replace(",","."));if(m[2])v=(v+parseFloat(m[2]))/2;return /^min/i.test(m[3])?v/60:/d/i.test(m[3])?v*24:v;}
+function ago(ts){var d=Math.round((TODAY-ts)/DAY);return d<=0?t("ago.today"):d===1?t("ago.yesterday"):t("ago.days",{n:d});}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function typeWord(r){return r.kind==="report"?t("type.report"):r.t==="R"?t("type.Rs"):t("type."+r.t);}
+function sentenceCase(s){
+  var x=s.toLowerCase();
+  x=x.replace(/\b(hvac|ev|rxo|otis|pm|am|ph|g[1-5]|us)\b/g,function(m){return m.toUpperCase();});
+  x=x.replace(/\b(january|february|march|april|june|july|august|september|october|november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday|jan|feb|apr|jun|jul|aug|sept?|oct|nov|dec)\b/g,cap);
+  x=x.replace(/\bmay(?=\s*\d)/g,"May").replace(/\b(\d+)(st|nd|rd|th)\b/gi,function(m,a,b){return a+b.toLowerCase();});
+  x=x.replace(/\batlantic station\b/g,"Atlantic Station").replace(/\bstamford\b/g,"Stamford").replace(/\bfresh & co\b/g,"Fresh & Co").replace(/\baquarion\b/g,"Aquarion").replace(/\bfloors?(?=\s*\d)/g,cap);
+  return cap(x);
+}
+function cleanTitle(s){
+  s=String(s||"").replace(/^\s*((fwd?|re|fw)\s*:\s*)+/i,"").replace(/^\s*subject\s*:\s*/i,"").replace(/^\s*atlantic\s+station\s*(?::|-|–|—)\s*/i,"").replace(/\s+/g," ").trim();
+  var letters=s.replace(/[^A-Za-z]/g,""),upper=s.replace(/[^A-Z]/g,"");
+  if(letters.length>=6&&upper.length/letters.length>0.7)s=sentenceCase(s);
+  s=s.replace(/(\d)\s*-\s*(\d)/g,"$1–$2").replace(/\s+-\s+/g," – ").replace(/\s*!+$/,"").replace(/\s*\.\s*(to be restored soon)$/i,": $1");
+  return s||"Building notice";
+}
+function cleanText(x){
+  return String(x||"").replace(/^\s*(atlantic-station\s*)?(welcome to atlantic station( west)?!?\s*)?(atlantic sta(?:tion|ton)\s*)?(\bAS\b\s*)?\.?\s*/i,"").replace(/^(dear|good (morning|afternoon|evening)|hello|hi)\b[^,.:!]{0,60}[,.:!]\s*/i,"").trim();
+}
+function placeName(w){
+  w=String(w||"");
+  if(LANG!=="es"||!w)return w;
+  if(PLACES_ES[w])return PLACES_ES[w];
+  return w.replace(/^One stack, floors /,"Una línea, pisos ").replace(/^Floors /,"Pisos ").replace(/^(\d{1,2})(?:st|nd|rd|th) floor$/,"Piso $1");
+}
+function durT(d){
+  d=String(d||"");
+  if(LANG!=="es"||!d)return d;
+  return d.replace(/same day \(no restoration notice\)/i,"mismo día (sin aviso de restablecimiento)").replace(/\bsame day\b/i,"mismo día").replace(/ongoing at time of notice/i,"en curso al momento del aviso").replace(/\bnot announced\b/i,"no anunciado").replace(/\bovernight\b/i,"durante la noche").replace(/\bexpected\b/i,"previsto").replace(/\bintermittent\b/i,"intermitente").replace(/\bdays\b/g,"días").replace(/\bday\b/g,"día");
+}
+function floorRange(w){
+  w=String(w||"");
+  if(/whole building|all units|all floors|building-wide/i.test(w))return {lo:6,hi:26};
+  var m=/(\d{1,2})\s*[A-Z]?\s*[–—-]\s*(\d{1,2}|P2|PH)\b/i.exec(w);
+  if(m){var a=+m[1],b=/^\d+$/.test(m[2])?+m[2]:27;return {lo:Math.min(a,b),hi:Math.max(a,b)};}
+  m=/\b(\d{1,2})(?:st|nd|rd|th)\s+floor/i.exec(w);if(m)return {lo:+m[1],hi:+m[1]};
+  if(/upper floors/i.test(w))return {lo:17,hi:26};
+  if(/lower floors/i.test(w))return {lo:6,hi:16};
+  return null;
+}
+function reachesUpper(w){var f=floorRange(w);return !!f&&f.hi>=17&&f.lo<=26;}
+function reachesLower(w){var f=floorRange(w);return !!f&&f.lo<=16&&f.hi>=6;}
+function guessCat(r){
+  if(r.cat)return r.cat;
+  var g=r.g||"",s=(r.s+" "+r.x).toLowerCase();
+  if(g==="sinks"||g==="hotwater")return "water";
+  if(g==="smoke")return "fire";
+  if(/clean/.test(s))return "clean";
+  if(/window/.test(s))return "win";
+  if(/ac unit|air condition|heat/.test(s))return "hvac";
+  if(/ev charger|charger/.test(s))return "amen";
+  if(/sink|leak|water|shower/.test(s))return "water";
+  return "other";
+}
+function life(o,kind){
+  o.ts=parse(o.d).getTime();
+  var te=o.e?parse(o.e).getTime():o.ts;
+  if(te<o.ts){te=o.ts;o.e="";o.est=false;}
+  o.open=o.status==="open";
+  if(o.open){te=Math.max(o.ts,TODAY);o.e="";o.est=false;}
+  o.te=te;
+  var pinned=o.banner==="pin"&&(!o.pinUntil||parse(o.pinUntil).getTime()>=TODAY);
+  var legacy=!o.status&&!o.e&&o.ts<=TODAY&&(kind==="report"?(TODAY-o.ts)<=7*DAY:(o.t==="U"&&(TODAY-o.ts)<=3*DAY));
+  o.active=o.banner!=="hide"&&o.ts<=TODAY&&(o.open||pinned||legacy);
+  var last=o.confirmed||"";
+  (o.updates||[]).forEach(function(u){if(u&&u.d&&u.d>last)last=u.d;});
+  if(!last||last<o.d)last=o.d;
+  o.lastConfirmed=last;
+}
+function lastUpdate(o){var u=null;(o.updates||[]).forEach(function(x){if(x&&x.d&&x.text&&(!u||x.d>=u.d))u=x;});return u;}
+function normalize(list){
+  return list.map(function(r,i){
+    var eraw=r.e||"",est=eraw.charAt(0)==="~",e=est?eraw.slice(1):eraw;
+    var m=!!r.m||/^[0-9]{4}-[0-9]{2}$/.test(r.d);
+    var d=m?r.d.slice(0,7)+"-15":r.d;
+    var w=r.w||"";if(/^Some/.test(w))w="Whole building";
+    var x=(r.x||"").replace(/ Not counted toward the upper floors because the affected units weren.t named[.]/,"");
+    var o={kind:"incident",i:i,id:String(r.id||("b"+i)),d:d,m:m,e:e,est:est,c:catOf(r.c).k,t:r.t||"N",s:cleanTitle(r.s),x:cleanText(x),w:w,g:r.g||"",dur:r.dur||"",img:r.img||[],src:r.src||"base",stack:r.stack||"",cat:r.cat||"",copies:r.copies||1,status:r.status||"",confirmed:r.confirmed||"",updates:Array.isArray(r.updates)?r.updates:[],banner:r.banner||"",pinUntil:r.pinUntil||""};
+    if(o.c==="you")o.cat=guessCat(o);
+    life(o,"incident");
+    o.recent=(TODAY-o.ts)<=7*DAY&&o.ts<=TODAY;
+    o.hours=o.c==="water"?hoursOf(o.dur):0;
+    return o;
+  });
+}
+function normReports(list){
+  return list.filter(function(r){return r&&r.d;}).map(function(r,i){
+    var o={kind:"report",i:i,id:String(r.id),d:r.d,e:(r.e||"").replace(/^~/,""),m:false,est:false,c:catOf(r.cat).k,cat:r.cat||"other",t:"R",s:cleanTitle(r.title),x:r.text||"",w:r.where||"",img:r.img||[],stack:r.stack||"",status:r.status||"",confirmed:r.confirmed||"",updates:Array.isArray(r.updates)?r.updates:[],banner:r.banner||"",pinUntil:r.pinUntil||"",name:r.name||"",anon:r.anon!==false};
+    life(o,"report");
+    return o;
+  });
+}
+return {t:t,catOf:catOf,catName:catName,catShort:catShort,tcatName:tcatName,parse:parse,iso:iso,fmt:fmt,fmtShort:fmtShort,fmtDay:fmtDay,fmtRow:fmtRow,esc:esc,hoursOf:hoursOf,ago:ago,cap:cap,typeWord:typeWord,sentenceCase:sentenceCase,cleanTitle:cleanTitle,cleanText:cleanText,placeName:placeName,durT:durT,floorRange:floorRange,reachesUpper:reachesUpper,reachesLower:reachesLower,guessCat:guessCat,life:life,lastUpdate:lastUpdate,normalize:normalize,normReports:normReports,MONTHS:MONTHS,WDAYS:WDAYS,CATS:CATS,TICKET_CATS:TICKET_CATS,PLACES_ES:PLACES_ES};
+}
+// <<< end of the block copied from index.html
+
+// The top of the homepage, as index.html draws it (the hero in render()); keep the two in step.
+// (When this was written, a browser test compared it line for line with what the page itself draws from the same record.)
+function siteHero(R) {
+  const C = R.C, t = C.t, TODAY = R.TODAY, DAY = 86400000, rows = R.rows, reps = R.reps;
+  const isProblem = r => r.kind === "report" || r.t === "U" || r.t === "R";
+  const open = rows.filter(r => r.active).concat(reps.filter(r => r.active));
+  open.sort((a, b) => (b.lastConfirmed > a.lastConfirmed ? 1 : b.lastConfirmed < a.lastConfirmed ? -1 : 0) || b.ts - a.ts);
+  const item = r => {
+    const bits = [];
+    if (r.w) bits.push(esc(C.placeName(r.w)));
+    const days = Math.round((TODAY - r.ts) / DAY) + 1;
+    if (r.open && days > 1) { bits.push(esc(t("since", { date: C.fmtShort(r.ts) }))); bits.push("<strong>" + esc(t("dayN", { n: days })) + "</strong>"); }
+    else bits.push(esc(t("started", { date: C.fmtShort(r.ts) })));
+    const u = C.lastUpdate(r);
+    if (u) { let txt = String(u.text); if (txt.length > 110) txt = txt.slice(0, 108).replace(/\s+\S*$/, "") + "…"; bits.push(esc(t("updateOn", { date: C.fmtShort(C.parse(u.d).getTime()), text: txt }))); }
+    if (r.open && (TODAY - C.parse(r.lastConfirmed).getTime()) > 14 * DAY) bits.push(esc(t("lastConfirmed", { date: C.fmtShort(C.parse(r.lastConfirmed).getTime()) })));
+    return '<li><a href="/entry/' + encodeURIComponent(r.id) + '">' + esc(r.s) + '</a><span class="meta">' + bits.join(" · ") + '</span></li>';
+  };
+  const banner = (R.pub.banner && R.pub.banner.text) || "";
+  const out = { calm: false };
+  if (banner) out.active = '<li>' + esc(banner) + '</li>' + open.slice(0, 3).map(item).join("");
+  else if (open.length) out.active = open.slice(0, 4).map(item).join("") + (open.length > 4 ? '<li class="meta"><a href="#log-h">' + esc(t("hero.more", { n: open.length - 4 })) + '</a></li>' : '');
+  else { out.calm = true; out.active = "<li>" + esc(t("hero.nothing")) + "</li>"; }
+  const soon = rows.filter(r => r.t === "S" && !r.m && r.te >= TODAY).sort((a, b) => a.ts - b.ts);
+  out.soon = soon.slice(0, 4).map(r => {
+    const when = r.ts <= TODAY ? t("nowThrough", { date: C.fmtDay(r.te) }) : (C.fmtDay(r.ts) + (r.te > r.ts ? " – " + C.fmtDay(r.te) : ""));
+    return '<li><a href="/entry/' + encodeURIComponent(r.id) + '">' + esc(r.s) + '</a><span class="meta">' + esc(C.cap(when)) + (r.w && r.s.indexOf(r.w) < 0 ? " · " + esc(C.placeName(r.w)) : "") + '</span></li>';
+  }).join("");
+  const lastHit = test => { let best = null; rows.forEach(r => { if (r.c !== "water" || r.t === "N" || r.ts > TODAY || !test(r.w)) return; const v = Math.min(r.te, TODAY); if (best === null || v > best) best = v; }); return best; };
+  const up = lastHit(C.reachesUpper), low = lastHit(C.reachesLower);
+  const fact = (k, v) => '<li>' + esc(t(k, { when: "\u0000" })).replace("\u0000", "<strong>" + esc(v !== null ? C.ago(v) : t("never")) + "</strong>") + '</li>';
+  out.facts = fact("facts.upper", up) + fact("facts.lower", low);
+  const probs = rows.filter(isProblem).length + reps.length;
+  const recent = rows.filter(r => isProblem(r) && r.ts <= TODAY && (TODAY - r.ts) <= 30 * DAY).length + reps.filter(r => r.ts <= TODAY && (TODAY - r.ts) <= 30 * DAY).length;
+  const wateru = rows.filter(r => r.c === "water" && r.t === "U").length;
+  out.stats = '<div><b>' + probs + '</b><span>' + esc(t("stats.problems")) + '</span></div><div><b>' + wateru + '</b><span>' + esc(t("stats.water")) + '</span></div><div><b>' + recent + '</b><span>' + esc(t("stats.recent")) + '</span></div>';
+  const newest = Math.max.apply(null, rows.concat(reps).filter(r => !r.m && r.ts <= TODAY).map(r => Math.min(TODAY, Math.max(r.ts, C.parse(r.lastConfirmed).getTime()))));
+  out.updated = isFinite(newest) ? esc(t("hero.updated", { date: C.fmt(newest) })) : "";
+  // Days with water interrupted (the sentence over the calendar)
+  const isWater = r => r.t !== "N" && !r.m && (r.c === "water" || r.g === "hotwater");
+  const fd = {}, fu = {}, ad = {};
+  rows.concat(reps).forEach(r => { if (!isWater(r)) return; for (let ts = r.ts; ts <= r.te; ts += DAY) { const k = C.iso(ts); ad[k] = 1; if (C.reachesUpper(r.w)) { fd[k] = 1; if (r.t === "U" || r.t === "R") fu[k] = 1; } } });
+  out.calstat = esc(t("cal.stat", { n: Object.keys(fd).length, u: Object.keys(fu).length, a: Object.keys(ad).length }));
+  return out;
+}
+// The newest rows of each list, as plain HTML for readers without scripts (search engines); the page redraws them
+function siteLists(R) {
+  const C = R.C, t = C.t, TODAY = R.TODAY, DAY = 86400000;
+  const pill = (k, label, extra) => '<span class="pill' + (extra ? " " + extra : "") + '" style="--pc:var(--c-' + C.catOf(k).k + ');--pt:var(--t-' + C.catOf(k).k + ')">' + esc(label || C.catName(k)) + '</span>';
+  const newest = (a, b) => (b.ts - a.ts) || (b.i - a.i);
+  const link = r => '<a href="/entry/' + encodeURIComponent(r.id) + '">' + esc(r.s) + '</a>';
+  const what = r => { const u = C.lastUpdate(r); return '<td class="what"><strong>' + link(r) + '</strong>' + (r.x ? '<span class="x">' + esc(r.x) + '</span>' : '') + (u ? '<span class="upd">' + esc(t("updateOn", { date: C.fmtShort(C.parse(u.d).getTime()), text: u.text })) + '</span>' : '') + '</td>'; };
+  const when = r => {
+    let h = esc(C.fmtRow(r));
+    if (r.open) h += '<span class="st open">' + esc(t("stillGoing")) + '</span><span class="end">' + esc(t("dayN", { n: Math.round((TODAY - r.ts) / DAY) + 1 })) + '</span>';
+    else if (r.e && r.e > r.d) h += '<span class="end">' + esc(r.est ? t("toDate", { date: t("aboutDate", { date: C.fmt(r.e) }) }) : t("toDate", { date: C.fmt(r.e) })) + '</span>';
+    if (r.dur) h += '<span class="end">' + esc(C.durT(r.dur)) + '</span>';
+    return h;
+  };
+  const where = r => esc(C.placeName(r.w)) + (r.stack ? ", " + esc(t("lineOf", { x: r.stack })) : "") + (r.copies > 1 ? '<span class="end">' + esc(t("forwardedBy", { n: r.copies })) + '</span>' : '');
+  const log = R.rows.slice().sort(newest).slice(0, 25).map(r => '<tr id="entry-' + esc(r.id) + '" data-id="' + esc(r.id) + '"><td class="dt">' + when(r) + '</td><td class="cat">' + (r.c === "you" ? pill(r.cat, C.tcatName(r.cat), "tk") : pill(r.c)) + '</td><td class="typ ' + esc(String(r.t).toLowerCase()) + '">' + esc(C.typeWord(r)) + '</td>' + what(r) + '<td class="where">' + where(r) + '</td></tr>').join("");
+  const tickets = R.rows.filter(r => r.c === "you").sort(newest).slice(0, 10).map(r => '<tr data-id="' + esc(r.id) + '"><td class="dt">' + esc(C.fmtRow(r)) + '</td><td class="cat">' + pill(r.cat, C.tcatName(r.cat)) + '</td><td class="where">' + where(r) + '</td>' + what(r) + '</tr>').join("");
+  const reports = R.reps.slice().sort((a, b) => (b.open - a.open) || b.ts - a.ts).slice(0, 6).map(r => {
+    const meta = [C.fmt(r.d)];
+    if (r.open) meta.push(t("stillGoing")); else if (r.e) meta.push(t("resolvedOn", { date: C.fmt(r.e) }));
+    if (r.w) meta.push(C.placeName(r.w)); if (r.stack) meta.push(t("lineOf", { x: r.stack })); meta.push(r.name && !r.anon ? t("rp.by", { name: r.name }) : t("rp.anon"));
+    return '<article class="report" id="report-' + esc(r.id) + '"><div class="body"><p class="meta">' + esc(meta.join(" · ")) + '</p><h3>' + link(r) + '</h3><p>' + esc(r.x) + '</p><div class="foot">' + pill(r.c, C.tcatName(r.cat)) + '</div></div></article>';
+  }).join("");
+  return { log: log, tickets: tickets, reports: reports };
+}
+// The homepage from GitHub Pages, with the record written into the places index.html marks with <!--b:name--> comments.
+// The file is cut at its markers once (homeParts), so writing a fresh page is one pass over it.
+function homeParts(text) {
+  const parts = [], re = /<!--b:(\w+)-->[\s\S]*?<!--\/b:\1-->/g;
+  let at = 0, m;
+  while ((m = re.exec(text))) { parts.push(text.slice(at, m.index), m[1]); at = m.index + m[0].length; }
+  parts.push(text.slice(at));
+  return parts;   // text, name, text, name, ..., text
+}
+async function bakeHome(env, ctx, url) {
+  const lang = url.searchParams.get("lang") === "es" ? "es" : "en";
+  const done = BAKED && BAKED[lang];
+  if (done && Date.now() - done.at < SITE_FRESH_MS) return html(done.html, 200, { "Cache-Control": "public, max-age=60" });
+  const html0 = await originHome(env);
+  if (!HOME_CACHE.parts) HOME_CACHE.parts = homeParts(html0);
+  const parts = HOME_CACHE.parts;
+  if (parts.indexOf("data") < 0 || parts.indexOf("active") !== 1) return null;   // a homepage from before the markers existed: hand it on untouched
+  const R = await siteRecord(env, "en");
+  sweepSoon(env, ctx);
+  const live = sitePub(R.pub); live.caps = caps(env);
+  const hero = siteHero(R), lists = siteLists(R);
+  const fill = { active: hero.active, soon: hero.soon, facts: hero.facts, stats: hero.stats, updated: hero.updated, calstat: hero.calstat, tickets: lists.tickets, reports: lists.reports, log: lists.log,
+    data: '<script id="asr-data" type="application/json">' + safeJson({ at: Date.now(), pages: true, base: R.base, live: live }) + '</script>' };
+  const out = [];
+  for (let i = 0; i < parts.length; i++) {
+    let p = parts[i];
+    if (i % 2) { out.push("<!--b:" + p + "-->" + (fill[p] != null ? fill[p] : "") + "<!--/b:" + p + "-->"); continue; }
+    if (i === 0) {
+      // Everything before the first marker: the head, and the opening of the hero
+      p = p.replace('class="wrap skel" id="hero"', 'class="wrap" id="hero"');
+      if (hero.calm) p = p.replace('<div class="alert" id="alert"', '<div class="alert ok" id="alert"');
+      if (lang === "es") {
+        // A Spanish address gets a Spanish head; the page's own script puts the rest of the page into Spanish
+        const es = siteCore(R.TODAY, "es");
+        p = p.replace('<html lang="en">', '<html lang="es">')
+          .replace(/<title>[^<]*<\/title>/, '<title>' + esc(es.t("doc.title")) + '</title>')
+          .replace(/<meta name="description" content="[^"]*">/, '<meta name="description" content="' + esc(es.t("doc.desc")) + '">')
+          .replace('<link rel="canonical" href="' + env.SITE_ORIGIN + '/">', '<link rel="canonical" href="' + env.SITE_ORIGIN + '/?lang=es">');
+      }
+    } else if (i === 2 && hero.soon) p = p.replace('aria-labelledby="soonH" hidden>', 'aria-labelledby="soonH">');   // between "active" and "soon": the Coming up box
+    out.push(p);
+  }
+  const page = out.join("");
+  BAKED = BAKED || {}; BAKED[lang] = { at: Date.now(), html: page };
+  return html(page, 200, { "Cache-Control": "public, max-age=60" });
+}
+
+const ENTRY_CSS = ":root{--bg:#F4F6F8;--paper:#FFFFFF;--ink:#1B2430;--muted:#5D6877;--line:#D8DDE3;--line-strong:#AEB7C2;--zebra:#F8FAFB;--hover:#EEF3F8;--harbor:#16202B;--harbor-ink:#E9EEF3;--harbor-muted:#A9B8C8;--chip:#E6EAEE;--chip-on:#1B2430;--chip-on-ink:#F4F6F8;--focus:#2B6CB0;--c-water:#2B6CB0;--c-hvac:#DD6B20;--c-elev:#6B46C1;--c-win:#2C7A7B;--c-fire:#C53030;--c-amen:#B7791F;--c-garage:#5B6779;--c-pm:#38A169;--c-clean:#0E9488;--c-you:#D53F8C;--c-other:#7C8B9A;--t-water:#1E4E80;--t-hvac:#93410F;--t-elev:#52309A;--t-win:#1B5657;--t-fire:#9B1F1F;--t-amen:#734A0C;--t-garage:#3F4957;--t-pm:#1F5F3A;--t-clean:#0A5A52;--t-you:#9C1F60;--t-other:#4F5B68;--amber:#C98A1B;--amber-ink:#8A5A0B;--ok:#2F855A;--mark:#FFF1B8;--bad:#B91C1C;}@media (prefers-color-scheme: dark){:root{--bg:#0F151C;--paper:#171F29;--ink:#E6EAEF;--muted:#A3AEBC;--line:#2A333E;--line-strong:#465262;--zebra:#1A222D;--hover:#232E3B;--harbor:#0B1118;--harbor-ink:#E9EEF3;--harbor-muted:#A0B0C2;--chip:#232D38;--chip-on:#E6EAEF;--chip-on-ink:#0F151C;--focus:#6FA6E8;--c-water:#4F8FD6;--c-hvac:#EE8A3F;--c-elev:#8F74E3;--c-win:#3FA79B;--c-fire:#E25C5C;--c-amen:#D4A040;--c-garage:#8A97A9;--c-pm:#4CBF7E;--c-clean:#2FB8AA;--c-you:#E86AA6;--c-other:#8C9BAA;--t-water:#9CC4F2;--t-hvac:#F6B27F;--t-elev:#C2B1F5;--t-win:#86D3C9;--t-fire:#F5A3A3;--t-amen:#EBC883;--t-garage:#BCC6D2;--t-pm:#94DDB3;--t-clean:#7FDACF;--t-you:#F4A9CB;--t-other:#BCC6D0;--amber:#E0A23A;--amber-ink:#E9B65E;--ok:#4CBF7E;--mark:#5A4A12;--bad:#F07A7A;}}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:\"IBM Plex Sans\",system-ui,-apple-system,\"Segoe UI\",Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;font-variant-numeric:tabular-nums}a{color:inherit}h1{font-family:\"Fraunces\",\"Iowan Old Style\",Georgia,serif;font-weight:500;letter-spacing:-0.01em;font-size:36px;line-height:1.12;margin:0 0 14px}.wrap{max-width:760px;margin:0 auto;padding:0 24px}@media (max-width:600px){.wrap{padding:0 16px}h1{font-size:28px}}.skip{position:absolute;left:12px;top:-60px;z-index:5;background:var(--paper);color:var(--ink);padding:10px 14px;border-radius:8px;font-weight:600;text-decoration:none}.skip:focus{top:10px}:focus-visible{outline:2px solid var(--focus);outline-offset:2px}.nav{background:var(--harbor);color:var(--harbor-ink)}.nav .wrap{display:flex;align-items:center;gap:12px;height:56px}.brand{font-family:\"Fraunces\",Georgia,serif;font-size:18px;text-decoration:none;white-space:nowrap}.navr{margin-left:auto;display:flex;align-items:center;gap:14px}.lang{border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:7px 10px;font-size:14px;line-height:1.2;text-decoration:none;white-space:nowrap}.back{color:var(--harbor-muted);text-decoration:none;font-size:15px;white-space:nowrap;padding:10px 0}@media (max-width:480px){.brand{font-size:16px}.navr{gap:10px}.back{font-size:14px}}@media (max-width:420px){.nav .wrap{padding:0 12px;gap:8px}.brand{font-size:15px}.lang{padding:7px 8px;font-size:13px}}@media (max-width:400px){.back{display:none}}main.wrap{padding-top:32px;padding-bottom:48px}.kicker{font-size:14px;color:var(--muted);margin:0 0 8px}.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;color:var(--muted);font-size:15px;margin:0 0 18px}.pill{display:inline-block;padding:2px 9px;border-radius:12px;font-size:14px;line-height:1.4;color:var(--pt);background:color-mix(in srgb,var(--pc) 13%,transparent);border:1px solid color-mix(in srgb,var(--pc) 28%,transparent)}.pill.tk{background:transparent;border-style:dashed}.typ{color:var(--ink)}.typ.u{font-weight:600;color:var(--t-fire)}.typ.r{font-weight:600;color:var(--t-you)}.st{display:inline-block;font-size:13px;font-weight:600;padding:1px 8px;border-radius:10px;background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber-ink);border:1px solid color-mix(in srgb,var(--amber) 40%,transparent)}.desc{font-size:17px;margin:0 0 16px;white-space:pre-line;overflow-wrap:anywhere}.updates{margin:0 0 18px;padding-left:20px}.updates li{margin:0 0 4px}.photos{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 8px}.photos img{width:230px;max-width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block}.actions{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}.btn{display:inline-flex;align-items:center;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:600;font-size:15px;padding:11px 18px;border-radius:8px;min-height:44px}.btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--line-strong)}.callout{border-left:3px solid var(--amber);padding:10px 16px;background:var(--paper);border-radius:0 10px 10px 0;margin:24px 0;color:var(--muted);font-size:15px}.callout p{margin:0}.pn{display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--line);padding-top:16px;font-size:15px}.pn a,.pn span{flex:1}.pn a:last-child{text-align:right}footer{border-top:1px solid var(--line);padding:24px 0 48px;color:var(--muted);font-size:15px}footer p{margin:0 0 10px}";
+// One entry on its own page: /entry/<id> (add ?lang=es for Spanish labels; the entry's own words stay as written)
+async function entryPage(env, ctx, url) {
+  let id = "";
+  try { id = decodeURIComponent(url.pathname.slice(7)).replace(/\/+$/, ""); } catch (e) { id = ""; }
+  const lang = url.searchParams.get("lang") === "es" ? "es" : "en";
+  const R = await siteRecord(env, lang), C = R.C, t = C.t, site = env.SITE_ORIGIN, lq = lang === "es" ? "?lang=es" : "";
+  const all = R.rows.concat(R.reps);
+  const r = all.find(x => x.id === id);
+  const head = (title, extra) => '<!DOCTYPE html>\n<html lang="' + lang + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + esc(title) + '</title>\n' + extra +
+    '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="alternate" type="application/rss+xml" title="355 Atlantic Street: outages and repairs" href="' + esc(env.API_ORIGIN) + '/feed.xml">\n' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">\n<style>' + ENTRY_CSS + '</style>\n</head>\n<body>\n' +
+    '<a class="skip" href="#main">' + esc(t("skip")) + '</a>\n<header class="nav"><div class="wrap"><a class="brand" href="/' + lq + '">355 Atlantic Street</a><div class="navr"><a class="lang" href="' + esc(url.pathname) + (lang === "es" ? "" : "?lang=es") + '" hreflang="' + (lang === "es" ? "en" : "es") + '" lang="' + (lang === "es" ? "en" : "es") + '">' + esc(t("lang.other")) + '</a><a class="back" href="/' + lq + '">' + esc(lang === "es" ? "Volver al registro" : "Back to the record") + '</a></div></div></header>\n';
+  const foot = '<footer><div class="wrap"><p>' + esc(t("meth.keep.p5")) + '</p><p>' + esc(t("foot.p3")) + '</p></div></footer>\n</body>\n</html>\n';
+  if (!r) {
+    const gone = lang === "es" ? "Esa entrada ya no está en el sitio." : "That entry is no longer on the site.";
+    return html(head(gone, '<meta name="robots" content="noindex">\n') + '<main class="wrap" id="main"><p class="kicker">' + esc(t("hero.kicker")) + '</p><h1>' + esc(gone) + '</h1><p class="actions"><a class="btn" href="/' + lq + '#log-h">' + esc(t("hero.browse")) + '</a></p></main>\n' + foot, 404, { "Cache-Control": "public, max-age=60" });
+  }
+  const rep = r.kind === "report", ticket = r.c === "you";
+  const canon = site + "/entry/" + encodeURIComponent(r.id);
+  const typeName = rep ? t("type.report") : ticket ? t("type.R") : t("type." + r.t);
+  const when = C.fmtRow(r) + (!r.open && r.e && r.e > r.d ? " " + (r.est ? t("toDate", { date: t("aboutDate", { date: C.fmt(r.e) }) }) : t("toDate", { date: C.fmt(r.e) })) : "");
+  const place = r.w ? C.placeName(r.w) + (r.stack ? ", " + t("lineOf", { x: r.stack }) : "") : "";
+  const title = r.s + ", " + C.fmtRow(r) + ": " + t("doc.title").split(": ")[0];
+  let desc = [typeName, place, when].filter(Boolean).join(" · ") + ". " + String(r.x || t("doc.desc")).replace(/\s+/g, " ").trim();
+  if (desc.length > 220) desc = desc.slice(0, 218).replace(/\s+\S*$/, "") + "…";
+  const img = (r.img || [])[0];
+  const image = img ? env.API_ORIGIN + "/img/" + encodeURIComponent(img) : site + "/og.png";
+  const last = r.lastConfirmed && r.lastConfirmed > r.d ? r.lastConfirmed : (r.e && r.e > r.d ? r.e : r.d);
+  const ld = { "@context": "https://schema.org", "@type": "Article", headline: r.s, datePublished: r.m ? r.d.slice(0, 7) : r.d, dateModified: r.m ? r.d.slice(0, 7) : last, mainEntityOfPage: canon, image: image,
+    isPartOf: { "@type": "WebSite", name: "355 Atlantic Street: the residents' maintenance record", url: site + "/" },
+    about: { "@type": "Place", name: "Atlantic Station", alternateName: "355 Atlantic Street", address: { "@type": "PostalAddress", streetAddress: "355 Atlantic Street", addressLocality: "Stamford", addressRegion: "CT", postalCode: "06901", addressCountry: "US" } },
+    author: { "@type": "Organization", name: "Residents of 355 Atlantic Street" }, publisher: { "@type": "Organization", name: "Residents of 355 Atlantic Street" } };
+  const meta = '<meta name="description" content="' + esc(desc) + '">\n<link rel="canonical" href="' + esc(canon) + '">\n' +
+    '<meta property="og:title" content="' + esc(r.s + " · " + C.fmtRow(r)) + '">\n<meta property="og:description" content="' + esc(desc) + '">\n<meta property="og:type" content="article">\n<meta property="og:url" content="' + esc(canon) + '">\n<meta property="og:image" content="' + esc(image) + '">\n<meta property="og:site_name" content="355 Atlantic Street">\n<meta name="twitter:card" content="summary_large_image">\n' +
+    '<script type="application/ld+json">' + safeJson(ld) + '</script>\n';
+  const k = C.catOf(rep || ticket ? r.cat : r.c).k;
+  const bits = ['<span class="pill' + (ticket ? " tk" : "") + '" style="--pc:var(--c-' + k + ');--pt:var(--t-' + k + ')">' + esc(rep || ticket ? C.tcatName(r.cat) : C.catName(r.c)) + '</span>',
+    '<span class="typ ' + (rep ? "r" : esc(String(r.t).toLowerCase())) + '">' + esc(typeName) + '</span>', '<span>' + esc(when) + '</span>'];
+  if (place) bits.push('<span>' + esc(place) + '</span>');
+  if (r.open) bits.push('<span class="st">' + esc(t("stillGoing")) + '</span><span>' + esc(t("dayN", { n: Math.round((R.TODAY - r.ts) / 86400000) + 1 })) + '</span>');
+  else if (rep && r.e) bits.push('<span>' + esc(t("resolvedOn", { date: C.fmt(r.e) })) + '</span>');
+  if (r.dur) bits.push('<span>' + esc(C.durT(r.dur)) + '</span>');
+  if (rep) bits.push('<span>' + esc(r.name && !r.anon ? t("rp.by", { name: r.name }) : t("rp.anon")) + '</span>');
+  if (r.copies > 1) bits.push('<span>' + esc(t("forwardedBy", { n: r.copies })) + '</span>');
+  const ups = (r.updates || []).filter(u => u && u.d && u.text).slice().sort((a, b) => String(a.d).localeCompare(String(b.d)));
+  const photos = (r.img || []).map(i => '<a href="' + esc(env.API_ORIGIN) + '/img/' + encodeURIComponent(i) + '"><img src="' + esc(env.API_ORIGIN) + '/img/' + encodeURIComponent(i) + '?s=t" alt="' + esc(t("rp.photoAlt", { t: r.s })) + '" loading="lazy" width="400" height="300"></a>').join("");
+  // Neighbours in time, so every entry page links to two more
+  const order = all.slice().sort((a, b) => (a.ts - b.ts) || (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0) || (a.i - b.i));
+  const at = order.indexOf(r), older = order[at - 1], newer = order[at + 1];
+  const keep = rep || ticket ? t("meth.keep.p1") : r.src === "discord" ? t("meth.keep.p2") : t("meth.keep.p4");
+  const body = '<main class="wrap" id="main">\n<p class="kicker">' + esc(t("hero.kicker")) + '</p>\n<h1>' + esc(r.s) + '</h1>\n<p class="meta">' + bits.join("") + '</p>\n' +
+    (r.x ? '<p class="desc">' + esc(r.x) + '</p>\n' : '') +
+    (ups.length ? '<ul class="updates">' + ups.map(u => '<li>' + esc(t("updateOn", { date: C.fmtShort(C.parse(u.d).getTime()), text: u.text })) + '</li>').join("") + '</ul>\n' : '') +
+    (photos ? '<div class="photos">' + photos + '</div>\n' : '') +
+    '<p class="actions"><a class="btn" href="/' + lq + (rep ? "#report-" : "#entry-") + encodeURIComponent(r.id) + '">' + esc(t("hero.browse")) + '</a><a class="btn secondary" href="/submit.html' + lq + (rep ? "#report" : ticket ? "#ticket" : "") + '">' + esc(rep ? t("rp.add") : ticket ? t("tk.add") : t("hero.add")) + '</a></p>\n' +
+    '<div class="callout"><p>' + esc(keep) + '</p></div>\n' +
+    ((older || newer) ? '<nav class="pn">' + (older ? '<a href="/entry/' + encodeURIComponent(older.id) + lq + '" rel="prev">← ' + esc(older.s) + '</a>' : '<span></span>') + (newer ? '<a href="/entry/' + encodeURIComponent(newer.id) + lq + '" rel="next">' + esc(newer.s) + ' →</a>' : '') + '</nav>\n' : '') +
+    '</main>\n';
+  return html(head(title, meta) + body + foot, 200, { "Cache-Control": "public, max-age=300" });
+}
+async function siteMap(env) {
+  const R = await siteRecord(env, "en"), site = env.SITE_ORIGIN;
+  const day = r => { let d = r.m ? r.d : (r.lastConfirmed && r.lastConfirmed > r.d ? r.lastConfirmed : (r.e && r.e > r.d ? r.e : r.d)); if (!validDate(d) || d > R.today) d = validDate(r.d) && r.d <= R.today ? r.d : R.today; return d; };
+  const all = R.rows.concat(R.reps).sort((a, b) => b.ts - a.ts);
+  const alt = '<xhtml:link rel="alternate" hreflang="en" href="' + xmlEsc(site) + '/"/><xhtml:link rel="alternate" hreflang="es" href="' + xmlEsc(site) + '/?lang=es"/>';
+  const body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' +
+    '<url><loc>' + xmlEsc(site) + '/</loc><lastmod>' + R.today + '</lastmod><changefreq>daily</changefreq><priority>1.0</priority>' + alt + '</url>\n' +
+    '<url><loc>' + xmlEsc(site) + '/?lang=es</loc><lastmod>' + R.today + '</lastmod><changefreq>daily</changefreq><priority>0.8</priority>' + alt + '</url>\n' +
+    all.map(r => '<url><loc>' + xmlEsc(site + "/entry/" + encodeURIComponent(r.id)) + '</loc><lastmod>' + day(r) + '</lastmod></url>').join("\n") + '\n</urlset>\n';
+  return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=900" } });
 }
 
 // Minimal MIME reader: headers, date, subject, and a text body (text/plain preferred, else HTML stripped)
