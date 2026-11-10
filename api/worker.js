@@ -1853,18 +1853,24 @@ const INDEXNOW_KEY = "dc6d40d45a6b92e224bbc1699e653848";   // also served as /<k
 async function pingIndexNow(env, ids) {
   const site = env.SITE_ORIGIN;
   const urls = [site + "/"].concat([...new Set(ids)].slice(0, 2000).map(i => site + "/entry/" + encodeURIComponent(i)));
-  try {
-    const r = await fetch("https://api.indexnow.org/indexnow", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ host: new URL(site).hostname, key: INDEXNOW_KEY, keyLocation: site + "/" + INDEXNOW_KEY + ".txt", urlList: urls }) });
-    console.log("indexnow: " + r.status + " for " + urls.length + " addresses");
-  } catch (e) { console.log("indexnow failed: " + (e && e.message)); }
+  const body = JSON.stringify({ host: new URL(site).hostname, key: INDEXNOW_KEY, keyLocation: site + "/" + INDEXNOW_KEY + ".txt", urlList: urls });
+  // The shared endpoint first; when it is busy (429) or down, Bing's own, which passes the list on the same way
+  for (const api of ["https://api.indexnow.org/indexnow", "https://www.bing.com/indexnow"]) {
+    try {
+      const r = await fetch(api, { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8" }, body: body });
+      console.log("indexnow: " + r.status + " from " + new URL(api).hostname + " for " + urls.length + " addresses");
+      if (r.status >= 200 && r.status < 300) return true;
+      if (r.status !== 429 && r.status < 500) return false;
+    } catch (e) { console.log("indexnow failed: " + (e && e.message)); }
+  }
+  return false;
 }
 async function announce(env, ctx) {
   const pub = await readDoc(env, "pub"), today = todayNY();
   const mark = x => (x.status || "") + "|" + (x.e || "") + "|" + ((x.updates || []).length);
-  let changed = [], jobs = [], pages = false;
+  let changed = [], jobs = [], pages = false, allSent = true, tries = 0;
   await mutateDoc(env, "sys", sys => {
-    changed = []; jobs = []; pages = !!sys.pages;
+    changed = []; jobs = []; pages = !!sys.pages; allSent = !!sys.pagesTold; tries = sys.pagesTries || 0;
     const first = !sys.known, known = sys.known || {}, told = sys.told || {}, next = {}, nextTold = {};
     for (const x of pub.incidents.concat(pub.reports)) {
       if (!x || !x.id) continue;
@@ -1884,7 +1890,16 @@ async function announce(env, ctx) {
     if (jobs.length && alertsOn(env)) sys.outbox = (sys.outbox || []).concat(jobs).slice(-50);
     if (first) changed = [];
   }, ctx);
-  if (changed.length && pages) await pingIndexNow(env, changed);
+  if (pages) {
+    // The site's pages are in use: bring their copy of the record up to date here, so a visitor's request doesn't have to
+    let R = null;
+    try { REC_CACHE = null; R = await siteRecord(env, "en", ctx); } catch (e) { console.log("site record not refreshed: " + (e && e.message)); }
+    if (!allSent && R && tries < 24) {
+      // Search engines haven't been given the full list of entry pages yet (the first try can be turned away): once an hour, up to a day
+      const ok = await pingIndexNow(env, R.ord);
+      await mutateDoc(env, "sys", sys => { if (ok) { sys.pagesTold = today; delete sys.pagesTries; } else sys.pagesTries = (sys.pagesTries || 0) + 1; }, ctx);
+    } else if (changed.length) await pingIndexNow(env, changed);
+  }
   await sendAlerts(env, ctx);
 }
 // Work through the outbox a batch at a time (the hourly schedule and page loads pick up where this stops).
@@ -1940,7 +1955,7 @@ async function sitePages(request, env, ctx) {
       let res = null;
       if (path === "/" || path === "/index.html") res = await bakeHome(env, ctx, url);
       else if (path.startsWith("/entry/")) res = await entryPage(env, ctx, url);
-      else if (path === "/sitemap.xml") res = await siteMap(env);
+      else if (path === "/sitemap.xml") res = await siteMap(env, ctx);
       if (res) { notePages(env, ctx); return res; }
     } catch (e) { console.log("site page failed, passing through: " + (e && e.message)); }
   }
@@ -1955,7 +1970,11 @@ function notePages(env, ctx) {
   const p = (async () => {
     let fresh = false;
     await mutateDoc(env, "sys", sys => { fresh = false; if (sys.pages) return false; sys.pages = todayNY(); fresh = true; }, ctx);
-    if (fresh) { const pub = await readDoc(env, "pub"); await pingIndexNow(env, pub.incidents.concat(pub.reports).map(x => x.id).concat((await baseRows(env)).map((r, i) => r.id || "b" + i))); }
+    if (fresh) {
+      const pub = await readDoc(env, "pub");
+      const ok = await pingIndexNow(env, pub.incidents.concat(pub.reports).map(x => x.id).concat((await baseRows(env)).map((r, i) => r.id || "b" + i)));
+      if (ok) await mutateDoc(env, "sys", sys => { sys.pagesTold = todayNY(); }, ctx);   // otherwise announce() tries again each hour
+    }
   })().catch(e => console.log("notePages failed: " + (e && e.message)));
   if (ctx && ctx.waitUntil) ctx.waitUntil(p);
 }
@@ -1995,22 +2014,56 @@ async function originHome(env) {
 function caps(env) { return { confirm: true, alerts: alertsOn(env) }; }
 function safeJson(v) { return JSON.stringify(v).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029"); }
 function sitePub(pub) { const live = { incidents: pub.incidents, reports: pub.reports }; if (pub.banner) live.banner = pub.banner; return live; }
-// The record as the homepage sees it: archived rows plus live ones, through the page's own normalize().
-// Worked out at most once every 30 seconds per language (and so is the finished homepage, below): a burst of
-// visitors or a crawler walking every entry page costs one read of the record, not one each.
+// New York's calendar date without Intl. Building a time-zone formatter costs several milliseconds the first time in
+// a new isolate, which the site's pages can't spare on the free plan. US rule since 2007: daylight time runs from
+// the second Sunday of March, 2:00, to the first Sunday of November, 2:00.
+function nyDate(ms) {
+  const t = ms == null ? Date.now() : ms, y = new Date(t).getUTCFullYear();
+  const sunday = (month, n) => 1 + ((7 - new Date(Date.UTC(y, month, 1)).getUTCDay()) % 7) + 7 * (n - 1);
+  const start = Date.UTC(y, 2, sunday(2, 2), 7), end = Date.UTC(y, 10, sunday(10, 1), 6);   // 2:00 EST is 07:00 UTC; 2:00 EDT is 06:00 UTC
+  return new Date(t - (t >= start && t < end ? 4 : 5) * 3600000).toISOString().slice(0, 10);
+}
+// The record as the site's pages see it: archived rows plus live ones, through the page's own normalize().
+// Working that out in a new isolate takes more processor time than the free plan allows a request (measured: 11 to
+// 25 ms against a limit of 10), so the result is kept in KV under "site:rec", stamped with the version of the live
+// record (the D1 row's ver) and the day. A request then reads the stamp and the kept copy and draws its page; the
+// working-out happens once per change to the record and once a day, normally in the background (announce() does it
+// after every change and every hour). The rows come out the same in both languages, so one copy serves both.
+// In memory it is reused for 30 seconds. "full" is for the homepage, which also needs the raw record.
 let REC_CACHE = null;
 let BAKED = null;
 const SITE_FRESH_MS = 30000;
-async function siteRecord(env, lang) {
-  const today = todayNY(), key = today + "|" + (lang === "es" ? "es" : "en");
+const REC_KEY = "site:rec", REC_FORMAT = 1;
+function byTime(a, b) { return (a.ts - b.ts) || (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0) || (a.i - b.i); }
+async function siteRecord(env, lang, ctx, full) {
+  const today = nyDate(), L = lang === "es" ? "es" : "en", key = today + "|" + L;
   const hit = REC_CACHE && REC_CACHE[key];
-  if (hit && Date.now() - hit.at < SITE_FRESH_MS) return hit.v;
-  const [base, pub] = await Promise.all([baseRows(env), readDoc(env, "pub")]);
-  const C = siteCore(Date.parse(today + "T00:00:00Z"), lang === "es" ? "es" : "en");
-  const ids = new Set(pub.incidents.filter(r => r && r.id).map(r => r.id));
-  const rows = C.normalize(base.filter(r => !(r.id && ids.has(r.id))).concat(pub.incidents));
-  const reps = C.normReports(pub.reports);
-  const v = { C: C, base: base, pub: pub, rows: rows, reps: reps, today: today, TODAY: Date.parse(today + "T00:00:00Z") };
+  if (hit && Date.now() - hit.at < SITE_FRESH_MS && (!full || hit.v.pub)) return hit.v;
+  const TODAY = Date.parse(today + "T00:00:00Z"), C = siteCore(TODAY, L);
+  let v = null;
+  if (!full && env.SQL) {
+    try {
+      const [row, kept] = await Promise.all([env.SQL.prepare("SELECT ver FROM docs WHERE id = ?").bind("pub").first(), env.DB.get(REC_KEY, "json")]);
+      if (row && kept && kept.f === REC_FORMAT && kept.k === row.ver + "|" + today && Array.isArray(kept.rows) && Array.isArray(kept.reps) && Array.isArray(kept.ord))
+        v = { C: C, rows: kept.rows, reps: kept.reps, ord: kept.ord, pages: !!kept.pages, today: today, TODAY: TODAY };
+    } catch (e) { v = null; }   // no table yet, or a damaged copy: work it out below
+  }
+  if (!v) {
+    const [base, doc] = await Promise.all([baseRows(env), getDoc(env, "pub")]), pub = doc.body;
+    const ids = new Set(pub.incidents.filter(r => r && r.id).map(r => r.id));
+    const rows = C.normalize(base.filter(r => !(r.id && ids.has(r.id))).concat(pub.incidents));
+    const reps = C.normReports(pub.reports);
+    const ord = rows.concat(reps).sort(byTime).map(r => r.id);   // oldest first: each entry page links to its neighbours
+    v = { C: C, base: base, pub: pub, rows: rows, reps: reps, ord: ord, pages: false, today: today, TODAY: TODAY };
+    if (env.SQL && doc.ver >= 0) {
+      const keep = (async () => {
+        const sys = await readDoc(env, "sys");
+        await env.DB.put(REC_KEY, JSON.stringify({ f: REC_FORMAT, k: doc.ver + "|" + today, at: Date.now(), pages: !!sys.pages, rows: rows, reps: reps, ord: ord }));
+      })().catch(e => console.log("site record not kept: " + (e && e.message)));
+      if (ctx && ctx.waitUntil) ctx.waitUntil(keep); else await keep;
+    }
+  }
+  if (v.pages) PAGES_NOTED = true;   // already on record that the site serves these pages: notePages() has nothing to do
   if (!REC_CACHE || !Object.keys(REC_CACHE).every(k => k.slice(0, 10) === today)) REC_CACHE = {};
   REC_CACHE[key] = { at: Date.now(), v: v };
   return v;
@@ -2235,7 +2288,7 @@ async function bakeHome(env, ctx, url) {
   if (!HOME_CACHE.parts) HOME_CACHE.parts = homeParts(html0);
   const parts = HOME_CACHE.parts;
   if (parts.indexOf("data") < 0 || parts.indexOf("active") !== 1) return null;   // a homepage from before the markers existed: hand it on untouched
-  const R = await siteRecord(env, "en");
+  const R = await siteRecord(env, "en", ctx, true);
   sweepSoon(env, ctx);
   const live = sitePub(R.pub); live.caps = caps(env);
   const hero = siteHero(R), lists = siteLists(R);
@@ -2271,7 +2324,7 @@ async function entryPage(env, ctx, url) {
   let id = "";
   try { id = decodeURIComponent(url.pathname.slice(7)).replace(/\/+$/, ""); } catch (e) { id = ""; }
   const lang = url.searchParams.get("lang") === "es" ? "es" : "en";
-  const R = await siteRecord(env, lang), C = R.C, t = C.t, site = env.SITE_ORIGIN, lq = lang === "es" ? "?lang=es" : "";
+  const R = await siteRecord(env, lang, ctx), C = R.C, t = C.t, site = env.SITE_ORIGIN, lq = lang === "es" ? "?lang=es" : "";
   const all = R.rows.concat(R.reps);
   const r = all.find(x => x.id === id);
   const head = (title, extra) => '<!DOCTYPE html>\n<html lang="' + lang + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + esc(title) + '</title>\n' + extra +
@@ -2313,8 +2366,8 @@ async function entryPage(env, ctx, url) {
   const ups = (r.updates || []).filter(u => u && u.d && u.text).slice().sort((a, b) => String(a.d).localeCompare(String(b.d)));
   const photos = (r.img || []).map(i => '<a href="' + esc(env.API_ORIGIN) + '/img/' + encodeURIComponent(i) + '"><img src="' + esc(env.API_ORIGIN) + '/img/' + encodeURIComponent(i) + '?s=t" alt="' + esc(t("rp.photoAlt", { t: r.s })) + '" loading="lazy" width="400" height="300"></a>').join("");
   // Neighbours in time, so every entry page links to two more
-  const order = all.slice().sort((a, b) => (a.ts - b.ts) || (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0) || (a.i - b.i));
-  const at = order.indexOf(r), older = order[at - 1], newer = order[at + 1];
+  const at = R.ord.indexOf(r.id), near = k => (at >= 0 && R.ord[k] !== undefined ? all.find(x => x.id === R.ord[k]) : undefined);
+  const older = near(at - 1), newer = near(at + 1);
   const keep = rep || ticket ? t("meth.keep.p1") : r.src === "discord" ? t("meth.keep.p2") : t("meth.keep.p4");
   const body = '<main class="wrap" id="main">\n<p class="kicker">' + esc(t("hero.kicker")) + '</p>\n<h1>' + esc(r.s) + '</h1>\n<p class="meta">' + bits.join("") + '</p>\n' +
     (r.x ? '<p class="desc">' + esc(r.x) + '</p>\n' : '') +
@@ -2326,8 +2379,8 @@ async function entryPage(env, ctx, url) {
     '</main>\n';
   return html(head(title, meta) + body + foot, 200, { "Cache-Control": "public, max-age=300" });
 }
-async function siteMap(env) {
-  const R = await siteRecord(env, "en"), site = env.SITE_ORIGIN;
+async function siteMap(env, ctx) {
+  const R = await siteRecord(env, "en", ctx), site = env.SITE_ORIGIN;
   const day = r => { let d = r.m ? r.d : (r.lastConfirmed && r.lastConfirmed > r.d ? r.lastConfirmed : (r.e && r.e > r.d ? r.e : r.d)); if (!validDate(d) || d > R.today) d = validDate(r.d) && r.d <= R.today ? r.d : R.today; return d; };
   const all = R.rows.concat(R.reps).sort((a, b) => b.ts - a.ts);
   const alt = '<xhtml:link rel="alternate" hreflang="en" href="' + xmlEsc(site) + '/"/><xhtml:link rel="alternate" hreflang="es" href="' + xmlEsc(site) + '/?lang=es"/>';
